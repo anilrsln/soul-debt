@@ -1,0 +1,26 @@
+{
+  "name": "soul-debt",
+  "version": "1.0.0",
+  "description": "Active descent tower defense — a reluctant necromancer harvests souls on the way down to the soul-eating god. Pivoted from a Zero Stress King clone.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "tower-defense",
+    "descent",
+    "necromancer",
+    "phaser3",
+    "incremental"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "vite": "^5.4.21"
+  }
+}
