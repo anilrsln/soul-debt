@@ -7,10 +7,7 @@ import AchievementManager from '../systems/AchievementManager.js';
 import SoulDebtManager from '../systems/SoulDebtManager.js';
 import PrestigeManager from '../systems/PrestigeManager.js';
 import Necromancer from '../entities/Necromancer.js';
-import Archer from '../entities/Archer.js';
-import Cannon from '../entities/Cannon.js';
-import FrostTower from '../entities/FrostTower.js';
-import Catapult from '../entities/Catapult.js';
+import Defender from '../entities/Defender.js';
 import { formatNumber } from '../utils/NumberFormatter.js';
 import AssetProvider from '../systems/AssetProvider.js';
 import { t as i18n } from '../i18n/index.js';
@@ -112,10 +109,11 @@ export default class GameScene extends Phaser.Scene {
         this._moveUnitAnchor(this._selectedUnit, px, py);
       }
     });
-    this.archers = [];
-    this.cannons = [];
-    this.frostTowers = [];
-    this.catapults = [];
+    // Defender registry (Faz G mimari): anahtar → canlı birim dizisi.
+    // necromancer(laser) hariç tüm DEFENDERS anahtarları; yeni karakter = config'e obje, burası otomatik.
+    this.defenderKeys = Object.keys(CONFIG.DEFENDERS).filter(k => k !== 'laser');
+    this.defenders = {};
+    for (const k of this.defenderKeys) this.defenders[k] = [];
 
     // Dalga yöneticisi
     this.waveManager = new WaveManager(this);
@@ -305,21 +303,12 @@ export default class GameScene extends Phaser.Scene {
       u.sprite.setPosition(u.x, u.y);
     }
 
-    // Archers
-    this.syncDefenders('archer', this.archers, Archer);
-    for (const a of this.archers) a.update(delta, enemies);
-
-    // Cannons
-    this.syncDefenders('cannon', this.cannons, Cannon);
-    for (const c of this.cannons) c.update(delta, enemies);
-
-    // Frost Towers
-    this.syncDefenders('frost', this.frostTowers, FrostTower);
-    for (const f of this.frostTowers) f.update(delta, enemies);
-
-    // Catapults
-    this.syncDefenders('catapult', this.catapults, Catapult);
-    for (const ct of this.catapults) ct.update(delta, enemies);
+    // Tüm savunucular — registry döngüsü (tek Defender sınıfı, config-driven)
+    for (const key of this.defenderKeys) {
+      const list = this.defenders[key];
+      this.syncDefenders(key, list);
+      for (const d of list) d.update(delta, enemies);
+    }
 
     // Floating text güncelleme
     this.updateFloatingTexts(delta);
@@ -346,7 +335,7 @@ export default class GameScene extends Phaser.Scene {
   /** Savunucu sayısını GameState ile senkronize eder (K24 serbest yerleşim).
    *  Yeni birim bir BAŞLANGIÇ çıpasına yerleşir (melee öne, ranged arkaya); oyuncu sonra
    *  savaş/kurulum fazında tıklayıp seçtiği birimi taşıyabilir (placeAnchor). */
-  syncDefenders(type, list, DefenderClass) {
+  syncDefenders(type, list) {
     const state = GameState.defenders[type];
     const targetCount = state.count || 0;
 
@@ -361,7 +350,7 @@ export default class GameScene extends Phaser.Scene {
       const bandTop = CONFIG.CORRIDOR_TOP + 30;
       const bandH = (CONFIG.CORRIDOR_BOTTOM - CONFIG.CORRIDOR_TOP) - 60;
       const y = bandTop + ((idx * 53) % bandH); // dikeyde yay (çakışmayı azalt)
-      list.push(new DefenderClass(this, x, y, idx));
+      list.push(new Defender(this, type, x, y, idx));
     }
 
     while (list.length > targetCount) {
@@ -372,13 +361,14 @@ export default class GameScene extends Phaser.Scene {
 
   /** Dur-dövüş için: sahadaki tüm canlı MELEE birimleri (K34 tıkaçlar). Enemy._findBlocker çağırır. */
   getMeleeBlockers() {
-    const all = [...this.cannons]; // mevcut kadroda melee = cannon; Faz G'de Golem/Bruiser eklenir
-    return all.filter(d => d.alive && d.combatType === 'melee');
+    return this.getAllUnits().filter(d => d.alive && d.combatType === 'melee');
   }
 
   /** Tüm dizilebilir birimler (necromancer hariç) — taşıma/HP bar/absorbe için. */
   getAllUnits() {
-    return [...this.archers, ...this.cannons, ...this.frostTowers, ...this.catapults];
+    const out = [];
+    for (const key of this.defenderKeys) out.push(...this.defenders[key]);
+    return out;
   }
 
   // ═══════════════ Olaylar ═══════════════
@@ -464,9 +454,7 @@ export default class GameScene extends Phaser.Scene {
   /** Upgrade geri bildirimi: ilgili savunucu sprite'larını kısa pulse ile büyüt. */
   onDefenderUpgraded(data) {
     const type = data && data.type;
-    const list = type === 'laser' ? [this.necromancer]
-      : type === 'archer' ? this.archers
-      : type === 'cannon' ? this.cannons : [];
+    const list = type === 'laser' ? [this.necromancer] : (this.defenders[type] || []);
     for (const d of list) {
       if (!d || !d.sprite) continue;
       this.tweens.add({
@@ -581,7 +569,7 @@ export default class GameScene extends Phaser.Scene {
 
   /** type → ilgili birim listesi. */
   _unitListFor(type) {
-    return { archer: this.archers, cannon: this.cannons, frost: this.frostTowers, catapult: this.catapults }[type] || null;
+    return this.defenders[type] || null;
   }
 
   /** Yerleştirmeyi bitir: birimi tıklanan çıpaya koy. */

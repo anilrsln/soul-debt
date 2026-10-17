@@ -126,6 +126,8 @@ export const CONFIG = {
     laser: {
       name: 'Necromancer',
       combatType: 'ranged', hp: 9999, // necromancer canı ayrı yönetilir (GameState.necromancer)
+      // NOT: necromancer kendi entity'si (Necromancer.js) ile çizilir; registry'ye dahil DEĞİL.
+      // Davranış alanları (projectileType vb.) burada tutulmaz — hire edilmez.
       damage:   { base: 5,  multiplier: 1.2,  baseCost: 10 },
       fireRate: { base: 1.2, multiplier: 1.1, baseCost: 15 },
       range:    { base: 150, multiplier: 1.08, baseCost: 20 },
@@ -137,6 +139,10 @@ export const CONFIG = {
     archer: {
       name: 'Archer',
       combatType: 'ranged', hp: 30, // ranged: çıpada sabit, menzilden vurur (K34)
+      // Davranış (veri-odaklı; tek Defender sınıfı bunları okur):
+      spriteKey: 'defender-archer', spriteType: 'sprite', // animasyonlu sprite
+      projectileType: 'arrow', fireSfx: 'archerFire', fireFx: 'recoil',
+      archerSplash: true, // Conquest "Archer Mastery" splash kancası (ConquestManager'dan okunur)
       soulCapacity: 6, // düşük — ucuz dirilt, düşük borç (K12/K22 İskelet Okçu)
       // K30 placeholder: soul + bone (İskelet Okçu benzeri)
       craftCost: { soul: 50, bone: 10 }, craftCostMultiplier: 1.5,
@@ -149,6 +155,9 @@ export const CONFIG = {
     cannon: {
       name: 'Cannon',
       combatType: 'melee', hp: 120, // melee TIKAÇ: yolu tutar, dur-dövüş (K34 Golem benzeri blokçu)
+      // Melee: mermi yok. Davranış alanları:
+      spriteKey: 'defender-cannon', spriteType: 'image',
+      fireFx: 'blast', // (melee olduğu için ateş efekti şu an çağrılmıyor; ileride ranged varyant için korunur)
       soulCapacity: 20, // yüksek — pahalı dirilt, çok borç (K12/K22 Taş Golem benzeri)
       // K30 placeholder: soul + essence (Golem benzeri ağır birim)
       craftCost: { soul: 200, essence: 8 }, craftCostMultiplier: 2.0,
@@ -161,6 +170,9 @@ export const CONFIG = {
     frost: {
       name: 'Frost Tower',
       combatType: 'ranged', hp: 40, // ranged yavaşlatıcı (K34)
+      spriteKey: 'defender-frost', spriteType: 'image',
+      projectileType: 'frostbolt', fireSfx: 'frostFire', fireFx: 'frost',
+      onHitEffect: 'slow', // Defender.js slowFraction/slowDuration uygular
       soulCapacity: 12, // orta (K12/K22 Büyücü benzeri)
       // K30 placeholder: soul + bone + essence (çok-metalı — Büyücü benzeri)
       craftCost: { soul: 300, bone: 15, essence: 5 }, craftCostMultiplier: 1.8,
@@ -177,6 +189,8 @@ export const CONFIG = {
     catapult: {
       name: 'Catapult',
       combatType: 'ranged', hp: 50, // ranged uzun menzil AoE (K34)
+      spriteKey: 'defender-catapult', spriteType: 'image',
+      projectileType: 'boulder', fireSfx: 'boulderFire', fireFx: 'heavy',
       soulCapacity: 16, // orta-yüksek (K12)
       // K30 placeholder: soul + bone + essence (çok-metalı ağır)
       craftCost: { soul: 500, bone: 20, essence: 10 }, craftCostMultiplier: 2.5,
