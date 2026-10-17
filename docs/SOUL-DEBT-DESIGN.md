@@ -41,7 +41,7 @@ Oyunun temel ritmi "10 dalga = 1 kat" döngüsüdür. Bu döngü, oyuna nefes al
 - Bir kat 10 dalgadan oluşur.
 - Kat boyunca savaş kesintisizdir; dizilim sabittir, oyuncu mikro-yönetim yapmaz.
 - 10. dalganın sonunda kat bekçisi (boss) belirir.
-- Kat tamamlanınca bir **kat-arası kurulum fazı** açılır: necromancer'ın canı tamamen dolar, oyuncu ordusunu yeniden dizebilir, birim ekleyebilir veya çıkarabilir (absorbe).
+- Kat tamamlanınca bir **kat-arası kurulum fazı** açılır: necromancer'ın canı tamamen dolar, **tüm birimlerin canı yenilenir**, oyuncu ordusunu yeniden dizebilir, birim ekleyebilir veya çıkarabilir (absorbe). Not: Can yenilenir ama diriltme kuyruğu ve biriken soul-debt DEVAM eder — kat sonu bir nefes anıdır, borç affı değil (soul-debt cezası K11 korunur).
 - Oyuncu hazır olunca bir sonraki kata iner. Katlar derinleştikçe düşmanlar görsel ve sayısal olarak güçlenir.
 - **Önceden belirli bir Kat N'de** (en dip) tanrı bulunur. Oyun saf-sonsuz değildir; tanrıya ulaşmak bir hedeftir. N bir placeholder'dır (playtest ile ayarlanır — ör. Kat 10 ≈ 100 dalga).
 - Tanrıyı yenmek oyunun **zafer/sonu**dur ve gönüllü prestige'i tetikler (bkz. 7). Zaferden sonra oyuncuya "tekrar oyna" ve "endless devam" seçeneği sunulur (endless + New Game+ ayrıntısı park'ta — bkz. 10).
@@ -125,7 +125,11 @@ Birim **çıpanın otonomi dairesinden asla çıkmaz**. Böylece oyuncunun yerle
 
 ### 6.3 Birim Ölümü ve Otomatik Diriltme
 
-Birimler gerçekten ölebilir. Bir birim öldüğünde necromancer onu **yerinde** otomatik olarak yeniden diriltir. Oyun hiçbir yere geri sarmaz: dalga devam eder, kat devam eder, yalnızca o tek birim kısa bir cooldown sonrası tekrar ayağa kalkar — ölmeden önceki gücüyle (birimin soul-kapasitesi sabittir, güçsüzleşerek dirilmez). Oyuncunun manuel diriltme yapması gerekmez. Otomatik diriltme sayesinde oyuncu uzaktayken bile ordu tamamen dağılmaz; necromancer arka planda dirilmeye devam eder.
+Birimler gerçekten ölebilir. Bir birim öldüğünde necromancer onu **yerinde** otomatik olarak yeniden diriltir. Oyun hiçbir yere geri sarmaz: dalga devam eder, kat devam eder, yalnızca o tek birim kısa bir cooldown sonrası tekrar ayağa kalkar — ölmeden önceki gücüyle (birimin soul-kapasitesi sabittir, güçsüzleşerek dirilmez). Oyuncunun manuel diriltme yapması gerekmez — bu idle güvenliğinin temelidir (AFK'de bile ordu dağılmaz; saf-manuel diriltme bilinçle reddedildi, bkz. DECISIONS R3). Otomatik diriltme sayesinde oyuncu uzaktayken bile necromancer arka planda dirilmeye devam eder.
+
+**Opsiyonel manuel öncelik (K29):** Oto-diriltme varsayılandır, ama oyuncu isterse diriltme kuyruğuna müdahale edebilir — "önce şu tankı dirilt" diye öncelik verir, ya da "şu pahalı birimi şimdilik erteleyip soul biriktir" der. Bu müdahale zorunlu değildir (dokunmazsan sistem sırayla diriltir), ama doğru sırayı seçmek stratejik derinlik verir. Böylece idle tabanı (AFK güvenli) ile aktif derinlik (öncelik yönetimi) birlikte yaşar — K28 felsefesiyle aynı. Bu yetenek ileride bir node'dan açılabilir (erken oyun saf-oto/basit, ileri oyun öncelik-yönetimli/derin — K21 ile uyumlu).
+
+**Diriltme vs yeni örme sırası:** Diriltme kuyruğu ve yeni birim örme aynı anda tetiklenebilir; hangisi önce aktive edildiyse önce gerçekleşir (FIFO). İkisi de object pool'dan birim çeker — sıra pooling'i etkilemez, yalnızca öncelik meselesidir (havuz boşsa FIFO sırası devreye girer).
 
 Birim ölümü ile koşu sıfırlama **tamamen ayrı katmanlardır:** tek bir birimin ölmesi (hatta tüm ordunun ölmesi) oyunu başa döndürmez. Oyunu yalnızca necromancer'ın canının tamamen bitmesi sıfırlar (bkz. 6.5 ve 7).
 
@@ -238,7 +242,7 @@ Her 10 dalgada bir kat bekçisi (boss) belirir. Beş boss rotasyonu temel alın�
 
 ### 8.4 Kısmi-İadeli İsteğe Bağlı Absorbe
 
-Kat-arası kurulum fazında oyuncu bir birimi geri emebilir (absorbe). Bu absorbe isteğe bağlıdır ve birimin meta maliyetinin yalnızca bir kısmını (örneğin %50-70) geri verir. Tam iade bilinçli olarak reddedilmiştir: tam iade, her kat başında bedelsiz yeniden kurulum yaratır, bu da meta ekonomisini ve dizilim planlamasını anlamsızlaştırır. Kısmi iade, yeniden kurulumu mümkün kılar ama maliyetli yapar, böylece planlama ciddiye alınır ve necromancer'ın absorbe teması korunur.
+Kat-arası kurulum fazında oyuncu bir birimi geri emebilir (absorbe). Bu absorbe isteğe bağlıdır ve birimin örme maliyetinin — hem **soul hem meta** (Model 3'te örme ikisini de harcar, 5.2b) — yalnızca bir kısmını (örneğin %50-70, placeholder) geri verir. (Diriltme ise yalnız soul harcar, meta değil — bu yüzden absorbe-iadesi örmeye özgüdür.) Tam iade bilinçli olarak reddedilmiştir: tam iade, her kat başında bedelsiz yeniden kurulum yaratır, bu da meta ekonomisini ve dizilim planlamasını anlamsızlaştırır. Kısmi iade, yeniden kurulumu mümkün kılar ama maliyetli yapar, böylece planlama ciddiye alınır ve necromancer'ın absorbe teması korunur.
 
 ## 9. Korunan ve Değişen Kod
 

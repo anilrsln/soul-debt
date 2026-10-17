@@ -130,6 +130,14 @@ Soru: wave (savaş) içinde yeni birim örülebilir mi, ve örülürse konumunu 
 - **Kapsam:** yeni örülen/konumlanan birimler savaşta yerleştirilir; mevcut birimler savaşta çıpalarında kalır (ankerli otonomi dairesi dışına taşınmaz). İnce dizilim + absorbe kat-arası fazda; savaş yerleştirmesi "kaba/acil", kat-arası "ince ayar".
 - **K9/K24 ilişkisi:** K9'un "savaşta tamamen sabit dizilim" kuralı bir kez daha yumuşadı. Asıl amaç ("panik zorunlu olmasın") korunur; panik hâlâ opsiyonel. (Mevcut birimleri de savaşta taşıma seçeneği reddedildi — mikro-yönetim/refleks riski en yüksek oydu.)
 
+### K29 — Diriltme: oto-taban + opsiyonel manuel öncelik; absorbe soul+meta; kat-sonu can tazeleme
+Dört kenar-durumu tek kararda toplandı (K28 tartışmasından türedi):
+- **Diriltme modeli:** Oto-diriltme varsayılan kalır (AFK güvenli; saf-manuel = R3 reddi korunur). Üstüne **opsiyonel manuel öncelik**: oyuncu kuyruğa müdahale eder (önce şunu dirilt / şunu ertele). Zorunlu değil — dokunmazsan sistem sırayla diriltir. İdle taban + aktif derinlik (K28 felsefesi). İleride bir node'dan açılabilir (K21). Saf-manuel diriltme (Model C) bilinçle reddedildi — AFK'de ordu çöker, idle (K4) ölür.
+- **Diriltme vs örme sırası:** FIFO — hangisi önce aktive edildiyse o. Pooling'i bozmaz (ikisi de havuzdan çeker, sıra sadece öncelik).
+- **Absorbe iadesi:** örme hem soul hem meta harcadığından (Model 3), absorbe **ikisini de** kısmen iade eder (%50-70 placeholder). Diriltme yalnız soul harcar, meta değil.
+- **Kat sonu:** tüm birimler can yeniler + necromancer full. Ama diriltme kuyruğu + soul-debt DEVAM eder (borç affı yok; K11 cezası korunur). Kat sonu nefes anı, af değil.
+- **Necromancer ölümü (teyit):** Kat 1'e dönüş + tüm koşu-içi reset (upgrade'ler + birimler dahil) + prestige çarpanı kalıcı (K14/K25). Yeni karar değil, kesişim teyidi.
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)

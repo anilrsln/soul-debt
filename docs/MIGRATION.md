@@ -84,7 +84,9 @@ Bu, kodun en çetrefilli ve en çok oturum-notu biriktirmiş kısmı. Soul Debt'
 - Yeni manager veya EconomyManager içinde: `soulDebt` state'i.
 - Birim ölünce otomatik diriltme: anlık soul maliyeti + cooldown + borç artışı (DESIGN 6.4).
 - Borç zamanla + kill ile azalır.
-- Diriltme maliyeti birimin soul-kapasitesiyle ölçeklenir (DECISIONS K12).
+- Diriltme maliyeti birimin soul-kapasitesiyle ölçeklenir (DECISIONS K12). Diriltme YALNIZ soul harcar (meta değil).
+- **Oto-diriltme varsayılan; opsiyonel manuel öncelik (K29):** Kuyruk otomatik işler (AFK güvenli). Oyuncu müdahale ederse öncelik/erteleme (ileride node'dan açılabilir). Diriltme vs yeni örme: FIFO (önce aktive edilen). İkisi de object pool'dan çeker.
+- **Kat sonu (WaveManager/kurulum fazı):** tüm birimler can tazeler + necromancer full; diriltme kuyruğu + soul-debt DEVAM (af yok).
 
 ## 5. YENİ/DEĞİŞEN — Savaş Modeli (Dur-Dövüş + Serbest Yerleşim + Ankerli Otonomi)
 
