@@ -19,14 +19,16 @@ export default class UIScene extends Phaser.Scene {
     // ═══════ ÜST BAR (HUD) ═══════
     this.topBar = this.add.rectangle(CONFIG.CANVAS_WIDTH / 2, 15, CONFIG.CANVAS_WIDTH, 30, CONFIG.COLORS.UI_BG, 0.85).setDepth(100);
 
-    // 4 sayaç: soul (merkezi kaynak) + 3 meta (bone/essence/crystal) — Soul Debt ekonomisi
-    this.soulText    = this.add.text(10,  5, '', this.textStyle(14, '#c9b3ff')).setDepth(101); // soul: soluk mor
-    this.boneText    = this.add.text(150, 5, '', this.textStyle(13, '#d8d8d8')).setDepth(101); // bone: kemik gri
-    this.essenceText = this.add.text(265, 5, '', this.textStyle(13, '#b060ff')).setDepth(101); // essence: mor
-    this.crystalText = this.add.text(390, 5, '', this.textStyle(13, '#55e0e0')).setDepth(101); // crystal: cyan
-    this.waveText = this.add.text(340, 5, '', this.textStyle(14, '#ffffff')).setDepth(101);
-    this.enemyText = this.add.text(480, 5, '', this.textStyle(11, '#aaaaaa')).setDepth(101);
-    this.prestigeText = this.add.text(560, 5, '', this.textStyle(10, '#9b59b6')).setDepth(101);
+    // 4 sayaç: soul + 3 meta — SOLDA sıkışık grup (çakışmayacak genişlikte)
+    this.soulText    = this.add.text(8,   6, '', this.textStyle(12, '#c9b3ff')).setDepth(101); // soul
+    this.boneText    = this.add.text(108, 6, '', this.textStyle(12, '#d8d8d8')).setDepth(101); // bone
+    this.essenceText = this.add.text(192, 6, '', this.textStyle(12, '#b060ff')).setDepth(101); // essence
+    this.crystalText = this.add.text(276, 6, '', this.textStyle(12, '#55e0e0')).setDepth(101); // crystal
+    // Wave + kat + düşman sayacı — ORTA grup
+    this.waveText = this.add.text(380, 6, '', this.textStyle(12, '#ffffff')).setDepth(101);
+    this.enemyText = this.add.text(510, 6, '', this.textStyle(11, '#aaaaaa')).setDepth(101);
+    // Prestige çarpanı — MAP butonunun solunda
+    this.prestigeText = this.add.text(575, 6, '', this.textStyle(10, '#c9b3ff')).setDepth(101);
     // Necromancer can göstergesi (saha üstü, necromancer yakını) — K10/K13
     this.necroHpText = this.add.text(CONFIG.CANVAS_WIDTH / 2, 44, '', {
       fontSize: '13px', fontFamily: 'monospace', color: '#ff6b6b', stroke: '#000', strokeThickness: 3,
@@ -35,7 +37,7 @@ export default class UIScene extends Phaser.Scene {
     this.soulDebtText = this.add.text(CONFIG.CANVAS_WIDTH / 2, 62, '', {
       fontSize: '11px', fontFamily: 'monospace', color: '#d16bff', stroke: '#000', strokeThickness: 2,
     }).setOrigin(0.5).setDepth(120).setAlpha(0);
-    this.fpsText = this.add.text(720, 5, '', this.textStyle(11, '#666666')).setDepth(101);
+    this.fpsText = this.add.text(770, 20, '', this.textStyle(9, '#555555')).setDepth(101); // en köşe alt, küçük
 
     // Wave progress bar (top bar altı)
     this.waveProgressBg = this.add.rectangle(CONFIG.CANVAS_WIDTH / 2, 31, CONFIG.CANVAS_WIDTH, 3, 0x333333, 0.6).setDepth(100);
@@ -341,27 +343,50 @@ export default class UIScene extends Phaser.Scene {
 
   createHireButton(x, y, info) {
     const canHire = info.canHire;
-    const color = canHire ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED;
-    const bg = this.add.rectangle(x, y, 130, 26, color, 1).setDepth(102).setInteractive({ useHandCursor: true });
+    const type = this.activeTab;
+    const els = [];
 
-    const labelStr = info.unlocked
-      ? t('ui.hirePlus', { cost: formatNumber(info.hireCost) })
-      : t('ui.unlock', { cost: formatNumber(info.hireCost) });
-    const label = this.add.text(x, y, labelStr, this.textStyle(10, canHire ? '#66ff66' : '#666666')).setOrigin(0.5).setDepth(103);
+    // İlk kilit açma durumu: tek buton (Aç). Açıldıktan sonra iki buton (Yerleştir / Hızlı).
+    if (!info.unlocked) {
+      const bg = this.add.rectangle(x, y, 130, 26, canHire ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED, 1).setDepth(102).setInteractive({ useHandCursor: true });
+      const label = this.add.text(x, y, t('ui.unlock', { cost: formatNumber(info.hireCost) }), this.textStyle(10, canHire ? '#66ff66' : '#666666')).setOrigin(0.5).setDepth(103);
+      bg.on('pointerdown', () => this._doHire(type, bg, true)); // ilk açılış = yerleştirme modu
+      bg.on('pointerover', () => { if (canHire) bg.setFillStyle(0x2a8a2a); });
+      bg.on('pointerout', () => { bg.setFillStyle(canHire ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED); });
+      this.upgradeElements.push(bg, label);
+      return;
+    }
 
-    bg.on('pointerdown', () => {
-      if (UpgradeManager.hireDefender(this.activeTab)) {
-        this.flashButton(bg);
-        this.panelDirty = true;
-        this.game.events.emit('sfx', 'hire');
-      } else {
-        this.game.events.emit('sfx', 'uiDenied');
+    // İki buton: "Yerleştir" (yerleştirme modu — K36) + "Hızlı" (default-at)
+    const c = canHire ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED;
+    const c2 = canHire ? 0x0f3460 : CONFIG.COLORS.UI_BUTTON_DISABLED;
+    const placeBg = this.add.rectangle(x - 34, y, 62, 26, c, 1).setDepth(102).setInteractive({ useHandCursor: true });
+    const placeLbl = this.add.text(x - 34, y, t('ui.hirePlace', { cost: formatNumber(info.hireCost) }), this.textStyle(9, canHire ? '#66ff66' : '#666666')).setOrigin(0.5).setDepth(103);
+    const quickBg = this.add.rectangle(x + 34, y, 62, 26, c2, 1).setDepth(102).setInteractive({ useHandCursor: true });
+    const quickLbl = this.add.text(x + 34, y, t('ui.hireQuick'), this.textStyle(9, canHire ? '#cccccc' : '#666666')).setOrigin(0.5).setDepth(103);
+
+    placeBg.on('pointerdown', () => this._doHire(type, placeBg, true));  // yerleştirme modu
+    quickBg.on('pointerdown', () => this._doHire(type, quickBg, false)); // hızlı default
+    placeBg.on('pointerover', () => { if (canHire) placeBg.setFillStyle(0x2a8a2a); });
+    placeBg.on('pointerout', () => placeBg.setFillStyle(c));
+    quickBg.on('pointerover', () => { if (canHire) quickBg.setFillStyle(0x1a4a7a); });
+    quickBg.on('pointerout', () => quickBg.setFillStyle(c2));
+    this.upgradeElements.push(placeBg, placeLbl, quickBg, quickLbl);
+  }
+
+  /** Hire + (placeMode ise) yerleştirme modunu başlat (K36). */
+  _doHire(type, bg, placeMode) {
+    if (UpgradeManager.hireDefender(type)) {
+      this.flashButton(bg);
+      this.panelDirty = true;
+      this.game.events.emit('sfx', 'hire');
+      if (placeMode) {
+        // GameScene syncDefenders bu frame birimi yaratır; sonra placement başlat
+        this.time.delayedCall(20, () => this.game.events.emit('start-placement', { type }));
       }
-    });
-    bg.on('pointerover', () => { if (canHire) bg.setFillStyle(0x2a8a2a); });
-    bg.on('pointerout', () => { bg.setFillStyle(canHire ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED); });
-
-    this.hireButton = { bg, label };
+    } else {
+      this.game.events.emit('sfx', 'uiDenied');
+    }
   }
 
   flashButton(bg) {

@@ -47,6 +47,22 @@ export default class GameScene extends Phaser.Scene {
     // Necromancer — başlangıç birimi (K25), hep sahnede, sabit konum
     this.necromancer = new Necromancer(this, CONFIG.WALL_X + 40, Math.round((CONFIG.CORRIDOR_TOP + CONFIG.CORRIDOR_BOTTOM) / 2));
     this.isGameOver = false;
+    // Yerleştirme modu (K36): hire → oyuncu birimi istediği yere koyar
+    this._placing = null; // { type, unit } — şu an yerleştirilen birim
+    this.game.events.off('start-placement', this.onStartPlacement, this);
+    this.game.events.on('start-placement', this.onStartPlacement, this);
+    this.events.once('shutdown', () => this.game.events.off('start-placement', this.onStartPlacement, this));
+    // ESC: yerleştirme iptali — birim default çıpasında kalır (soul zaten harcandı; iade sonra)
+    this.input.keyboard?.on('keydown-ESC', () => {
+      if (this._placing) {
+        const u = this._placing.unit;
+        if (u?.sprite) u.sprite.setAlpha(1);
+        // default çıpaya geri koy
+        if (u) { u.x = u.anchorX; u.y = u.anchorY; u.sprite?.setPosition(u.x, u.y); }
+        this._placing = null;
+        if (this._placeHint) this._placeHint.setVisible(false);
+      }
+    });
     // Necromancer canını başlat (yeni oyun) — yüklenen save applyLoad'da üzerine yazar
     if (GameState.necromancer.hp == null || GameState.necromancer.hp <= 0) {
       GameState.necromancer.hp = GameState.necromancer.maxHp;
@@ -60,6 +76,14 @@ export default class GameScene extends Phaser.Scene {
     this.input.on('pointerdown', (pointer) => {
       if (this.isGameOver) return;
       const px = pointer.worldX, py = pointer.worldY;
+
+      // 0) Yerleştirme modu (K36): tık = birimi oraya koy (savaş alanı içinde)
+      if (this._placing) {
+        if (px > CONFIG.WALL_X && px < CONFIG.CANVAS_WIDTH && py > CONFIG.CORRIDOR_TOP && py < CONFIG.CORRIDOR_BOTTOM) {
+          this._commitPlacement(px, py);
+        }
+        return; // yerleştirme modunda başka tık işlemi yok
+      }
 
       // Birime tık? (en yakın birim, 30px)
       let unit = null, ud = 30 * 30;
@@ -272,6 +296,14 @@ export default class GameScene extends Phaser.Scene {
     this.necromancer.update(delta, enemies);
     // Birim HP barları (dur-dövüş görünürlüğü — K34)
     this._drawUnitHpBars();
+
+    // Yerleştirme önizlemesi: birim fareyi takip etsin (K36)
+    if (this._placing && this._placing.unit?.sprite) {
+      const p = this.input.activePointer;
+      const u = this._placing.unit;
+      u.x = p.worldX; u.y = p.worldY;
+      u.sprite.setPosition(u.x, u.y);
+    }
 
     // Archers
     this.syncDefenders('archer', this.archers, Archer);
@@ -528,6 +560,43 @@ export default class GameScene extends Phaser.Scene {
     if (!enemy?.sprite) return;
     const m = this.add.text(enemy.sprite.x, enemy.sprite.y - 24, '🎯', { fontSize: '18px' }).setOrigin(0.5).setDepth(60);
     this.tweens.add({ targets: m, y: m.y - 10, alpha: 0, duration: 700, onComplete: () => m.destroy() });
+  }
+
+  /** UIScene "Ör & Yerleştir" dedi: en son eklenen bu tip birimi yerleştirme moduna al (K36). */
+  onStartPlacement(data) {
+    const type = data.type;
+    const list = this._unitListFor(type);
+    if (!list || list.length === 0) return;
+    const unit = list[list.length - 1]; // syncDefenders'ın yeni eklediği
+    this._placing = { type, unit };
+    // Önizleme: birimi fareye bağla, yarı saydam
+    if (unit.sprite) unit.sprite.setAlpha(0.5);
+    if (!this._placeHint) {
+      this._placeHint = this.add.text(CONFIG.CANVAS_WIDTH / 2, CONFIG.CORRIDOR_TOP + 8,
+        i18n('game.placementHint'), { fontSize: '12px', fontFamily: 'monospace', color: '#00ffff', stroke:'#000', strokeThickness:3 }
+      ).setOrigin(0.5).setDepth(200);
+    }
+    this._placeHint.setVisible(true);
+  }
+
+  /** type → ilgili birim listesi. */
+  _unitListFor(type) {
+    return { archer: this.archers, cannon: this.cannons, frost: this.frostTowers, catapult: this.catapults }[type] || null;
+  }
+
+  /** Yerleştirmeyi bitir: birimi tıklanan çıpaya koy. */
+  _commitPlacement(x, y) {
+    const u = this._placing.unit;
+    u.anchorX = x; u.anchorY = y;
+    if (u.sprite) u.sprite.setAlpha(1);
+    // ranged anında kayar; melee yürür
+    if (u.combatType === 'ranged') {
+      this.tweens.add({ targets: u, x, y, duration: 300, ease: 'Sine.easeInOut',
+        onUpdate: () => u.sprite?.setPosition(u.x, u.y) });
+    }
+    this._placing = null;
+    if (this._placeHint) this._placeHint.setVisible(false);
+    this.game.events.emit('sfx', 'hire');
   }
 
   /** Bir birimi seç (taşımaya hazırla) — K24 serbest yerleştirme. */

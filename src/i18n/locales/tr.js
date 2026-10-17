@@ -18,7 +18,7 @@ export default {
     // Sekmeler
     tab: {
       laser: 'Necromancer', archer: 'Okçu', cannon: 'Top',
-      frost: 'Frost', catapult: 'Mancınık', economy: 'Ekonomi',
+      frost: 'Ayaz', catapult: 'Mancınık', economy: 'Ekonomi',
     },
     // Yükseltme / kiralama
     level: 'Lv.{n}',
@@ -26,6 +26,8 @@ export default {
     conquestLock: '🔒 Fetih Haritası\'nda "{node}" düğümünü satın al',
     hireFirst: 'Önce {name} ör ({cost})',
     hirePlus: '+1 Ör ({cost})',
+    hirePlace: 'Yerleştir ({cost})',
+    hireQuick: 'Hızlı',
     unlock: 'Aç ({cost})',
     count: 'Adet: {n}',
     // Prestige dialog
@@ -37,7 +39,7 @@ export default {
     confirm: 'ONAYLA',
     cancel: 'VAZGEÇ',
     // Nodehint (kilitli sekme ipucu)
-    nodeHint: { cannon: 'Top Açılışı', frost: 'Frost Tower Açılışı', catapult: 'Mancınık Açılışı', default: 'Açılış' },
+    nodeHint: { cannon: 'Top Açılışı', frost: 'Ayaz Kulesi Açılışı', catapult: 'Mancınık Açılışı', default: 'Açılış' },
     langBtn: 'TR',
   },
   conquestMap: {
@@ -93,6 +95,7 @@ export default {
     nextWave: '→ Dalga {n}',
     necromancerHealed: '✚ Can Yenilendi',
     unitSelected: '✋ Seçildi — boş yere tıkla',
+    placementHint: '📍 Yerleştirmek için sahaya tıkla (ESC iptal)',
     godWave: '☠ TANRI UYANDI ☠',
     victoryTitle: 'TANRI DEVRİLDİ',
     victorySub: 'Kat {floor}\'e indin ve dibi fethettin.',

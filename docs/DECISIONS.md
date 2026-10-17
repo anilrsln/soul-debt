@@ -227,6 +227,21 @@ yaşayabilir — Faz G kadro gelince aynı kilit mantığı base Defender.findTa
 (şimdilik spekülatif değil; necromancer'da kanıtlandıktan sonra). "En az canlıyı bitir" politikası
 alternatifi değerlendirildi ama kilit + en-yakın yeterli ve daha okunur bulundu.
 
+
+### K36 — Hire sonrası yerleştirme: iki buton (kendim yerleştir / hızlı-default)
+Faz E'de hire → birim otomatik default çıpaya ışınlanıyordu; oyuncuya "nereye koyayım?" HİÇ
+sorulmuyordu (K24'ün "oyuncu çıpayı seçer" özüne aykırı; "oyun benim yerime karar verdi" hissi).
+Çözüm — hire butonu İKİ varyant sunar:
+- **"Ör & Yerleştir" (yerleştirme modu):** Birim örülür ama sahaya hemen konmaz. Oyun yerleştirme
+  moduna girer: fareyi takip eden önizleme; oyuncu savaş alanında bir noktaya tıklar → birimin
+  ÇIPASI orası olur (K24). ESC/sağ-tık iptal (+ soul/meta iade). Birim çıpaya yürüyerek gider
+  (ışınlanmaz — K24). Stratejik, kontrollü; oyunun kalbi.
+- **"Hızlı Ör" (default-at):** Birim doğrudan makul bir default çıpaya konur (acele edenler için).
+  Sonradan "birime tık → boş yere tık" ile taşınabilir. K28 "müdahale opsiyonel" felsefesi: tıkla-
+  yerleştir ödüllü, hızlı-at idare eder.
+İki buton birlikte: oto-dizilim (R10) DEĞİL — default yine oyuncunun bir tıkla seçimi, sistem
+kendiliğinden dizmiyor. Detay/denge (önizleme görseli, iade oranı) sonra; MVP'de akış çalışır.
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)
