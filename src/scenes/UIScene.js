@@ -3,6 +3,7 @@ import GameState from '../state/GameState.js';
 import { formatNumber } from '../utils/NumberFormatter.js';
 import UpgradeManager from '../systems/UpgradeManager.js';
 import EconomyManager from '../systems/EconomyManager.js';
+import SoulDebtManager from '../systems/SoulDebtManager.js';
 import PrestigeManager from '../systems/PrestigeManager.js';
 import { t, toggleLocale, getLocale } from '../i18n/index.js';
 
@@ -30,6 +31,10 @@ export default class UIScene extends Phaser.Scene {
     this.necroHpText = this.add.text(CONFIG.CANVAS_WIDTH / 2, 44, '', {
       fontSize: '13px', fontFamily: 'monospace', color: '#ff6b6b', stroke: '#000', strokeThickness: 3,
     }).setOrigin(0.5).setDepth(120);
+    // Soul-debt göstergesi (borç>0'da görünür) — K11/K33
+    this.soulDebtText = this.add.text(CONFIG.CANVAS_WIDTH / 2, 62, '', {
+      fontSize: '11px', fontFamily: 'monospace', color: '#d16bff', stroke: '#000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(120).setAlpha(0);
     this.fpsText = this.add.text(720, 5, '', this.textStyle(11, '#666666')).setDepth(101);
 
     // Wave progress bar (top bar altı)
@@ -500,6 +505,15 @@ export default class UIScene extends Phaser.Scene {
       const ratio = n.maxHp > 0 ? n.hp / n.maxHp : 0;
       this.necroHpText.setText(t('ui.necroHp', { hp: Math.ceil(n.hp), max: n.maxHp }));
       this.necroHpText.setColor(ratio > 0.3 ? '#ff9b9b' : '#ff3030');
+    }
+    // Soul-debt: borç varsa göster (çarpanla birlikte)
+    const debt = GameState.soulDebt?.current || 0;
+    if (debt > 0.5) {
+      const mult = SoulDebtManager.getDebtMultiplier();
+      this.soulDebtText.setText(t('ui.soulDebt', { debt: Math.ceil(debt), mult: mult.toFixed(2) }));
+      this.soulDebtText.setAlpha(Math.min(1, 0.5 + debt / 400));
+    } else {
+      this.soulDebtText.setAlpha(0);
     }
 
     // Flash efektleri

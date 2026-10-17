@@ -8,6 +8,7 @@ export default {
     fps: '{n} FPS',
     prestigeMult: '✦{n}x',
     necroHp: '☠ {hp}/{max}',
+    soulDebt: '⛓ Soul Debt {debt}  (revive ×{mult})',
     maxHpLabel: 'Max HP (Lv {n})',
     maxHpUpgrade: '+HP {cost}👻',
     mapBtn: '⚔ MAP',

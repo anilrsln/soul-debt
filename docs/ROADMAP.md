@@ -14,7 +14,7 @@
 | A | Lava mekaniğini tamamen sök | ✅ |
 | B | Ekonomi: EXP→Soul, Food→3 meta, Model 3, 4-sayaç UI | ✅ |
 | C | Necromancer varlığı + canı + hat ihlali (breachLine) | ✅ |
-| D | Soul-debt sistemi + otomatik diriltme (üç ceza) | ⬜ |
+| D | Soul-debt sistemi + otomatik diriltme (üç ceza) | 🟡 sistem kuruldu (birim-ölümü tetiği Faz E'de bağlanır) |
 | E | Dur-dövüş + oyuncu dizilimi + kat-arası kurulum fazı | ⬜ |
 | F | Prestige: iki yol (gönüllü/zorlanmış), Model Y çarpan | ⬜ |
 | G | Ritim (kat döngüsü) + kadro (MVP 5 birim, ~12 arketip) + lore | ⬜ |
@@ -52,13 +52,19 @@
 - Not: soul-debt breachLine'a BURADA bağlanmadı — o Faz D (K11). Can anahtarı/sprite 'laser'
   tarihsel; K23 ile Faz G'de temizlenir. Necromancer düşmanla bire bir DÖVÜŞMEZ (can havuzu).
 
-### Faz D — Soul-Debt
-- [ ] Otomatik diriltme: anlık soul + cooldown + biriken borç
-- [ ] Borç zamanla + kill ile azalır
-- [ ] Diriltme maliyeti soul-kapasiteyle ölçeklenir
-- [ ] **Düşman-orantılı breachLine hasarı (K12):** Faz C'de breach hasarı sabit (`CONFIG.NECROMANCER.breachDamage`)
-      girdi; Faz D'de düşmanın gücü/soul-kapasitesiyle ölçeklenecek (güçlü düşman = büyük ısırık + çok borç).
-      ATLANMAYACAK — soul-debt matematiğiyle birlikte gelir.
+### Faz D — Soul-Debt 🟡
+- [x] SoulDebtManager: ayrı borç sayacı (soul'dan düşmez — K33), üç ceza (soul + cooldown + borç çarpanı)
+- [x] Otomatik diriltme kuyruğu (FIFO, AFK güvenli — K29); `onUnitDeath`/`update`/`reviveUnit` API hazır
+- [x] Diriltme maliyeti = soulCapacity × katsayı × (1 + borç/ölçek) — K12; config'de tüm sabitler
+- [x] Borç azalır: zamanla (debtDecayPerSecond) + her kill'de (debtDecayPerKill — "ruh hasat")
+- [x] DEFENDERS'a soulCapacity alanları (placeholder; gerçek kadro Faz G)
+- [x] GameState.soulDebt + SaveManager v8; UI borç göstergesi (borç>0'da görünür)
+- [ ] **Birim ölümü → diriltme TETİĞİ:** Faz E'de bağlanır. Şu an sahada ölen oyuncu birimi yok
+      (dur-dövüş Faz E). Dur-dövüş birim öldürdüğünde `SoulDebtManager.onUnitDeath(unit)` çağrılacak
+      + birimin `revive()` metodu yazılacak. Sistem buna HAZIR bekler.
+- Not: Düşman-orantılı breach hasarı (K12) — Faz C'de breach SABİT kaldı (`NECROMANCER.breachDamage`).
+      K33 kararıyla hat ihlali borç YAZMAZ (yalnız can). Orantılı breach HASARI hâlâ açık kalem:
+      düşman gücüne göre can-kesintisi ölçeklensin mi? Faz E/denge sırasında playtest ile değerlendir.
 
 ### Faz E — Savaş Modeli
 - [ ] Dur-dövüş (yoluna çıkan ilk birime çarp, karşılıklı HP) — en ağır kod işi

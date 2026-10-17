@@ -63,6 +63,11 @@ const MIGRATIONS = {
     if (!gs.necromancer) gs.necromancer = { hp: 100, maxHp: 100, maxHpLevel: 0 };
     return gs;
   },
+  // v7 → v8: soul-debt sayacı (Faz D). Koşu-içi; eski save'lerde yoktu.
+  7: (gs) => {
+    if (!gs.soulDebt) gs.soulDebt = { current: 0 };
+    return gs;
+  },
 };
 
 const SaveManager = {
@@ -136,6 +141,8 @@ const SaveManager = {
     GameState.lifetimeSoul = gs.lifetimeSoul || 0; // onboarding tetiği (K19)
     // Necromancer can havuzu (K10/K13)
     if (gs.necromancer) Object.assign(GameState.necromancer, gs.necromancer);
+    // Soul-debt (K11/K33) — koşu-içi sayaç
+    if (gs.soulDebt) Object.assign(GameState.soulDebt, gs.soulDebt);
     // Wave
     Object.assign(GameState.wave, gs.wave || {});
     // Defenders

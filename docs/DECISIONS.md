@@ -161,6 +161,30 @@ Klon kökünden miras kalan iki sistem Soul Debt kurgusuna aykırı bulunup sök
 - **Kritik vuruş (crit) — PARK EDİLDİ (kaldırılmadı).** Combo'nun aksine crit ekonomiye dokunmaz (yalnız archer/cannon mermilerinde hasar varyansı). Dur-dövüş savaş modeli (Faz E) oturmadan silmek erken/gereksiz iş olurdu. config `COMBAT.crit` ve ilgili kod (Defender.rollDamage, Projectile.isCrit, Enemy._critFlash, GameScene.onCritHit) çalışır halde bırakıldı; Faz E'de yeni savaş modeline göre tutulacak veya değiştirilecek.
 - **ACHIEVEMENTS — SİSTEM TUTULDU, içerik Faz G'ye ertelendi.** AchievementManager + UI sağlam ve ölü değil. Ama içerik eski kurguya bağlı: `wave50/wave100` sonsuz-wave varsayımı (K26 ile çelişir), `cannonUnlock/archerFull` eski kadroya (K22'de değişecek) bağlı. Şimdi silinmedi/yeniden yazılmadı — Faz G'de kadro + kat + soul-debt kurgusu oturunca Soul Debt'e özgü başarımlarla (necromancer ölümü, ilk tanrı, N. kat, soul-debt zirvesi vb.) doldurulacak.
 
+
+### K33 — Soul-debt modeli: ayrı sayaç, koşu-içi; hat ihlali borç yazmaz
+Soul-debt'in oyuncuya tam olarak ne yaptığı netleştirildi (Faz D tasarımı, 2026-10-17):
+- **Soul ve soul-debt İKİ AYRI sayaçtır.** Soul = kaynak (düşman öldürünce kazanılır, her şey
+  onunla alınır). Soul-debt = ceza sayacı (soul'dan DÜŞMEZ; ayrı birikir). Diriltme iki şey yapar
+  aynı anda: (a) soul harcar [cepten], (b) borç yükler [sırta]. Borç bir "ikinci para" değil.
+- **Borç ne işe yarar (K11 üçüncü ceza):** Borç yükseldikçe sonraki diriltmeleri pahalılaştırır:
+  `diriltme_maliyeti = taban × (1 + debt / debtÖlçek)`. Tek yöne odaklı ceza — üç ceza da
+  (anlık soul + cooldown + borç çarpanı) diriltme etrafında toplanır, okunur kalır. Alternatif
+  "borç soul kazanımını yavaşlatsın" REDDEDİLDİ (bkz. R14): dolaylı + ekonomi zaten kill'e bağlı,
+  çifte ceza hissi.
+- **Borç nasıl birikir/azalır:** Birikir = YALNIZ diriltme (güçlü/kapasiteli birim = daha çok borç,
+  K12). Azalır = zamanla pasif erime + her düşman kill'inde biraz silinir ("ruh hasat ederek borç öde").
+- **Hat ihlali borç YAZMAZ (DESIGN 6.5 revize):** Düşman necromancer'a ulaşınca yalnız CAN keser
+  (Faz C), borç bindirmez. Gerekçe: hat ihlali zaten bir ceza (cana); üstüne borç = çifte ceza +
+  bulanık mekanik. İki ceza ekseni net ayrışır: borç = BİRİM kaybının sonucu (diriltme baskısı);
+  can = HAT kaybının sonucu (kaybetme koşuluna yaklaşma). (DESIGN 6.5'teki "+ borç" ibaresi iptal.)
+- **Borç koşu-içidir (A):** Prestige'de (necromancer ölümü dahil) borç sıfırlanır — tam reset
+  kuralına uyar (çarpan + açılmış tipler hariç her şey sıfır). Necromancer ölümü ayrıca borç
+  BİNDİRMEZ (çünkü hemen reset olacak; bindirmek anlamsız). Borç yalnız koşu İÇİNDE baskı yapar.
+- **Faz F notu (park değil, açık kapı):** "Borç prestige'i AŞSIN (kalıcı), necromancer ölümü ekstra
+  borç bindirsin, yeni koşu borçla başlasın" fikri (Model B) tematik olarak güçlü ama yeni koşuyu
+  boğma riski var; playtest etmeden kalıcı yapılmaz. Faz F (prestige) yazılırken değerlendirilecek.
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)
@@ -203,3 +227,10 @@ Her kat başında bedelsiz yeniden kurulum yaratır; meta ekonomisini ve dizilim
 
 ### R13 — Tek-seferlik meta kapısı (eski Model 2)
 "Birim tipini açmak için meta harca (bir kez), sonra örmek yalnız soul" modeli reddedildi. Sorun: meta tek-seferlik bir eşiğe iner; birkaç birim açıldıktan sonra bone/essence çöp olur ve "bone ordusu mu essence elitleri mi?" build kararı (K3'ün ruhu) buharlaşır. Yerine Model 3 (K18): meta örmede sürekli harcanır, kalıcı talep kazanır. Açma işi ise node'a taşındı (K21), meta'dan arındı.
+
+### R14 — Borç soul kazanımını yavaşlatsın (üçüncü ceza alternatifi)
+Soul-debt'in üçüncü cezası olarak "borç yükseldikçe soul kazanım oranı düşsün" reddedildi (K33).
+Sorun: (a) dolaylı — oyuncu neden yavaşladığını anlamaz; (b) ekonomi zaten düşman-kill'e bağlı,
+ölünce zaten az kill olur → çifte ceza hissi. Yerine borç yalnız diriltme maliyetini çarpar
+(doğrudan, okunur). "İkisi birden" (hem kazanım yavaşlat hem diriltme pahalandır) da playtest'te
+aşırı sert bulunacağı için MVP'ye alınmadı.

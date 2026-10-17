@@ -9,6 +9,7 @@ export default {
     fps: '{n} FPS',
     prestigeMult: '✦{n}x',
     necroHp: '☠ {hp}/{max}',
+    soulDebt: '⛓ Ruh Borcu {debt}  (diriltme ×{mult})',
     maxHpLabel: 'Max Can (Sv {n})',
     maxHpUpgrade: '+Can {cost}👻',
     mapBtn: '⚔ HARİTA',

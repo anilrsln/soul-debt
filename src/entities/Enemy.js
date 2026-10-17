@@ -4,6 +4,7 @@ import { calculateEnemyHP, calculateEnemySoul } from '../utils/MathUtils.js';
 import ConquestManager from '../systems/ConquestManager.js';
 import EconomyManager from '../systems/EconomyManager.js';
 import AssetProvider from '../systems/AssetProvider.js';
+import SoulDebtManager from '../systems/SoulDebtManager.js';
 
 /** Enemy — Sağdan spawn, sola yürü, hat ihlali veya savunucu ölümü. */
 export default class Enemy {
@@ -298,6 +299,8 @@ export default class Enemy {
     GameState.stats.totalSoulEarned += soul;
     GameState.stats.totalMetaEarned += meta;
     if (this.type === 'boss') GameState.stats.bossesKilled++;
+    // Düşman öldürmek soul-debt'i azaltır ("ruh hasat ederek borç öde" — K33)
+    SoulDebtManager.onEnemyKilled();
     this.scene.events.emit('enemy-killed', {
       type: this.type, soul, meta,
       x: this.sprite.x, y: this.sprite.y, killedBy,

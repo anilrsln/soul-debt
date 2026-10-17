@@ -19,7 +19,7 @@ export const CONFIG = {
   // Kaydetme
   SAVE_KEY: 'idle-kingdom-defense-save',
   SAVE_INTERVAL: 30000,
-  SAVE_VERSION: 7, // save şema sürümü — v7: necromancer varlığı (hp/maxHp) — Faz C
+  SAVE_VERSION: 8, // save şema sürümü — v8: soulDebt sayacı — Faz D
 
   // Idle sistemi
   IDLE_EFFICIENCY: 0.5,
@@ -99,6 +99,19 @@ export const CONFIG = {
     floorHealFull: true, // her 10 wave (kat sonu) necromancer canı full dolar (K7/K10)
   },
 
+  // Soul-Debt — birim diriltmenin üç katmanlı cezası (K11/K33). Soul'dan AYRI bir sayaç:
+  // diriltme hem soul harcar hem borç yükler; borç yalnız sonraki diriltmeleri pahalılaştırır.
+  // Koşu-içi (prestige'de sıfırlanır — K33 model A). Hat ihlali borç YAZMAZ (yalnız can — K33).
+  SOUL_DEBT: {
+    reviveCostPerCapacity: 2.5, // taban diriltme maliyeti = birim.soulCapacity × bu (K12: güçlü birim pahalı)
+    reviveCooldown: 2.0,        // sn — ölen birim bu süre sonra kalkar (K11 ikinci ceza)
+    debtPerCapacity: 1.0,       // her diriltme borcu += soulCapacity × bu (güçlü birim = çok borç)
+    debtScale: 200,             // maliyet çarpanı = 1 + debt / debtScale (borç ölçeği)
+    debtMaxMultiplier: 5,       // diriltme maliyet çarpanı tavanı (borç ne olursa olsun ×5'i geçmez)
+    debtDecayPerSecond: 3,      // borç saniyede bu kadar pasif erir
+    debtDecayPerKill: 2,        // her düşman öldürmede borç bu kadar azalır ("ruh hasat et, borç öde")
+  },
+
   // Savunucu başlangıç değerleri
   DEFENDERS: {
     // 'laser' anahtarı = NECROMANCER (K25 seçenek A). Damage/range/fireRate necromancer'ın
@@ -111,6 +124,7 @@ export const CONFIG = {
     },
     archer: {
       name: 'Archer',
+      soulCapacity: 6, // düşük — ucuz dirilt, düşük borç (K12/K22 İskelet Okçu)
       // K30 placeholder: soul + bone (İskelet Okçu benzeri)
       craftCost: { soul: 50, bone: 10 }, craftCostMultiplier: 1.5,
       hireCost: 50,
@@ -121,6 +135,7 @@ export const CONFIG = {
     },
     cannon: {
       name: 'Cannon',
+      soulCapacity: 20, // yüksek — pahalı dirilt, çok borç (K12/K22 Taş Golem benzeri)
       // K30 placeholder: soul + essence (Golem benzeri ağır birim)
       craftCost: { soul: 200, essence: 8 }, craftCostMultiplier: 2.0,
       hireCost: 200,
@@ -131,6 +146,7 @@ export const CONFIG = {
     },
     frost: {
       name: 'Frost Tower',
+      soulCapacity: 12, // orta (K12/K22 Büyücü benzeri)
       // K30 placeholder: soul + bone + essence (çok-metalı — Büyücü benzeri)
       craftCost: { soul: 300, bone: 15, essence: 5 }, craftCostMultiplier: 1.8,
       hireCost: 300,
@@ -145,6 +161,7 @@ export const CONFIG = {
     },
     catapult: {
       name: 'Catapult',
+      soulCapacity: 16, // orta-yüksek (K12)
       // K30 placeholder: soul + bone + essence (çok-metalı ağır)
       craftCost: { soul: 500, bone: 20, essence: 10 }, craftCostMultiplier: 2.5,
       hireCost: 500,

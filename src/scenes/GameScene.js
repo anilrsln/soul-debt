@@ -4,6 +4,7 @@ import WaveManager from '../systems/WaveManager.js';
 import IdleManager from '../systems/IdleManager.js';
 import SaveManager from '../systems/SaveManager.js';
 import AchievementManager from '../systems/AchievementManager.js';
+import SoulDebtManager from '../systems/SoulDebtManager.js';
 import Necromancer from '../entities/Necromancer.js';
 import Archer from '../entities/Archer.js';
 import Cannon from '../entities/Cannon.js';
@@ -74,6 +75,10 @@ export default class GameScene extends Phaser.Scene {
 
     // Dalga yöneticisi
     this.waveManager = new WaveManager(this);
+
+    // Soul-debt / otomatik diriltme yöneticisi (K11/K33) — Faz D.
+    // Birim ölümü→diriltme tetiği Faz E'de (dur-dövüş) bağlanır; sistem hazır bekler.
+    SoulDebtManager.init(this);
 
     // Floating text listesi
     this.floatingTexts = [];
@@ -234,6 +239,10 @@ export default class GameScene extends Phaser.Scene {
 
     // Dalga yöneticisi
     this.waveManager.update(delta);
+
+    // Soul-debt: borç zaman erimesi + diriltme kuyruğu (K11/K33)
+    SoulDebtManager.reduceDebt(CONFIG.SOUL_DEBT.debtDecayPerSecond * delta);
+    SoulDebtManager.update(delta);
 
     // Tüm düşmanlar listesi
     const enemies = this.waveManager.enemies;
