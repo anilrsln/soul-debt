@@ -130,7 +130,7 @@ export default class MenuScene extends Phaser.Scene {
 
     // Offline/idle kazancı — GameScene popup olarak gösterir
     const earnings = IdleManager.calculateIdleEarnings();
-    if (earnings && (earnings.exp > 0 || earnings.food > 0)) {
+    if (earnings && (earnings.soul > 0 || earnings.meta > 0)) {
       this.registry.set('idleEarnings', earnings);
     }
     this.startGame();

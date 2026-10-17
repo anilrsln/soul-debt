@@ -5,7 +5,7 @@ import { CONFIG } from '../config.js';
  * IdleManager — Offline gelir hesaplama.
  *
  * Gerçekçi model: idle geliri, oyuncunun oynarken ÖLÇÜLEN gerçek kazanım
- * hızına (GameState.meta.expRate / foodRate) dayanır. Bu hız gerçek DPS,
+ * hızına (GameState.meta.soulRate / metaRate) dayanır. Bu hız gerçek DPS,
  * upgrade'ler, wave ve tüm çarpanları (prestige/conquest/ekonomi) zaten
  * içerir — bu yüzden burada tekrar çarpan uygulanmaz, sadece verimlilik.
  */
@@ -22,21 +22,21 @@ const IdleManager = {
     if (elapsedMs > maxMs) elapsedMs = maxMs;
     const elapsedSeconds = elapsedMs / 1000;
 
-    const expRate = GameState.meta.expRate || 0;
-    const foodRate = GameState.meta.foodRate || 0;
-    const exp = Math.floor(expRate * elapsedSeconds * CONFIG.IDLE_EFFICIENCY);
-    const food = Math.floor(foodRate * elapsedSeconds * CONFIG.IDLE_EFFICIENCY);
+    const soulRate = GameState.meta.soulRate || 0;
+    const metaRate = GameState.meta.metaRate || 0;
+    const soul = Math.floor(soulRate * elapsedSeconds * CONFIG.IDLE_EFFICIENCY);
+    const meta = Math.floor(metaRate * elapsedSeconds * CONFIG.IDLE_EFFICIENCY);
 
-    if (exp <= 0 && food <= 0) return null; // henüz ölçülmüş hız yok
+    if (soul <= 0 && meta <= 0) return null; // henüz ölçülmüş hız yok
 
-    return { elapsedSeconds, exp, food };
+    return { elapsedSeconds, soul, meta };
   },
 
   applyEarnings(earnings) {
-    GameState.resources.exp += earnings.exp;
-    GameState.resources.food += earnings.food;
-    GameState.stats.totalExpEarned += earnings.exp;
-    GameState.stats.totalFoodEarned += earnings.food;
+    GameState.resources.soul += earnings.soul;
+    GameState.resources.bone += earnings.meta;
+    GameState.stats.totalSoulEarned += earnings.soul;
+    GameState.stats.totalMetaEarned += earnings.meta;
   },
 };
 

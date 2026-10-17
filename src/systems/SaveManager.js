@@ -29,13 +29,13 @@ const MIGRATIONS = {
   // v2 → v3: ölçülen kazanım hızı alanları
   2: (gs) => {
     if (!gs.meta) gs.meta = {};
-    if (gs.meta.expRate == null) gs.meta.expRate = 0;
-    if (gs.meta.foodRate == null) gs.meta.foodRate = 0;
+    if (gs.meta.soulRate == null) gs.meta.soulRate = 0;
+    if (gs.meta.metaRate == null) gs.meta.metaRate = 0;
     return gs;
   },
   // v3 → v4: ekonomi upgrade seviyeleri
   3: (gs) => {
-    if (!gs.economy) gs.economy = { expBoost: { level: 0 }, foodBoost: { level: 0 } };
+    if (!gs.economy) gs.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };
     return gs;
   },
   // v4 → v5: frost + catapult defender state alanları
@@ -43,6 +43,19 @@ const MIGRATIONS = {
     if (!gs.defenders) gs.defenders = {};
     if (!gs.defenders.frost)    gs.defenders.frost    = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
     if (!gs.defenders.catapult) gs.defenders.catapult = { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } };
+    return gs;
+  },
+  // v5 → v6: EXP/Food ekonomisi → Soul + 3 meta (Soul Debt). Eski ekonomi şeması
+  // uyumsuz; ekonomi alanları temiz başlangıca sıfırlanır (DESIGN 11, MIGRATION §9).
+  5: (gs) => {
+    gs.resources = { soul: 0, bone: 0, essence: 0, crystal: 0 };
+    gs.lifetimeSoul = 0;
+    gs.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };
+    if (!gs.meta) gs.meta = {};
+    gs.meta.soulRate = 0; gs.meta.metaRate = 0; gs.meta.onboardingSeen = false;
+    if (gs.stats) { gs.stats.totalSoulEarned = 0; gs.stats.totalMetaEarned = 0; }
+    // conquest node'ları da sıfırla (maliyetler/effect'ler yeni şemaya geçti)
+    gs.conquestMap = { unlockedNodes: [], bonuses: {} };
     return gs;
   },
 };
@@ -111,8 +124,8 @@ const SaveManager = {
       const migrated = this._migrate(savedData);
       const gs = migrated.gameState || {};
     // Resources
-    GameState.resources.exp = gs.resources?.exp || 0;
-    GameState.resources.food = gs.resources?.food || 0;
+    GameState.resources.soul = gs.resources?.soul || 0;
+    GameState.resources.bone = gs.resources?.bone || 0;
     // Wave
     Object.assign(GameState.wave, gs.wave || {});
     // Defenders

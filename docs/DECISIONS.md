@@ -138,6 +138,19 @@ Dört kenar-durumu tek kararda toplandı (K28 tartışmasından türedi):
 - **Kat sonu:** tüm birimler can yeniler + necromancer full. Ama diriltme kuyruğu + soul-debt DEVAM eder (borç affı yok; K11 cezası korunur). Kat sonu nefes anı, af değil.
 - **Necromancer ölümü (teyit):** Kat 1'e dönüş + tüm koşu-içi reset (upgrade'ler + birimler dahil) + prestige çarpanı kalıcı (K14/K25). Yeni karar değil, kesişim teyidi.
 
+### K30 — Birim örme maliyeti: serbest çok-metalı (tek-meta varsayımı kalktı)
+K22'deki örtük "her birim tek meta ile örülür" varsayımı kaldırıldı. Bir birimin örme maliyeti **soul + herhangi bir meta kombinasyonu** olabilir — iki, hatta üçten fazla meta dahil. Örnekler (placeholder, playtest'te değişir):
+- İskelet Bruiser: soul + bone
+- İskelet Okçu: soul + bone
+- Hasar Büyücüsü: soul + bone + essence
+- Healer Büyücü: soul + bone + essence
+- Taş Golem: soul + essence
+
+Gerekçe: çok-metalı maliyet daha zengin build baskısı yaratır ("bu birimi örmek için hem bone hem essence biriktirmeliyim"). Config yapısı buna göre serbesttir: her birime `craftCost: { soul: N, bone?: M, essence?: K, crystal?: L }` — yalnız gereken metalar yazılır. Diriltme hâlâ YALNIZ soul (K29); çok-meta yalnız örmede. Kesin değerler ve hangi birimin hangi metaları isteyeceği playtest'te ayarlanır — bu yüzden MVP'ye placeholder olarak girer.
+
+### K30 — Birim örme maliyeti: serbest çoklu-meta
+Bir birim örme maliyeti soul + **herhangi sayıda meta** olabilir (tek meta zorunlu değil — önceki K22 "tek-meta" varsayımı kaldırıldı). Örnekler: İskelet Bruiser/Okçu = soul + bone; Taş Golem = soul + essence; Hasar Büyücüsü ve Healer Büyücü = soul + bone + essence (iki meta). Gerekçe: çoklu-meta "bu birimi örmek için hem bone hem essence biriktirmeliyim" build baskısı yaratır — K3'ün stratejik eksen fikrini güçlendirir. Config yapısı: her birimde `craftCost: { soul, bone?, essence?, crystal? }` (hangisi varsa). Değerler ve meta kombinasyonları placeholder; playtest'te değişir (MVP başlangıç önerisi: 3 bone-ağırlıklı + 2 essence-ağırlıklı birim, iki büyücü bone+essence karması). Diriltme hâlâ YALNIZ soul (K29); meta yalnız örmede.
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)

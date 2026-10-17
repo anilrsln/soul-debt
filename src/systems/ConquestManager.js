@@ -23,8 +23,8 @@ const ConquestManager = {
   canPurchase(nodeId) {
     if (!this.isAvailable(nodeId)) return false;
     const node = CONFIG.CONQUEST_NODES[nodeId];
-    if (node.cost.exp && GameState.resources.exp < node.cost.exp) return false;
-    if (node.cost.food && GameState.resources.food < node.cost.food) return false;
+    if (node.cost.soul && GameState.resources.soul < node.cost.soul) return false;
+    if (node.cost.bone && GameState.resources.bone < node.cost.bone) return false;
     return true;
   },
 
@@ -34,8 +34,8 @@ const ConquestManager = {
     const node = CONFIG.CONQUEST_NODES[nodeId];
 
     // Kaynak harca
-    if (node.cost.exp) GameState.resources.exp -= node.cost.exp;
-    if (node.cost.food) GameState.resources.food -= node.cost.food;
+    if (node.cost.soul) GameState.resources.soul -= node.cost.soul;
+    if (node.cost.bone) GameState.resources.bone -= node.cost.bone;
 
     // Node'u aç
     GameState.conquestMap.unlockedNodes.push(nodeId);

@@ -19,7 +19,7 @@ export const CONFIG = {
   // Kaydetme
   SAVE_KEY: 'idle-kingdom-defense-save',
   SAVE_INTERVAL: 30000,
-  SAVE_VERSION: 5, // save şema sürümü — değişince artır + SaveManager'a migration ekle
+  SAVE_VERSION: 6, // save şema sürümü — v6: EXP/Food → Soul+3meta (Soul Debt ekonomisi)
 
   // Idle sistemi
   IDLE_EFFICIENCY: 0.5,
@@ -28,17 +28,17 @@ export const CONFIG = {
   // Upgrade maliyet çarpanı
   UPGRADE_COST_MULTIPLIER: 1.15,
 
-  // Ekonomi upgrade'leri (run içi, EXP ile alınır; prestige/yeni oyunda sıfırlanır)
+  // Ekonomi upgrade'leri (run içi, soul ile alınır; prestige/yeni oyunda sıfırlanır)
   // Çarpan = 1 + level × bonusPerLevel; maliyet = baseCost × costMultiplier^level
   ECONOMY_UPGRADES: {
-    expBoost:  { name: 'EXP Boost',  bonusPerLevel: 0.10, baseCost: 100, costMultiplier: 1.25 },
-    foodBoost: { name: 'Food Boost', bonusPerLevel: 0.10, baseCost: 150, costMultiplier: 1.30 },
+    soulBoost: { name: 'Soul Boost', bonusPerLevel: 0.10, baseCost: 100, costMultiplier: 1.25 },
+    metaBoost: { name: 'Meta Boost', bonusPerLevel: 0.10, baseCost: 150, costMultiplier: 1.30 },
   },
 
   // Debug / runtime tuning (yalnızca ?dev modunda dev panel üzerinden değişir)
   DEBUG: {
     timeScale: 1,       // oyun hızı çarpanı
-    gainMultiplier: 1,  // test için EXP/Food kazanç çarpanı
+    gainMultiplier: 1,  // test için soul/meta kazanç çarpanı
     jumpWaveTarget: 10, // "wave'e atla" hedefi
   },
 
@@ -68,7 +68,7 @@ export const CONFIG = {
     cannonUnlock:  { name: "Topçu",          desc: "Cannon'u aç",              check: (g) => g.defenders.cannon.canBeHired === true },
     archerFull:    { name: "Okçu Ordusu",    desc: "Maksimum okçuya ulaş",     check: (g) => g.defenders.archer.count >= g.defenders.archer.maxCount },
     allNodes:      { name: "Fetih",          desc: "Tüm Conquest node'larını aç", check: (g) => g.conquestMap.unlockedNodes.length >= Object.keys(CONFIG.CONQUEST_NODES).length },
-    richExp:       { name: "Zengin",         desc: "1M toplam EXP kazan",      check: (g) => g.stats.totalExpEarned >= 1e6 },
+    richExp:       { name: "Zengin",         desc: "1M toplam Soul kazan",     check: (g) => g.stats.totalSoulEarned >= 1e6 },
   },
 
   // Renk paleti
@@ -95,6 +95,8 @@ export const CONFIG = {
     },
     archer: {
       name: 'Archer',
+      // K30 placeholder: soul + bone (İskelet Okçu benzeri)
+      craftCost: { soul: 50, bone: 10 }, craftCostMultiplier: 1.5,
       hireCost: 50,
       hireCostMultiplier: 1.5,
       damage:   { base: 3,  multiplier: 1.2,  baseCost: 12 },
@@ -103,6 +105,8 @@ export const CONFIG = {
     },
     cannon: {
       name: 'Cannon',
+      // K30 placeholder: soul + essence (Golem benzeri ağır birim)
+      craftCost: { soul: 200, essence: 8 }, craftCostMultiplier: 2.0,
       hireCost: 200,
       hireCostMultiplier: 2.0,
       damage:      { base: 15, multiplier: 1.25, baseCost: 30 },
@@ -111,6 +115,8 @@ export const CONFIG = {
     },
     frost: {
       name: 'Frost Tower',
+      // K30 placeholder: soul + bone + essence (çok-metalı — Büyücü benzeri)
+      craftCost: { soul: 300, bone: 15, essence: 5 }, craftCostMultiplier: 1.8,
       hireCost: 300,
       hireCostMultiplier: 1.8,
       // Hasar düşük; asıl değer yavaşlatma
@@ -123,6 +129,8 @@ export const CONFIG = {
     },
     catapult: {
       name: 'Catapult',
+      // K30 placeholder: soul + bone + essence (çok-metalı ağır)
+      craftCost: { soul: 500, bone: 20, essence: 10 }, craftCostMultiplier: 2.5,
       hireCost: 500,
       hireCostMultiplier: 2.5,
       damage:      { base: 35, multiplier: 1.3,  baseCost: 50 },
@@ -177,34 +185,34 @@ export const CONFIG = {
 
   // Düşman değerleri
   ENEMIES: {
-    skeleton:    { name: 'Skeleton',         hp: 10,  speed: 30, exp: 2,  food: 0, color: 0xcccccc },
-    armored:     { name: 'Armored Skeleton', hp: 25,  speed: 20, exp: 5,  food: 1, color: 0x888888 },
-    fast:        { name: 'Fast Runner',      hp: 8,   speed: 50, exp: 3,  food: 0, color: 0xff6666 },
-    foodCarrier: { name: 'Food Carrier',     hp: 20,  speed: 30, exp: 2,  food: 3, color: 0x66ff66 },
-    elite:       { name: 'Elite',            hp: 100, speed: 25, exp: 15, food: 5, color: 0xffaa00 },
+    skeleton:    { name: 'Skeleton',         hp: 10,  speed: 30, soul: 2,  meta: 0, metaType: 'bone', color: 0xcccccc },
+    armored:     { name: 'Armored Skeleton', hp: 25,  speed: 20, soul: 5,  meta: 1, metaType: 'bone', color: 0x888888 },
+    fast:        { name: 'Fast Runner',      hp: 8,   speed: 50, soul: 3,  meta: 0, metaType: 'bone', color: 0xff6666 },
+    foodCarrier: { name: 'Food Carrier',     hp: 20,  speed: 30, soul: 2,  meta: 3, metaType: 'bone', color: 0x66ff66 },
+    elite:       { name: 'Elite',            hp: 100, speed: 25, soul: 15, meta: 5, metaType: 'essence', color: 0xffaa00 },
     // Kalkanlı: orta HP ama kalkan ilk darbeleri emer (shield, HP eğrisinde ölçeklenir)
-    shield:      { name: 'Shield Bearer',    hp: 30,  speed: 22, exp: 6,  food: 1, color: 0x6688cc, shield: 40 },
+    shield:      { name: 'Shield Bearer',    hp: 30,  speed: 22, soul: 6,  meta: 1, metaType: 'essence', color: 0x6688cc, shield: 40 },
     // Splitter: savunucu ile ölünce 'split.count' küçük çocuğa bölünür (çocuklar bölünmez)
-    splitter:    { name: 'Splitter',         hp: 24,  speed: 26, exp: 5,  food: 0, color: 0xcc66ff,
+    splitter:    { name: 'Splitter',         hp: 24,  speed: 26, soul: 5,  meta: 0, metaType: 'essence', color: 0xcc66ff,
                    split: { count: 2, hpFactor: 0.4, rewardFactor: 0.35, scale: 0.6 } },
     // Healer: her 'interval' sn'de menzildeki (kendisi hariç) düşmanları maxHP'nin fraction'ı kadar iyileştirir
-    healer:      { name: 'Healer',           hp: 28,  speed: 24, exp: 7,  food: 1, color: 0x33cc99,
+    healer:      { name: 'Healer',           hp: 28,  speed: 24, soul: 7,  meta: 1, metaType: 'essence', color: 0x33cc99,
                    heal: { fraction: 0.12, radius: 90, interval: 1.2 } },
     // ── Boss tipleri ── her bossEvery wave'de tek spawn; rotasyon WaveManager'da
     // boss_tank: zırhlı, çok yüksek HP + kalkan — yavaş ama dayanıklı
-    boss_tank:    { name: 'Tank Boss',    hp: 1000, speed: 12, exp: 140, food: 25, color: 0xcc3333,
+    boss_tank:    { name: 'Tank Boss',    hp: 1000, speed: 12, soul: 140, meta: 25, metaType: 'crystal', color: 0xcc3333,
                     shield: 300 },
     // boss_berserker: hızlı saldırıcı + rage — hasar aldıkça hızlanır (max 2× base speed)
-    boss_berserker: { name: 'Berserker Boss', hp: 500, speed: 32, exp: 160, food: 18, color: 0xff6600,
+    boss_berserker: { name: 'Berserker Boss', hp: 500, speed: 32, soul: 160, meta: 18, metaType: 'crystal', color: 0xff6600,
                       rage: { speedGainFraction: 0.04, maxMultiplier: 2.0 } },
     // boss_shaman: kendini iyileştiren — orta HP + heal özelliği, bitirmek zor
-    boss_shaman:  { name: 'Shaman Boss',  hp: 700, speed: 16, exp: 150, food: 22, color: 0xaa44ff,
+    boss_shaman:  { name: 'Shaman Boss',  hp: 700, speed: 16, soul: 150, meta: 22, metaType: 'crystal', color: 0xaa44ff,
                     heal: { fraction: 0.05, radius: 0, interval: 2.5 } }, // radius:0 → sadece kendini iyileştirir
     // boss_splitter: ölünce 3 mini boss'a bölünür — mini'ler bölünmez ve düşük ödül verir
-    boss_splitter: { name: 'Splitter Boss', hp: 600, speed: 20, exp: 130, food: 20, color: 0xff44cc,
+    boss_splitter: { name: 'Splitter Boss', hp: 600, speed: 20, soul: 130, meta: 20, metaType: 'crystal', color: 0xff44cc,
                      split: { count: 3, hpFactor: 0.35, rewardFactor: 0.3, scale: 0.55 } },
     // boss_armored: yavaş ama güçlü kalkan + yüksek HP
-    boss_armored: { name: 'Armored Boss',  hp: 1400, speed: 9,  exp: 180, food: 30, color: 0x778899,
+    boss_armored: { name: 'Armored Boss',  hp: 1400, speed: 9,  soul: 180, meta: 30, metaType: 'crystal', color: 0x778899,
                     shield: 500 },
   },
 
@@ -218,19 +226,19 @@ export const CONFIG = {
     timeBetweenSpawns: 1200,
     timeBetweenWaves: 2000,
     hpScaling: 1.08,
-    expScaling: 1.05,
+    soulScaling: 1.05,
     bossEvery: 10, // her 10 wave'de boss dalgası
     typeUnlocks: { skeleton: 1, armored: 5, fast: 8, foodCarrier: 3, elite: 15, shield: 10, splitter: 12, healer: 14 },
   },
 
   // Wave milestone ödülleri — her milestoneInterval wave'de bir bonus
   // bigMilestoneEvery: bu katında 'büyük' milestone (3x çarpan)
-  // expBonus/foodBonus: o anki gelir oranına göre kaç saniyelik bonus
+  // soulBonus/metaBonus: o anki gelir oranına göre kaç saniyelik bonus
   MILESTONE: {
     milestoneInterval: 25,   // her 25. wave'de milestone
     bigMilestoneEvery: 2,    // her 2. milestone (50, 100, …) büyük milestone
-    expBonus: 60,            // 60 saniyelik EXP kazancı
-    foodBonus: 60,           // 60 saniyelik Food kazancı
+    soulBonus: 60,           // 60 saniyelik soul kazancı
+    metaBonus: 60,           // 60 saniyelik meta kazancı
     bigMultiplier: 3,        // büyük milestone'da 3x
   },
 
@@ -268,65 +276,65 @@ export const CONFIG = {
     laserBoost1: {
       id: 'laserBoost1', name: 'Laser Boost I',
       description: '+25% Laser Damage',
-      cost: { exp: 50 },
+      cost: { soul: 50 },
       effect: { type: 'defenderBoost', target: 'laser', stat: 'damage', value: 0.25 },
       requires: [], x: 100, y: 80,
     },
     laserBoost2: {
       id: 'laserBoost2', name: 'Laser Boost II',
       description: '+25% Laser Fire Rate',
-      cost: { exp: 150 },
+      cost: { soul: 150 },
       effect: { type: 'defenderBoost', target: 'laser', stat: 'fireRate', value: 0.25 },
       requires: ['laserBoost1'], x: 280, y: 80,
     },
     defenderAura: {
       id: 'defenderAura', name: 'Defender Damage Aura',
       description: '+15% All Defender Damage',
-      cost: { exp: 500 },
+      cost: { soul: 500 },
       effect: { type: 'globalBonus', stat: 'damage', value: 0.15 },
       requires: ['laserBoost2'], x: 480, y: 80,
     },
-    expMultiplier: {
-      id: 'expMultiplier', name: 'EXP Multiplier',
-      description: '+20% EXP Gain',
-      cost: { exp: 100 },
-      effect: { type: 'economy', stat: 'expMultiplier', value: 0.2 },
+    soulGain: {
+      id: 'soulGain', name: 'Soul Gain',
+      description: '+20% Soul Gain',
+      cost: { soul: 100 },
+      effect: { type: 'economy', stat: 'soulMultiplier', value: 0.2 },
       requires: ['laserBoost1'], x: 100, y: 200,
     },
     archerMastery: {
       id: 'archerMastery', name: 'Archer Mastery',
       description: '+30% Archer Damage',
-      cost: { exp: 300, food: 20 },
+      cost: { soul: 300 },
       effect: { type: 'defenderBoost', target: 'archer', stat: 'damage', value: 0.3 },
       requires: ['defenderAura'], x: 480, y: 200,
     },
-    foodBoost: {
-      id: 'foodBoost', name: 'Food Boost',
-      description: '+30% Food Gain',
-      cost: { exp: 200 },
-      effect: { type: 'economy', stat: 'foodMultiplier', value: 0.3 },
-      requires: ['expMultiplier'], x: 100, y: 320,
+    metaGain: {
+      id: 'metaGain', name: 'Meta Boost',
+      description: '+30% Meta Gain',
+      cost: { soul: 200 },
+      effect: { type: 'economy', stat: 'metaMultiplier', value: 0.3 },
+      requires: ['soulGain'], x: 100, y: 320,
     },
     cannonUnlock: {
       id: 'cannonUnlock', name: 'Cannon Unlock',
       description: 'Unlocks Cannon defender',
-      cost: { exp: 400, food: 50 },
+      cost: { soul: 400 },
       effect: { type: 'unlock', target: 'cannon' },
       requires: ['archerMastery'], x: 480, y: 320,
     },
     cannonPower1: {
       id: 'cannonPower1', name: 'Cannon Power I',
       description: '+30% Cannon Damage',
-      cost: { exp: 600 },
+      cost: { soul: 600 },
       effect: { type: 'defenderBoost', target: 'cannon', stat: 'damage', value: 0.3 },
       requires: ['cannonUnlock'], x: 660, y: 320,
     },
     prestigeUnlock: {
       id: 'prestigeUnlock', name: 'Prestige Unlock',
       description: 'Unlocks Prestige system',
-      cost: { exp: 1000 },
+      cost: { soul: 1000 },
       effect: { type: 'unlock', target: 'prestige' },
-      requires: ['foodBoost'], x: 100, y: 440,
+      requires: ['metaGain'], x: 100, y: 440,
     },
 
     // --- Tier 2 genişleme (yeni node'lar) ---
@@ -334,56 +342,56 @@ export const CONFIG = {
     archerSplash: {
       id: 'archerSplash', name: 'Archer Mastery',
       description: 'Her 5. ok menzildeki düşmanlara %40 alan hasarı verir',
-      cost: { exp: 450, food: 30 },
+      cost: { soul: 450 },
       effect: { type: 'archerSplash', splashEvery: 5, splashRadius: 55, splashFraction: 0.4 },
       requires: ['archerMastery'], x: 480, y: 440,
     },
     laserChain: {
       id: 'laserChain', name: 'Laser Enhancement II',
       description: 'Laser her vuruşta ikinci bir hedefe %50 hasar iletir',
-      cost: { exp: 350 },
+      cost: { soul: 350 },
       effect: { type: 'laserChain', chainFraction: 0.5 },
       requires: ['laserBoost2'], x: 280, y: 200,
     },
     bossPenetration: {
       id: 'bossPenetration', name: 'Artillery Specialist',
       description: '+50% Boss hasarı — tüm savunucular',
-      cost: { exp: 800, food: 40 },
+      cost: { soul: 800 },
       effect: { type: 'bossBonus', value: 0.5 },
       requires: ['cannonPower1'], x: 660, y: 440,
     },
-    foodBoost2: {
-      id: 'foodBoost2', name: 'Food Production II',
-      description: '+30% Yiyecek Kazanımı',
-      cost: { exp: 300 },
-      effect: { type: 'economy', stat: 'foodMultiplier', value: 0.3 },
-      requires: ['foodBoost'], x: 100, y: 560,
+    metaGain2: {
+      id: 'metaGain2', name: 'Meta Production II',
+      description: '+30% Meta Kazanımı',
+      cost: { soul: 300 },
+      effect: { type: 'economy', stat: 'metaMultiplier', value: 0.3 },
+      requires: ['metaGain'], x: 100, y: 560,
     },
     kingsDecree1: {
       id: 'kingsDecree1', name: "King's Decree I",
-      description: '+40% tüm EXP ve Yiyecek kazanımı',
-      cost: { exp: 1500 },
+      description: '+40% tüm Soul ve Meta kazanımı',
+      cost: { soul: 1500 },
       effect: { type: 'incomeMultiplier', value: 0.4 },
-      requires: ['foodBoost2'], x: 100, y: 680,
+      requires: ['metaGain2'], x: 100, y: 680,
     },
     kingsDecree2: {
       id: 'kingsDecree2', name: "King's Decree II",
-      description: '+60% tüm EXP ve Yiyecek kazanımı',
-      cost: { exp: 3000, food: 100 },
+      description: '+60% tüm Soul ve Meta kazanımı',
+      cost: { soul: 3000 },
       effect: { type: 'incomeMultiplier', value: 0.6 },
       requires: ['kingsDecree1'], x: 280, y: 680,
     },
     frostUnlock: {
       id: 'frostUnlock', name: 'Frost Tower Unlock',
       description: 'Frost Tower açılır — düşmanları yavaşlatır',
-      cost: { exp: 700, food: 60 },
+      cost: { soul: 700 },
       effect: { type: 'unlock', target: 'frost' },
       requires: ['defenderAura'], x: 480, y: 560,
     },
     catapultUnlock: {
       id: 'catapultUnlock', name: 'Catapult Unlock',
       description: 'Catapult açılır — uzun menzilli büyük AoE',
-      cost: { exp: 1200, food: 80 },
+      cost: { soul: 1200 },
       effect: { type: 'unlock', target: 'catapult' },
       requires: ['frostUnlock', 'bossPenetration'], x: 660, y: 560,
     },

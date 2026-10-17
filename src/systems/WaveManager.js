@@ -118,17 +118,17 @@ export default class WaveManager {
       const isBig = milestoneIndex % mc.bigMilestoneEvery === 0;
       const mult = isBig ? mc.bigMultiplier : 1;
       // Mevcut ölçülen kazanım hızı ile bonus hesapla (saniye cinsinden)
-      // expRate/foodRate: ölçülen gerçek kazanım hızı (0 ise wave'e göre fallback)
-      const waveFallback = completedWave * 0.5; // wave başına ~0.5 exp/s kaba tahmin
-      const expReward  = Math.floor((GameState.meta.expRate  || waveFallback) * mc.expBonus  * mult);
-      const foodReward = Math.floor((GameState.meta.foodRate || waveFallback * 0.3) * mc.foodBonus * mult);
-      GameState.resources.exp  += expReward;
-      GameState.resources.food += foodReward;
-      GameState.stats.totalExpEarned  += expReward;
-      GameState.stats.totalFoodEarned += foodReward;
+      // soulRate/metaRate: ölçülen gerçek kazanım hızı (0 ise wave'e göre fallback)
+      const waveFallback = completedWave * 0.5; // wave başına ~0.5 soul/s kaba tahmin
+      const soulReward  = Math.floor((GameState.meta.soulRate  || waveFallback) * mc.soulBonus  * mult);
+      const metaReward = Math.floor((GameState.meta.metaRate || waveFallback * 0.3) * mc.metaBonus * mult);
+      GameState.resources.soul  += soulReward;
+      GameState.resources.bone += metaReward;
+      GameState.stats.totalSoulEarned  += soulReward;
+      GameState.stats.totalMetaEarned += metaReward;
       this.scene.game.events.emit('sfx', isBig ? 'bigMilestone' : 'milestone');
       this.scene.events.emit('wave-milestone', {
-        wave: completedWave, isBig, expReward, foodReward,
+        wave: completedWave, isBig, soulReward, metaReward,
       });
     }
   }

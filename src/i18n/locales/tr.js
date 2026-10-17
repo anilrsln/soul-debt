@@ -2,8 +2,8 @@
 export default {
   ui: {
     // Üst bar / HUD
-    exp: '{n} EXP',
-    food: '{n} Food',
+    soul: '{n} Soul',
+    meta: '{n} Meta',
     wave: 'Dalga {n}',
     enemies: 'D: {killed}/{total}',
     fps: '{n} FPS',
@@ -18,11 +18,11 @@ export default {
     },
     // Yükseltme / kiralama
     level: 'Lv.{n}',
-    costExp: '{n} EXP',
+    costSoul: '{n} Soul',
     conquestLock: '🔒 Fetih Haritası\'nda "{node}" düğümünü satın al',
-    hireFirst: 'Önce {name} kirala ({cost} Food)',
-    hirePlus: '+1 Kirala ({cost} Food)',
-    unlock: 'Aç ({cost} Food)',
+    hireFirst: 'Önce {name} ör ({cost})',
+    hirePlus: '+1 Ör ({cost})',
+    unlock: 'Aç ({cost})',
     count: 'Adet: {n}',
     // Prestige dialog
     prestigeTitle: '✦ PRESTIGE ✦',
@@ -74,13 +74,13 @@ export default {
     timeHM: '{h}s {m}d',
     timeM: '{m}d',
     collect: 'TOPLA',
-    expGain: '⚡ +{n} EXP',
-    foodGain: '🍖 +{n} Food',
+    soulGain: '⚡ +{n} Soul',
+    metaGain: '💀 +{n} Meta',
   },
   // Savunucular (DEFENDERS)
   game: {
-    expGain: '+{n} EXP',
-    foodGain: '+{n} Food',
+    soulGain: '+{n} Soul',
+    metaGain: '+{n} Meta',
     bossDefeated: '★ BOSS YENİLDİ! ★',
     crit: 'KRİTİK!',
     bossWave: '⚠ {boss} — Dalga {wave}',
@@ -117,8 +117,8 @@ export default {
     blastRadius: 'Patlama Yarıçapı', reloadSpeed: 'Doldurma Hızı',
   },
   economy: {
-    expBoost: 'EXP Takviyesi',
-    foodBoost: 'Food Takviyesi',
+    soulBoost: 'Soul Takviyesi',
+    metaBoost: 'Meta Takviyesi',
   },
   // Başarımlar — name + desc
   achievement: {
@@ -134,25 +134,25 @@ export default {
     cannonUnlock:  { name: 'Topçu',         desc: 'Top\'u aç' },
     archerFull:    { name: 'Okçu Ordusu',   desc: 'Maksimum okçuya ulaş' },
     allNodes:      { name: 'Fetih',         desc: 'Tüm Fetih düğümlerini aç' },
-    richExp:       { name: 'Zengin',        desc: '1M toplam EXP kazan' },
+    richExp:       { name: 'Zengin',        desc: '1M toplam Soul kazan' },
   },
   // Fetih düğümleri (CONQUEST_NODES) — name + description
   conquest: {
     laserBoost1:     { name: 'Lazer Takviyesi I',     description: '+%25 Lazer Hasarı' },
     laserBoost2:     { name: 'Lazer Takviyesi II',    description: '+%25 Lazer Atış Hızı' },
     defenderAura:    { name: 'Savunucu Hasar Aurası', description: '+%15 Tüm Savunucu Hasarı' },
-    expMultiplier:   { name: 'EXP Çarpanı',           description: '+%20 EXP Kazanımı' },
+    soulGain:        { name: 'Soul Kazanımı',         description: '+%20 Soul Kazanımı' },
     archerMastery:   { name: 'Okçu Ustalığı',         description: '+%30 Okçu Hasarı' },
-    foodBoost:       { name: 'Food Takviyesi',        description: '+%30 Food Kazanımı' },
+    metaGain:        { name: 'Meta Takviyesi',        description: '+%30 Meta Kazanımı' },
     cannonUnlock:    { name: 'Top Açılışı',           description: 'Top savunucusunu açar' },
     cannonPower1:    { name: 'Top Gücü I',            description: '+%30 Top Hasarı' },
     prestigeUnlock:  { name: 'Prestige Açılışı',      description: 'Prestige sistemini açar' },
     archerSplash:    { name: 'Okçu Ustalığı',         description: 'Her 5. ok menzildeki düşmanlara %40 alan hasarı verir' },
     laserChain:      { name: 'Lazer Geliştirme II',   description: 'Lazer her vuruşta ikinci bir hedefe %50 hasar iletir' },
     bossPenetration: { name: 'Topçu Uzmanı',          description: '+%50 Boss hasarı — tüm savunucular' },
-    foodBoost2:      { name: 'Food Üretimi II',       description: '+%30 Yiyecek Kazanımı' },
-    kingsDecree1:    { name: 'Kral Fermanı I',        description: '+%40 tüm EXP ve Yiyecek kazanımı' },
-    kingsDecree2:    { name: 'Kral Fermanı II',       description: '+%60 tüm EXP ve Yiyecek kazanımı' },
+    metaGain2:       { name: 'Meta Üretimi II',       description: '+%30 Meta Kazanımı' },
+    kingsDecree1:    { name: 'Kral Fermanı I',        description: '+%40 tüm Soul ve Meta kazanımı' },
+    kingsDecree2:    { name: 'Kral Fermanı II',       description: '+%60 tüm Soul ve Meta kazanımı' },
     frostUnlock:     { name: 'Frost Tower Açılışı',   description: 'Frost Tower açılır — düşmanları yavaşlatır' },
     catapultUnlock:  { name: 'Mancınık Açılışı',      description: 'Mancınık açılır — uzun menzilli büyük AoE' },
   },

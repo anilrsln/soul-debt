@@ -94,10 +94,10 @@ export default class GameScene extends Phaser.Scene {
       this.showIdlePopup(idleEarnings);
     }
 
-    // Kazanım hızı örnekleyici başlangıcı (idle için gerçek EXP/Food/sn)
+    // Kazanım hızı örnekleyici başlangıcı (idle için gerçek soul/meta/sn)
     this._rateSampleTime = 0;
-    this._lastRateExp = GameState.stats.totalExpEarned;
-    this._lastRateFood = GameState.stats.totalFoodEarned;
+    this._lastRateSoul = GameState.stats.totalSoulEarned;
+    this._lastRateMeta = GameState.stats.totalMetaEarned;
   }
 
   /** Idle gelir popup'ı gösterir. */
@@ -121,12 +121,12 @@ export default class GameScene extends Phaser.Scene {
       stroke: '#000', strokeThickness: 1,
     }).setOrigin(0.5).setDepth(301);
 
-    const expLine = this.add.text(cx, cy + 5, i18n('idle.expGain', { n: formatNumber(earnings.exp) }), {
+    const soulLine = this.add.text(cx, cy + 5, i18n('idle.soulGain', { n: formatNumber(earnings.soul) }), {
       fontSize: '16px', fontFamily: 'monospace', color: '#ffd700',
       stroke: '#000', strokeThickness: 1,
     }).setOrigin(0.5).setDepth(301);
 
-    const foodLine = this.add.text(cx, cy + 30, i18n('idle.foodGain', { n: formatNumber(earnings.food) }), {
+    const metaLine = this.add.text(cx, cy + 30, i18n('idle.metaGain', { n: formatNumber(earnings.meta) }), {
       fontSize: '16px', fontFamily: 'monospace', color: '#66ff66',
       stroke: '#000', strokeThickness: 1,
     }).setOrigin(0.5).setDepth(301);
@@ -143,8 +143,8 @@ export default class GameScene extends Phaser.Scene {
     collectBtn.on('pointerdown', () => {
       IdleManager.applyEarnings(earnings);
       // Toplanan lump'ı kazanım hızına saymamak için baseline'ı güncelle
-      this._lastRateExp = GameState.stats.totalExpEarned;
-      this._lastRateFood = GameState.stats.totalFoodEarned;
+      this._lastRateSoul = GameState.stats.totalSoulEarned;
+      this._lastRateMeta = GameState.stats.totalMetaEarned;
       // Elementleri temizle
       [bg, title, info, expLine, foodLine, collectBtn, collectLabel].forEach(el => el.destroy());
     });
@@ -247,17 +247,17 @@ export default class GameScene extends Phaser.Scene {
     this._achvTimer = (this._achvTimer ?? 0) - deltaMs / 1000;
     if (this._achvTimer <= 0) { this._achvTimer = 1; AchievementManager.check(); }
 
-    // Kazanım hızı örnekleme (idle gelir için gerçek EXP/Food/sn, EMA ile)
+    // Kazanım hızı örnekleme (idle gelir için gerçek soul/meta/sn, EMA ile)
     this._rateSampleTime = (this._rateSampleTime ?? 0) + deltaMs / 1000;
     if (this._rateSampleTime >= 2) {
       const dt = this._rateSampleTime;
-      const dExp = Math.max(0, GameState.stats.totalExpEarned - (this._lastRateExp ?? GameState.stats.totalExpEarned));
-      const dFood = Math.max(0, GameState.stats.totalFoodEarned - (this._lastRateFood ?? GameState.stats.totalFoodEarned));
+      const dSoul = Math.max(0, GameState.stats.totalSoulEarned - (this._lastRateSoul ?? GameState.stats.totalSoulEarned));
+      const dMeta = Math.max(0, GameState.stats.totalMetaEarned - (this._lastRateMeta ?? GameState.stats.totalMetaEarned));
       const a = 0.3; // EMA yumuşatma
-      GameState.meta.expRate = (GameState.meta.expRate || 0) * (1 - a) + (dExp / dt) * a;
-      GameState.meta.foodRate = (GameState.meta.foodRate || 0) * (1 - a) + (dFood / dt) * a;
-      this._lastRateExp = GameState.stats.totalExpEarned;
-      this._lastRateFood = GameState.stats.totalFoodEarned;
+      GameState.meta.soulRate = (GameState.meta.soulRate || 0) * (1 - a) + (dSoul / dt) * a;
+      GameState.meta.metaRate = (GameState.meta.metaRate || 0) * (1 - a) + (dMeta / dt) * a;
+      this._lastRateSoul = GameState.stats.totalSoulEarned;
+      this._lastRateMeta = GameState.stats.totalMetaEarned;
       this._rateSampleTime = 0;
     }
   }
@@ -302,11 +302,11 @@ export default class GameScene extends Phaser.Scene {
 
   // ═══════════════ Olaylar ═══════════════
   onEnemyKilled(data) {
-    if (data.exp > 0) {
-      this.showFloatingText(i18n('game.expGain', { n: Math.floor(data.exp) }), data.x, data.y - 10, CONFIG.COLORS.UI_GOLD);
+    if (data.soul > 0) {
+      this.showFloatingText(i18n('game.soulGain', { n: Math.floor(data.soul) }), data.x, data.y - 10, CONFIG.COLORS.UI_GOLD);
     }
-    if (data.food > 0) {
-      this.showFloatingText(i18n('game.foodGain', { n: Math.floor(data.food) }), data.x, data.y + 5, CONFIG.COLORS.ENEMY_FOOD);
+    if (data.meta > 0) {
+      this.showFloatingText(i18n('game.metaGain', { n: Math.floor(data.meta) }), data.x, data.y + 5, CONFIG.COLORS.ENEMY_FOOD);
     }
     // Ölüm parçacık efekti
     this.spawnDeathParticles(data.x, data.y, data.killedBy);

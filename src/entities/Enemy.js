@@ -1,6 +1,6 @@
 import { CONFIG } from '../config.js';
 import GameState from '../state/GameState.js';
-import { calculateEnemyHP, calculateEnemyEXP } from '../utils/MathUtils.js';
+import { calculateEnemyHP, calculateEnemySoul } from '../utils/MathUtils.js';
 import ConquestManager from '../systems/ConquestManager.js';
 import EconomyManager from '../systems/EconomyManager.js';
 import ComboManager from '../systems/ComboManager.js';
@@ -45,10 +45,11 @@ export default class Enemy {
     this.healConfig = config.heal || null; // yakındaki düşmanları iyileştirir
     this.rageConfig  = config.rage  || null; // boss_berserker: hasar aldıkça hızlanır
 
-    this.foodReward = config.food * rewardFactor;
+    this.metaReward = (config.meta ?? 0) * rewardFactor;
+    this.metaType = config.metaType ?? 'bone'; // bone/essence/crystal (K3)
     this.maxHP = Math.max(1, Math.floor(calculateEnemyHP(config.hp, CONFIG.WAVES.hpScaling, waveNumber) * hpFactor));
     this.currentHP = this.maxHP;
-    this.expReward = calculateEnemyEXP(config.exp, CONFIG.WAVES.expScaling, waveNumber) * rewardFactor;
+    this.soulReward = calculateEnemySoul(config.soul, CONFIG.WAVES.soulScaling, waveNumber) * rewardFactor;
 
     // Davranış: kalkan (opsiyonel). config.shield varsa ilk darbeleri emer;
     // HP ile aynı eğride ölçeklenir. (Veri-güdümlü davranış deseni — yeni
@@ -247,11 +248,11 @@ export default class Enemy {
     ComboManager.registerKill();
     const comboMult = ComboManager.getMultiplier();
     const dbg = CONFIG.DEBUG?.gainMultiplier ?? 1;
-    const expMult = GameState.prestige.multiplier * ConquestManager.getEconomyMultiplier('expMultiplier') * dbg * EconomyManager.getEconomyBoostMultiplier('expBoost') * comboMult;
-    const foodMult = GameState.prestige.multiplier * ConquestManager.getEconomyMultiplier('foodMultiplier') * dbg * EconomyManager.getEconomyBoostMultiplier('foodBoost') * comboMult;
-    const exp = this.expReward * expMult;
-    const food = this.foodReward * foodMult;
-    this._grantRewards(exp, food, 'defender');
+    const soulMult = GameState.prestige.multiplier * ConquestManager.getEconomyMultiplier('soulMultiplier') * dbg * EconomyManager.getEconomyBoostMultiplier('soulBoost') * comboMult;
+    const metaMult = GameState.prestige.multiplier * ConquestManager.getEconomyMultiplier('metaMultiplier') * dbg * EconomyManager.getEconomyBoostMultiplier('metaBoost') * comboMult;
+    const soul = this.soulReward * soulMult;
+    const meta = this.metaReward * metaMult;
+    this._grantRewards(soul, meta, 'defender');
     // Splitter: savunucu ile ölünce küçük çocuklara bölünür (hat ihlalinde bölünmez)
     if (this.splitConfig && !this.noSplit) {
       const sc = this.splitConfig;
@@ -278,7 +279,7 @@ export default class Enemy {
     if (!this.isChild) GameState.wave.enemiesKilled++;
     GameState.stats.totalEnemiesKilled++;
     this.scene.events.emit('enemy-killed', {
-      type: this.type, exp: 0, food: 0,
+      type: this.type, soul: 0, meta: 0,
       x: this.sprite.x, y: this.sprite.y, killedBy: 'breach',
     });
     this.scene.game.events.emit('sfx', 'deathDefender');
@@ -289,16 +290,17 @@ export default class Enemy {
     });
   }
 
-  _grantRewards(exp, food, killedBy) {
-    GameState.resources.exp += exp;
-    GameState.resources.food += food;
+  _grantRewards(soul, meta, killedBy) {
+    GameState.resources.soul += soul;
+    GameState.lifetimeSoul += soul; // onboarding tetiği (K19)
+    GameState.resources[this.metaType] = (GameState.resources[this.metaType] || 0) + meta; // tipe göre meta (K3)
     if (!this.isChild) GameState.wave.enemiesKilled++; // çocuklar wave kotasına sayılmaz
     GameState.stats.totalEnemiesKilled++;
-    GameState.stats.totalExpEarned += exp;
-    GameState.stats.totalFoodEarned += food;
+    GameState.stats.totalSoulEarned += soul;
+    GameState.stats.totalMetaEarned += meta;
     if (this.type === 'boss') GameState.stats.bossesKilled++;
     this.scene.events.emit('enemy-killed', {
-      type: this.type, exp, food,
+      type: this.type, soul, meta,
       x: this.sprite.x, y: this.sprite.y, killedBy,
     });
     this.scene.game.events.emit('sfx', 'deathDefender');

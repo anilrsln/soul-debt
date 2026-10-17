@@ -11,8 +11,8 @@
 | Faz | Açıklama | Durum |
 |-----|----------|-------|
 | 0 | Repo kurulumu (soul-debt, temiz başlangıç, Pages) | 🟡 kısmen (kopya + ilk commit tamam; GitHub repo + push + Pages kullanıcıda) |
-| A | Lava mekaniğini tamamen sök | ⬜ |
-| B | Ekonomi: EXP→Soul, Food→3 meta, Model 3, 4-sayaç UI | ⬜ |
+| A | Lava mekaniğini tamamen sök | ✅ |
+| B | Ekonomi: EXP→Soul, Food→3 meta, Model 3, 4-sayaç UI | ✅ |
 | C | Necromancer varlığı + canı + hat ihlali (breachLine) | ⬜ |
 | D | Soul-debt sistemi + otomatik diriltme (üç ceza) | ⬜ |
 | E | Dur-dövüş + oyuncu dizilimi + kat-arası kurulum fazı | ⬜ |
@@ -36,11 +36,11 @@
 - [ ] Oyun hâlâ çalışır durumda
 
 ### Faz B — Ekonomi
-- [ ] GameState: soul + bone/essence/crystal + lifetimeSoul
-- [ ] EconomyManager: soul kazanım/harcama, meta drop'ları, Model 3 hire (örme = soul + meta)
-- [ ] UpgradeManager + ConquestManager: maliyet → soul, level gate yok
-- [ ] UI: 4 sayaç
-- [ ] Onboarding: ilk lifetime-soul eşiğinde node ekranını bir kez tanıt
+- [x] GameState: soul + bone/essence/crystal + lifetimeSoul
+- [x] EconomyManager: soul kazanım/harcama, meta drop'ları, Model 3 hire (soul + çok-meta, K30)
+- [x] UpgradeManager + ConquestManager: maliyet → soul (node'lar soul)
+- [x] UI: 4 sayaç (soul 👻 + bone 🦴 + essence 🔮 + crystal 💎)
+- [x] Onboarding: ilk lifetime-soul eşiğinde node ekranını bir kez tanıt
 
 ### Faz C — Necromancer
 - [ ] Sahnede konumlu, can havuzlu necromancer

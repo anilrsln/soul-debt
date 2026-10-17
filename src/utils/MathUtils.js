@@ -13,9 +13,9 @@ export function calculateEnemyHP(baseHP, hpScaling, waveNumber) {
   return Math.floor(baseHP * Math.pow(hpScaling, waveNumber - 1));
 }
 
-/** Düşman EXP: baseEXP × (expScaling ^ (wave-1)) */
-export function calculateEnemyEXP(baseEXP, expScaling, waveNumber) {
-  return Math.floor(baseEXP * Math.pow(expScaling, waveNumber - 1));
+/** Düşman Soul: baseSoul × (soulScaling ^ (wave-1)) */
+export function calculateEnemySoul(baseSoul, soulScaling, waveNumber) {
+  return Math.floor(baseSoul * Math.pow(soulScaling, waveNumber - 1));
 }
 
 /** İki nokta arası mesafe */

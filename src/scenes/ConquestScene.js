@@ -27,8 +27,8 @@ export default class ConquestScene extends Phaser.Scene {
       stroke: '#000', strokeThickness: 2,
     }).setOrigin(0.5).setDepth(210);
 
-    this.expLabel  = this.add.text(14, 12, '', this.ts(11, '#ffd700')).setDepth(210);
-    this.foodLabel = this.add.text(14, 28, '', this.ts(11, '#66ff66')).setDepth(210);
+    this.soulLabel = this.add.text(14, 12, '', this.ts(11, '#c9b3ff')).setDepth(210);
+    this.metaLabel = this.add.text(14, 28, '', this.ts(11, '#d8d8d8')).setDepth(210);
 
     // Kapat butonu
     const cb = this.add.rectangle(770, 25, 56, 26, 0xe94560).setDepth(210).setInteractive({ useHandCursor: true });
@@ -120,8 +120,10 @@ export default class ConquestScene extends Phaser.Scene {
       let costStr = unlocked ? t('conquestMap.unlocked') : '';
       if (!unlocked) {
         const parts = [];
-        if (cost.exp)  parts.push(t('ui.exp', { n: formatNumber(cost.exp) }));
-        if (cost.food) parts.push(t('ui.food', { n: formatNumber(cost.food) }));
+        if (cost.soul)    parts.push(`👻 ${formatNumber(cost.soul)}`);
+        if (cost.bone)    parts.push(`🦴 ${formatNumber(cost.bone)}`);
+        if (cost.essence) parts.push(`🔮 ${formatNumber(cost.essence)}`);
+        if (cost.crystal) parts.push(`💎 ${formatNumber(cost.crystal)}`);
         costStr = parts.join(' + ');
       }
       const sub = this.add.text(x, y + 9, costStr, this.ts(8, unlocked ? '#66ff88' : '#666688')).setOrigin(0.5).setDepth(3);
@@ -193,7 +195,7 @@ export default class ConquestScene extends Phaser.Scene {
   }
 
   update() {
-    this.expLabel.setText(`⚡ ${t('ui.exp', { n: formatNumber(GameState.resources.exp) })}`);
-    this.foodLabel.setText(`🍖 ${t('ui.food', { n: formatNumber(GameState.resources.food) })}`);
+    this.soulLabel.setText(`👻 ${formatNumber(GameState.resources.soul)}`);
+    this.metaLabel.setText(`🦴 ${formatNumber(GameState.resources.bone)}  🔮 ${formatNumber(GameState.resources.essence)}  💎 ${formatNumber(GameState.resources.crystal)}`);
   }
 }

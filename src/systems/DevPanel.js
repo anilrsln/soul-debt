@@ -22,7 +22,7 @@ const GROUPS = [
       { path: 'WAVES.enemiesPerWaveGrowth', label: 'Düşman artışı / wave', min: 0, max: 3, step: 0.1 },
       { path: 'WAVES.timeBetweenWaves', label: 'Wave arası (ms)', min: 0, max: 5000, step: 100 },
       { path: 'WAVES.hpScaling', label: 'HP ölçekleme', min: 1, max: 1.3, step: 0.01 },
-      { path: 'WAVES.expScaling', label: 'EXP ölçekleme', min: 1, max: 1.3, step: 0.01 },
+      { path: 'WAVES.soulScaling', label: 'Soul ölçekleme', min: 1, max: 1.3, step: 0.01 },
     ],
   },
   {
@@ -33,7 +33,7 @@ const GROUPS = [
       { path: 'DEFENDERS.archer.hireCostMultiplier', label: 'Archer kir. çarpanı', min: 1, max: 3, step: 0.1 },
       { path: 'DEFENDERS.cannon.hireCost', label: 'Cannon kiralama', min: 1, max: 1000, step: 5 },
       { path: 'DEFENDERS.cannon.hireCostMultiplier', label: 'Cannon kir. çarpanı', min: 1, max: 3, step: 0.1 },
-      { path: 'DEBUG.gainMultiplier', label: 'EXP/Food kazanç çarpanı', min: 1, max: 100, step: 1 },
+      { path: 'DEBUG.gainMultiplier', label: 'soul/meta kazanç çarpanı', min: 1, max: 100, step: 1 },
     ],
   },
   {
@@ -42,8 +42,8 @@ const GROUPS = [
       { path: 'DEBUG.timeScale', label: 'Oyun hızı', min: 0.25, max: 5, step: 0.25 },
       { path: 'DEBUG.jumpWaveTarget', label: 'Hedef wave', min: 1, max: 500, step: 1 },
       { type: 'action', label: "Wave'e atla", run: (game) => game.events.emit('dev-jump-wave', CONFIG.DEBUG.jumpWaveTarget) },
-      { type: 'action', label: '+10K EXP', run: () => { GameState.resources.exp += 10000; } },
-      { type: 'action', label: '+100 Food', run: () => { GameState.resources.food += 100; } },
+      { type: 'action', label: '+10K Soul', run: () => { GameState.resources.soul += 10000; } },
+      { type: 'action', label: '+100 Bone', run: () => { GameState.resources.bone += 100; } },
     ],
   },
 ];

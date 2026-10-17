@@ -9,7 +9,7 @@ import { t, toggleLocale, getLocale } from '../i18n/index.js';
 
 /**
  * UIScene — HUD overlay + alt yükseltme paneli.
- * Üst bar: EXP, Food, Wave, düşman sayacı, FPS.
+ * Üst bar: Soul + 3 meta (bone/essence/crystal), Wave, düşman sayacı, FPS.
  * Alt panel: Savunucu sekmeleri (Laser/Archer/Cannon), upgrade butonları, hire butonu.
  */
 export default class UIScene extends Phaser.Scene {
@@ -19,8 +19,11 @@ export default class UIScene extends Phaser.Scene {
     // ═══════ ÜST BAR (HUD) ═══════
     this.topBar = this.add.rectangle(CONFIG.CANVAS_WIDTH / 2, 15, CONFIG.CANVAS_WIDTH, 30, CONFIG.COLORS.UI_BG, 0.85).setDepth(100);
 
-    this.expText = this.add.text(10, 5, '', this.textStyle(14, '#ffd700')).setDepth(101);
-    this.foodText = this.add.text(180, 5, '', this.textStyle(14, '#66ff66')).setDepth(101);
+    // 4 sayaç: soul (merkezi kaynak) + 3 meta (bone/essence/crystal) — Soul Debt ekonomisi
+    this.soulText    = this.add.text(10,  5, '', this.textStyle(14, '#c9b3ff')).setDepth(101); // soul: soluk mor
+    this.boneText    = this.add.text(150, 5, '', this.textStyle(13, '#d8d8d8')).setDepth(101); // bone: kemik gri
+    this.essenceText = this.add.text(265, 5, '', this.textStyle(13, '#b060ff')).setDepth(101); // essence: mor
+    this.crystalText = this.add.text(390, 5, '', this.textStyle(13, '#55e0e0')).setDepth(101); // crystal: cyan
     this.waveText = this.add.text(340, 5, '', this.textStyle(14, '#ffffff')).setDepth(101);
     this.enemyText = this.add.text(480, 5, '', this.textStyle(11, '#aaaaaa')).setDepth(101);
     this.prestigeText = this.add.text(560, 5, '', this.textStyle(10, '#9b59b6')).setDepth(101);
@@ -77,10 +80,8 @@ export default class UIScene extends Phaser.Scene {
     this.game.events.on('conquest-closed', () => { this.panelDirty = true; });
 
     // Flash efekti için referanslar
-    this.lastExp = GameState.resources.exp;
-    this.lastFood = GameState.resources.food;
-    this.expFlashTimer = 0;
-    this.foodFlashTimer = 0;
+    this.lastSoul = GameState.resources.soul;
+    this.soulFlashTimer = 0;
 
     // ═══════ ALT PANEL (Upgrade) ═══════
     this.panelHeight = CONFIG.CANVAS_HEIGHT - CONFIG.CORRIDOR_BOTTOM - 5; // tam oyun alani altinda
@@ -108,8 +109,7 @@ export default class UIScene extends Phaser.Scene {
     // Dirty flag — panel sadece gerektiğinde yeniden çizilir
     this.panelDirty = true;
     this.lastActiveTab = null;
-    this.lastExp = 0;
-    this.lastFood = 0;
+    this.lastSoul = 0;
 
     // GameScene event dinle
     const gameScene = this.scene.get('GameScene');
@@ -133,7 +133,7 @@ export default class UIScene extends Phaser.Scene {
     const isBig = data.isBig;
     const borderColor = isBig ? 0xffd700 : 0x66ccff;
     const titleTxt = isBig ? `🌟 Büyük Milestone! Dalga ${data.wave}` : `⚡ Milestone! Dalga ${data.wave}`;
-    const rewardTxt = `+${formatNumber(data.expReward)} EXP  +${formatNumber(data.foodReward)} 🍖`;
+    const rewardTxt = `+${formatNumber(data.soul)} 👻  +${formatNumber(data.meta)} 🦴`;
     const bgColor = isBig ? 0x1a1000 : 0x001a1a;
     const bg = this.add.rectangle(cx, y, 320, isBig ? 52 : 46, bgColor, 0.97).setDepth(252).setStrokeStyle(2, borderColor);
     const title = this.add.text(cx, y - 10, titleTxt, this.textStyle(isBig ? 13 : 12, isBig ? '#ffd700' : '#66ccff')).setOrigin(0.5).setDepth(253);
@@ -279,7 +279,7 @@ export default class UIScene extends Phaser.Scene {
       const btnY = y + 38;
       const color = stat.canAfford ? CONFIG.COLORS.UI_BUTTON : CONFIG.COLORS.UI_BUTTON_DISABLED;
       const bg = this.add.rectangle(btnX, btnY, btnWidth, 22, color, 1).setDepth(102).setInteractive({ useHandCursor: true });
-      const costLabel = this.add.text(btnX, btnY, t('ui.costExp', { n: formatNumber(stat.cost) }), this.textStyle(10, stat.canAfford ? '#ffd700' : '#666666')).setOrigin(0.5).setDepth(103);
+      const costLabel = this.add.text(btnX, btnY, t('ui.costSoul', { n: formatNumber(stat.cost) }), this.textStyle(10, stat.canAfford ? '#ffd700' : '#666666')).setOrigin(0.5).setDepth(103);
 
       bg.on('pointerdown', () => {
         if (UpgradeManager.purchaseUpgrade(this.activeTab, stat.name)) {
@@ -311,7 +311,7 @@ export default class UIScene extends Phaser.Scene {
     }
   }
 
-  /** Ekonomi sekmesi: EXP Boost / Food Boost upgrade'leri. */
+  /** Ekonomi sekmesi: Soul Boost / Meta Boost upgrade'leri. */
   renderEconomyPanel() {
     const startX = 10, startY = this.panelY + 32;
     const keys = Object.keys(CONFIG.ECONOMY_UPGRADES);
@@ -334,7 +334,7 @@ export default class UIScene extends Phaser.Scene {
       const btnX = x + btnWidth / 2, btnY = y + 38;
       const color = canAfford ? CONFIG.COLORS.UI_BUTTON : CONFIG.COLORS.UI_BUTTON_DISABLED;
       const bg = this.add.rectangle(btnX, btnY, btnWidth, 22, color, 1).setDepth(102).setInteractive({ useHandCursor: true });
-      const costLabel = this.add.text(btnX, btnY, t('ui.costExp', { n: formatNumber(cost) }), this.textStyle(10, canAfford ? '#ffd700' : '#666666')).setOrigin(0.5).setDepth(103);
+      const costLabel = this.add.text(btnX, btnY, t('ui.costSoul', { n: formatNumber(cost) }), this.textStyle(10, canAfford ? '#ffd700' : '#666666')).setOrigin(0.5).setDepth(103);
 
       bg.on('pointerdown', () => {
         if (EconomyManager.purchaseEconomyUpgrade(key)) {
@@ -445,6 +445,19 @@ export default class UIScene extends Phaser.Scene {
   }
 
   // ═══════ CONQUEST MAP ═══════
+  /** İlk (en ucuz) conquest node'unun soul maliyeti — onboarding eşiği. */
+  _firstNodeCost() {
+    if (this._cachedFirstNodeCost != null) return this._cachedFirstNodeCost;
+    let min = Infinity;
+    for (const node of Object.values(CONFIG.CONQUEST_NODES)) {
+      if (node.cost?.soul && (!node.requires || node.requires.length === 0)) {
+        min = Math.min(min, node.cost.soul);
+      }
+    }
+    this._cachedFirstNodeCost = Number.isFinite(min) ? min : 50;
+    return this._cachedFirstNodeCost;
+  }
+
   openConquestMap() {
     if (!this.scene.isActive('ConquestScene')) {
       this.game.events.emit('sfx', 'mapOpen');
@@ -464,17 +477,25 @@ export default class UIScene extends Phaser.Scene {
 
   // ═══════ HUD GÜNCELLEMESİ ═══════
   onEnemyKilled() {
-    this.expFlashTimer = 0.3;
-    this.foodFlashTimer = 0.3;
+    this.soulFlashTimer = 0.3;
     this.panelDirty = true; // Kaynak değişti, butonları güncelle
   }
 
   update(time, deltaMs) {
     const delta = deltaMs / 1000;
 
+    // Onboarding (K19/5.3): ilk kez ilk node'a yetecek lifetime soul biriktiğinde
+    // Conquest ekranını bir kez otomatik tanıt. Sonraki eşiklerde oyun durmaz.
+    if (!GameState.meta.onboardingSeen && GameState.lifetimeSoul >= this._firstNodeCost()) {
+      GameState.meta.onboardingSeen = true;
+      if (!this.scene.isActive('ConquestScene')) this.openConquestMap();
+    }
+
     // HUD texleri
-    this.expText.setText(`⚡ ${t('ui.exp', { n: formatNumber(GameState.resources.exp) })}`);
-    this.foodText.setText(`🍖 ${t('ui.food', { n: formatNumber(GameState.resources.food) })}`);
+    this.soulText.setText(`👻 ${formatNumber(GameState.resources.soul)}`);
+    this.boneText.setText(`🦴 ${formatNumber(GameState.resources.bone)}`);
+    this.essenceText.setText(`🔮 ${formatNumber(GameState.resources.essence)}`);
+    this.crystalText.setText(`💎 ${formatNumber(GameState.resources.crystal)}`);
     this.waveText.setText(t('ui.wave', { n: GameState.wave.current }));
     this.enemyText.setText(t('ui.enemies', { killed: GameState.wave.enemiesKilled, total: GameState.wave.enemiesInWave }));
 
@@ -500,13 +521,9 @@ export default class UIScene extends Phaser.Scene {
     }
 
     // Flash efektleri
-    if (this.expFlashTimer > 0) {
-      this.expFlashTimer -= delta;
-      this.expText.setColor(this.expFlashTimer > 0.15 ? '#ffffff' : '#ffd700');
-    }
-    if (this.foodFlashTimer > 0) {
-      this.foodFlashTimer -= delta;
-      this.foodText.setColor(this.foodFlashTimer > 0.15 ? '#ffffff' : '#66ff66');
+    if (this.soulFlashTimer > 0) {
+      this.soulFlashTimer -= delta;
+      this.soulText.setColor(this.soulFlashTimer > 0.15 ? '#ffffff' : '#c9b3ff');
     }
 
     // Prestige butonu görünürlüğü

@@ -201,7 +201,9 @@ Boss fight bu açıdan özel değildir. Necromancer boss katında ölürse: koş
 
 > Not: Bu 5 birim oyuncunun *dizdiği* orduyu oluşturur. Bunlara ek olarak **necromancer** sabit bir başlangıç birimidir (hiring yok, hep sahnede; damage verir + can havuzu + kaybetme koşulu — bkz. 6.6). Yani sahada fiilen 5 dizilebilir birim + 1 sabit necromancer bulunur.
 
-**Meta dağılımı (MVP):** 3 Bone + 2 Essence. Crystal MVP'de kullanılmaz (yalnız kat bekçilerinden düşer, boss sistemi geç faz). Böylece oyuncu ilk boss'a ulaşmadan tüm MVP kadrosunu açabilir.
+**Örme maliyeti çok-metalı olabilir (K30):** Bir birimin örme maliyeti soul + herhangi bir meta kombinasyonudur (tek meta zorunlu değil). Placeholder: Bruiser/Okçu = soul+bone; Hasar Büyücüsü/Healer = soul+bone+essence; Golem = soul+essence. Config: `craftCost: { soul, bone?, essence?, crystal? }`. Değerler playtest'te ayarlanır.
+
+**Meta dağılımı (MVP):** Birimler ağırlıklı Bone+Essence; Crystal MVP'de kullanılmaz. Crystal MVP'de kullanılmaz (yalnız kat bekçilerinden düşer, boss sistemi geç faz). Böylece oyuncu ilk boss'a ulaşmadan tüm MVP kadrosunu açabilir.
 
 **Rol mantığı:** Taş Golem taunt'la 2-3 düşmanı tutarken arkadaki okçu (2) ve büyücü (3) güvenle vurur; bruiser (1) golemin yanında ön safı destekler veya golem düşerse boşluğu tutar; healer (4) ön safı ayakta tutarak dur-dövüşü sürdürülebilir kılar. Beş birim beş ayrı iş yapar, hiçbiri fazlalık değildir.
 

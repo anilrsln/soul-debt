@@ -3,14 +3,16 @@ import { calculateUpgradeCost } from '../utils/MathUtils.js';
 import { CONFIG } from '../config.js';
 
 /**
- * EconomyManager — EXP/Food toplama, yükseltme maliyeti, satın alma işlemleri.
+ * EconomyManager — Soul/meta toplama, yükseltme maliyeti, satın alma işlemleri.
+ * NOT: Model 3 hire (tip-açma=node, örme=soul+meta) yeni kadro+unitUnlock node ile Faz B4/G'de tamamlanır.
+ * Şimdilik mevcut hire mantığı soul+meta'ya (bone) geçirildi; çalışır ara durum.
  */
 const EconomyManager = {
   /**
    * Upgrade maliyetini hesaplar.
    * @param {string} defenderType — 'laser' | 'archer' | 'cannon'
    * @param {string} statName — 'damage' | 'fireRate' | 'range' | 'blastRadius' | 'reloadSpeed'
-   * @returns {number} Maliyet (EXP)
+   * @returns {number} Maliyet (soul)
    */
   getUpgradeCost(defenderType, statName) {
     const def = CONFIG.DEFENDERS[defenderType];
@@ -26,28 +28,54 @@ const EconomyManager = {
    */
   purchaseUpgrade(defenderType, statName) {
     const cost = this.getUpgradeCost(defenderType, statName);
-    if (GameState.resources.exp < cost) return false;
+    if (GameState.resources.soul < cost) return false;
     // Defender kilidi açık mı? (laser her zaman açık)
     if (defenderType !== 'laser' && !GameState.defenders[defenderType].unlocked) return false;
 
-    GameState.resources.exp -= cost;
+    GameState.resources.soul -= cost;
     GameState.defenders[defenderType][statName].level += 1;
     return true;
   },
 
   /**
-   * Savunucu kiralama maliyetini hesaplar (Food).
+   * Savunucu kiralama maliyetini hesaplar (meta: bone — Model 3 geçici).
    * @returns {number} Maliyet
    */
   getHireCost(defenderType) {
     const def = CONFIG.DEFENDERS[defenderType];
-    if (!def.hireCost) return 0; // laser hire edilmez
     const count = GameState.defenders[defenderType].count || 0;
-    return Math.floor(def.hireCost * Math.pow(def.hireCostMultiplier, count));
+    // Model 3 (K30): craftCost çok-metalı olabilir { soul, bone?, essence?, crystal? }.
+    // Her örme count ile ölçeklenir. craftCost yoksa eski hireCost'tan bone maliyeti türetilir (geçici).
+    if (def.craftCost) {
+      const scaled = {};
+      for (const [res, base] of Object.entries(def.craftCost)) {
+        scaled[res] = Math.floor(base * Math.pow(def.craftCostMultiplier ?? 1.5, count));
+      }
+      return scaled;
+    }
+    if (!def.hireCost) return 0; // laser/necromancer hire edilmez
+    // Fallback: tek-meta (bone) — yeni kadro gelince craftCost ile değişir
+    return { bone: Math.floor(def.hireCost * Math.pow(def.hireCostMultiplier, count)) };
+  },
+
+  /** Bir maliyet objesinin ({soul, bone, ...}) karşılanıp karşılanmadığı. */
+  _canAfford(cost) {
+    if (!cost || typeof cost === 'number') return false;
+    for (const [res, amt] of Object.entries(cost)) {
+      if ((GameState.resources[res] || 0) < amt) return false;
+    }
+    return true;
+  },
+
+  /** Bir maliyet objesini kaynaklardan düş. */
+  _spend(cost) {
+    for (const [res, amt] of Object.entries(cost)) {
+      GameState.resources[res] -= amt;
+    }
   },
 
   /**
-   * Yeni savunucu kiralar (Food harcar).
+   * Yeni savunucu kiralar (meta: bone harcar — Model 3 tamamlanınca soul+meta).
    * @returns {boolean} Başarılı mı
    */
   hireDefender(defenderType) {
@@ -58,12 +86,12 @@ const EconomyManager = {
     if (['cannon', 'frost', 'catapult'].includes(defenderType) && state.canBeHired === false) return false;
 
     const cost = this.getHireCost(defenderType);
-    if (cost <= 0) return false;
+    if (!cost || cost === 0) return false;
 
     // İlk kiralama — kilidi aç
     if (!state.unlocked) {
-      if (GameState.resources.food < cost) return false;
-      GameState.resources.food -= cost;
+      if (!this._canAfford(cost)) return false;
+      this._spend(cost);
       state.unlocked = true;
       state.count = 1;
       return true;
@@ -71,9 +99,9 @@ const EconomyManager = {
 
     // Maks sayıya ulaşıldı mı
     if (state.count >= state.maxCount) return false;
-    if (GameState.resources.food < cost) return false;
+    if (!this._canAfford(cost)) return false;
 
-    GameState.resources.food -= cost;
+    this._spend(cost);
     state.count += 1;
     return true;
   },
@@ -84,7 +112,7 @@ const EconomyManager = {
   canAffordUpgrade(defenderType, statName) {
     const cost = this.getUpgradeCost(defenderType, statName);
     if (defenderType !== 'laser' && !GameState.defenders[defenderType].unlocked) return false;
-    return GameState.resources.exp >= cost;
+    return GameState.resources.soul >= cost;
   },
 
   /**
@@ -96,12 +124,12 @@ const EconomyManager = {
     if (['cannon', 'frost', 'catapult'].includes(defenderType) && state.canBeHired === false) return false;
     if (state.unlocked && state.count >= state.maxCount) return false;
     const cost = this.getHireCost(defenderType);
-    return GameState.resources.food >= cost;
+    return this._canAfford(cost);
   },
 
-  // ═══════════════ Ekonomi upgrade'leri (EXP/Food kazanç çarpanı) ═══════════════
+  // ═══════════════ Ekonomi upgrade'leri (soul/meta kazanç çarpanı) ═══════════════
 
-  /** 'expBoost' | 'foodBoost' için mevcut çarpan (1 + level × bonus). */
+  /** 'soulBoost' | 'metaBoost' için mevcut çarpan (1 + level × bonus). */
   getEconomyBoostMultiplier(key) {
     const cfg = CONFIG.ECONOMY_UPGRADES[key];
     if (!cfg) return 1;
@@ -109,7 +137,7 @@ const EconomyManager = {
     return 1 + level * cfg.bonusPerLevel;
   },
 
-  /** Bir sonraki ekonomi upgrade'inin maliyeti (EXP). */
+  /** Bir sonraki ekonomi upgrade'inin maliyeti (soul). */
   getEconomyUpgradeCost(key) {
     const cfg = CONFIG.ECONOMY_UPGRADES[key];
     if (!cfg) return Infinity;
@@ -118,14 +146,14 @@ const EconomyManager = {
   },
 
   canAffordEconomyUpgrade(key) {
-    return GameState.resources.exp >= this.getEconomyUpgradeCost(key);
+    return GameState.resources.soul >= this.getEconomyUpgradeCost(key);
   },
 
-  /** Ekonomi upgrade satın al (EXP ile). */
+  /** Ekonomi upgrade satın al (soul ile). */
   purchaseEconomyUpgrade(key) {
     const cost = this.getEconomyUpgradeCost(key);
-    if (GameState.resources.exp < cost) return false;
-    GameState.resources.exp -= cost;
+    if (GameState.resources.soul < cost) return false;
+    GameState.resources.soul -= cost;
     if (!GameState.economy[key]) GameState.economy[key] = { level: 0 };
     GameState.economy[key].level += 1;
     return true;
