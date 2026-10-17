@@ -71,6 +71,9 @@ Bu, kodun en çetrefilli ve en çok oturum-notu biriktirmiş kısmı. Soul Debt'
 ## 3. YENİ — Necromancer Varlığı ve Canı
 
 - Yeni entity veya GameScene'de somut varlık: sahnede konumlu, can havuzu olan necromancer.
+- **Necromancer = başlangıç birimi (laser'ın yerini alır — DESIGN 6.6 / K25):** Mevcut `laser` (Laser Monument) sabit/menzilli/upgrade'lenen başlangıç kulesinin damage mantığı necromancer'a taşınır. `DEFENDERS.laser` → necromancer'ın damage/range/fireRate stat bloğu olur (ya da laser kaldırılıp necromancer'a gömülür). Necromancer hiring gerektirmez.
+- **Yönlendirilebilir hedefleme:** Necromancer varsayılan en yakın düşmanı hedefler; oyuncu bir düşmanı tıklarsa yapışkan hedef (o ölene/menzilden çıkana kadar), sonra otomatiğe döner. Input: düşmana tık + görsel hedef işareti. Yalnız necromancer (diğer menzilli birimler otomatik).
+- **Aktif yetenekler MVP'de YOK** — node'dan açılan soul+cooldown yetenekler sonraki faz (K25).
 - `GameState.js`: `necromancer: { hp, maxHp }`.
 - Hat ihlalinde (`breachLine`) hasar alır + soul-debt bindirir.
 - Her 10 wave (kat sonu) full dolum. Soul ile maxHp upgrade (yeni upgrade kolu).

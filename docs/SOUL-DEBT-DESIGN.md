@@ -141,6 +141,18 @@ Necromancer sahnede somut bir varlıktır ve bir can (dayanıklılık) havuzu ta
 
 Necromancer'ın canı sıfırlanırsa koşu sona erer (bkz. 7).
 
+### 6.6 Necromancer Bir Birim Olarak (Başlangıç Silahı + Son Hat)
+
+Necromancer yalnız bir can havuzu değil; aynı zamanda oyunun **başlangıç birimidir** ve damage verir. Klon kökeninde ilk birim `laser` (sabit, menzilli, upgrade'lenen başlangıç kulesi) idi; o rol Soul Debt'te necromancer'a taşınır. Necromancer hiring gerektirmez, oyun boyunca hep sahnededir.
+
+- **Sabit konumlu, menzilli, upgrade'lenen.** Necromancer en arkada (korunan konumda) durur ama menzili sayesinde öne gelen düşmanlara uzaktan ruh fırlatarak damage verir. Soul ile damage/menzil/ateş-hızı upgrade'lenir (node + upgrade kolları — K21).
+- **Çift rol, çelişkisiz.** Necromancer hem damage verir (menzilli, arkada) hem de kaybetme koşuludur (6.5): düşman hattı aşıp *ona ulaşırsa* canından yer. Böylece necromancer son savunma hattıdır — önündeki ordu çökse bile bir süre kendi menziliyle direnir, ama düşman üstüne gelirse canı erir. Lore: bıkkın necromancer ordusunu öne sürer, geride ruhları yönetir, ama köşeye sıkışınca isteksizce elini kirletir.
+- **Hedefleme (yönlendirilebilir):** Varsayılan olarak necromancer **en yakın düşmana** vurur (otomatik — idle sözleşmesi, oyuncu hiçbir şey yapmasa da savaşır). Oyuncu bir düşmanı **tıklarsa**, necromancer o düşmanı **yapışkan** biçimde hedefler: hedef ölene (ya da menzilden çıkana) kadar ona vurur, sonra otomatiğe (en yakın) döner. Bu, alan-koruması stratejisini (serbest yerleştirme + topografya) "şu tehlikeli düşmanı öncelikle temizle" komutuyla destekler. Sürekli mikro değil, ara sıra bir *komutan dokunuşu* — idle+planlama kimliği (K4/K9) korunur.
+- **Kapsam:** Hedef-yönlendirme yalnız necromancer'a özeldir. Diğer menzilli birimler (okçu, hasar büyücüsü) otomatik hedefler; hepsini ayrı yönlendirmek mikro-yönetim kaosu olurdu (park'ta değerlendirilebilir).
+- **UX notu:** Tıklanan düşmanda görsel hedef işareti (halka vb.) olmalı ki oyuncu necromancer'ın neyi hedeflediğini görsün. Faz C/D detayı.
+
+**Aktif yetenekler (sonraki faz, MVP değil):** Necromancer ileride node'dan açılan, soul maliyetli + cooldown'lu, ara sıra kullanılan aktif yetenekler kazanabilir (ör. lanetle, yavaşlat, ruh patlaması). Bunlar idle sözleşmesini bozmaz (sürekli değil, kritik anda isteğe bağlı). **MVP'ye girmez** — çekirdek (dur-dövüş, ekonomi, soul-debt) çalışınca eklenir; aksi halde yeni input/cooldown/hedef-seçim sistemleri çekirdekten önce yük olur. Necromancer'ın temel damage hali (laser yerine geçiş) ise MVP'ye girer.
+
 ## 7. Kaybetme ve Prestige
 
 ### 7.1 Prestige Nedir
@@ -175,6 +187,8 @@ Boss fight bu açıdan özel değildir. Necromancer boss katında ölürse: koş
 | 3 | Hasar Büyücüsü | Alan hasarı (AoE) — kalabalık dalgaları biçer | Orta | Bone |
 | 4 | Healer Büyücü | Destek — birim HP yenileme, ön safı ayakta tutar | Orta | Essence |
 | 5 | Taş Golem | Asıl tank — taunt ile birden çok düşmanın ilgisini çeker, aynı anda birkaçıyla dövüşür | Yüksek | Essence |
+
+> Not: Bu 5 birim oyuncunun *dizdiği* orduyu oluşturur. Bunlara ek olarak **necromancer** sabit bir başlangıç birimidir (hiring yok, hep sahnede; damage verir + can havuzu + kaybetme koşulu — bkz. 6.6). Yani sahada fiilen 5 dizilebilir birim + 1 sabit necromancer bulunur.
 
 **Meta dağılımı (MVP):** 3 Bone + 2 Essence. Crystal MVP'de kullanılmaz (yalnız kat bekçilerinden düşer, boss sistemi geç faz). Böylece oyuncu ilk boss'a ulaşmadan tüm MVP kadrosunu açabilir.
 
@@ -223,7 +237,7 @@ Kat-arası kurulum fazında oyuncu bir birimi geri emebilir (absorbe). Bu absorb
 
 **Korunan (~%70):** Sahne mimarisi (Boot/Menu/Game/UI/Conquest), manager sistemi, WaveManager, EconomyManager, UpgradeManager, ConquestManager, object pooling, i18n altyapısı, save/load, prestige iskeleti, idle gelir, combo, achievement, syncDefenders deseni, projectile sistemi.
 
-**Değişen veya yeni:** Ölüm ve ödül mantığı (tamamen yeniden), para birimleri (EXP→Soul, Food→üç meta), tema ve asset (tamamen yeni), necromancer varlığı ve canı (yeni), soul-debt sistemi (yeni), dur-dövüş ve lane-blocking (yeni), oyuncu-dizilimli kurulum fazı (yeni), kat döngüsü ritmi (yeni), Model 3 birim ekonomisi (yeni).
+**Değişen veya yeni:** Ölüm ve ödül mantığı (tamamen yeniden), para birimleri (EXP→Soul, Food→üç meta), tema ve asset (tamamen yeni), necromancer varlığı ve canı (yeni; eski `laser` başlangıç kulesinin damage rolü necromancer'a taşınır, + yönlendirilebilir hedefleme — bkz. 6.6), soul-debt sistemi (yeni), dur-dövüş ve lane-blocking (yeni), oyuncu-dizilimli kurulum fazı (yeni), kat döngüsü ritmi (yeni), Model 3 birim ekonomisi (yeni).
 
 **Kaldırılan:** Lava mekaniği tamamen kaldırılır. `dieToLava()`, `dieToWall()`, `getLavaExpRate()`, `drawLava()` ve `CONFIG.LAVA_X` runtime override silinir. Bunların yerini tek bir "hat ihlali" olayı alır (düşman WALL_X'i geçer, necromancer'a ulaşır).
 

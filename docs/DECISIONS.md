@@ -106,6 +106,13 @@ Oyun lane/saf-dizme stratejisine bağlı DEĞİL. Birimler ızgaraya/şeride diz
 - **K9 revizesi:** "dizilim savaşta tamamen sabit" → "çıpa sabit + daire-içi otonom". Planlama oyunu kimliği korunur (oyuncu çıpa konumlar), savaş-içi mikro-hareket otonomiye bırakılır.
 - **Faz sırası:** Faz E'de önce çıpa-sabit (hareketsiz) dur-dövüş; ankerli otonomi cila katmanı olarak üstüne eklenir (çekirdek bağımlılığı değil).
 
+### K25 — Necromancer bir birim: başlangıç silahı + yönlendirilebilir hedef
+Necromancer yalnız can havuzu (K10) değil, aynı zamanda oyunun başlangıç birimidir ve damage verir. Klon kökenindeki ilk birim `laser` (sabit, menzilli, upgrade'lenen başlangıç kulesi) rolü necromancer'a taşınır; hiring yok, hep sahnede. Sabit konumlu + menzilli olduğundan arkada güvende durup öne gelen düşmana vurur — çift rol (damage + kaybetme koşulu) çelişmez: düşman hattı aşıp ona ulaşırsa canından yer (son savunma hattı). Lore: bıkkın necromancer ordusunu öne sürer, köşeye sıkışınca isteksizce kendi vurur.
+- **Hedefleme:** varsayılan en yakın düşman (otomatik — idle sözleşmesi). Oyuncu bir düşmanı tıklarsa **yapışkan hedef**: o ölene/menzilden çıkana kadar necromancer onu vurur, sonra otomatiğe döner. Alan-koruması stratejisini "şu tehlikeliyi öncelikle temizle" komutuyla destekler. Ara sıra komutan-dokunuşu; sürekli mikro değil (K4/K9 korunur).
+- **Kapsam:** yalnız necromancer yönlendirilir; diğer menzilli birimler (okçu/büyücü) otomatik. Hepsini yönlendirmek mikro-yönetim kaosu olurdu (park).
+- **Aktif yetenekler (MVP değil):** node'dan açılan, soul maliyetli + cooldown'lu, ara sıra kullanılan yetenekler (lanetle/yavaşlat/ruh patlaması) ileride eklenir. Çekirdek çalışınca; yeni input/cooldown/hedef sistemleri çekirdekten önce yük olmasın. Necromancer'ın temel damage hali MVP'ye girer.
+- **UX:** tıklanan düşmanda görsel hedef işareti (Faz C/D).
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)
