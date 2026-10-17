@@ -85,6 +85,7 @@ export default {
     waveComplete: 'Wave {n} Complete!',
     nextWave: '→ Wave {n}',
     necromancerHealed: '✚ Health Restored',
+    unitSelected: '✋ Selected — click empty ground',
     gameOverTitle: 'THE NECROMANCER FELL',
     gameOverSub: 'You ran dry on Wave {wave}. The underworld swallowed you.',
     restart: '↻ Restart',

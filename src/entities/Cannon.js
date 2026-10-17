@@ -35,23 +35,8 @@ export default class Cannon extends Defender {
     );
   }
 
-  update(delta, enemies) {
-    if (!this.alive) return;
-    if (this.cooldownTimer > 0) this.cooldownTimer -= delta;
-    this.target = this.findTarget(enemies);
-
-    if (this.target && this.cooldownTimer <= 0) {
-      this.fire(this.target);
-      this.cooldownTimer = 1 / this.getFireRate();
-    }
-
-    for (let i = this.projectiles.length - 1; i >= 0; i--) {
-      const p = this.projectiles[i];
-      p.update(delta, enemies);
-      if (!p.alive) { this.projectiles.splice(i, 1); this.scene.projectilePool.release(p); }
-    }
-  }
-
+  // Cannon artık MELEE tıkaç (K34) — update base class'ta (updateMelee). Kendi update'i yok.
+  // Mermi altyapısı (fire) ileride ranged varyant için korunuyor ama çağrılmıyor.
   fire(target) {
     const isBoss = target.type?.startsWith('boss_');
     const { damage, isCrit } = this.rollDamage(isBoss);

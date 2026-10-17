@@ -14,8 +14,8 @@
 | A | Lava mekaniğini tamamen sök | ✅ |
 | B | Ekonomi: EXP→Soul, Food→3 meta, Model 3, 4-sayaç UI | ✅ |
 | C | Necromancer varlığı + canı + hat ihlali (breachLine) | ✅ |
-| D | Soul-debt sistemi + otomatik diriltme (üç ceza) | 🟡 sistem kuruldu (birim-ölümü tetiği Faz E'de bağlanır) |
-| E | Dur-dövüş + oyuncu dizilimi + kat-arası kurulum fazı | ⬜ |
+| D | Soul-debt sistemi + otomatik diriltme (üç ceza) | ✅ (birim-ölümü tetiği Faz E'de bağlandı) |
+| E | Dur-dövüş + oyuncu dizilimi + kat-arası kurulum fazı | 🟡 çekirdek kuruldu (kat-arası tam-duraklama fazı + harita engel-çarpışması cila) |
 | F | Prestige: iki yol (gönüllü/zorlanmış), Model Y çarpan | ⬜ |
 | G | Ritim (kat döngüsü) + kadro (MVP 5 birim, ~12 arketip) + lore | ⬜ |
 | H | Save version bump + denge + playtest cila | ⬜ |
@@ -52,28 +52,34 @@
 - Not: soul-debt breachLine'a BURADA bağlanmadı — o Faz D (K11). Can anahtarı/sprite 'laser'
   tarihsel; K23 ile Faz G'de temizlenir. Necromancer düşmanla bire bir DÖVÜŞMEZ (can havuzu).
 
-### Faz D — Soul-Debt 🟡
+### Faz D — Soul-Debt ✅
 - [x] SoulDebtManager: ayrı borç sayacı (soul'dan düşmez — K33), üç ceza (soul + cooldown + borç çarpanı)
-- [x] Otomatik diriltme kuyruğu (FIFO, AFK güvenli — K29); `onUnitDeath`/`update`/`reviveUnit` API hazır
+- [x] Otomatik diriltme kuyruğu (FIFO, AFK güvenli — K29); `onUnitDeath`/`update`/`revive` API
 - [x] Diriltme maliyeti = soulCapacity × katsayı × (1 + borç/ölçek) — K12; config'de tüm sabitler
 - [x] Borç azalır: zamanla (debtDecayPerSecond) + her kill'de (debtDecayPerKill — "ruh hasat")
 - [x] DEFENDERS'a soulCapacity alanları (placeholder; gerçek kadro Faz G)
 - [x] GameState.soulDebt + SaveManager v8; UI borç göstergesi (borç>0'da görünür)
-- [ ] **Birim ölümü → diriltme TETİĞİ:** Faz E'de bağlanır. Şu an sahada ölen oyuncu birimi yok
-      (dur-dövüş Faz E). Dur-dövüş birim öldürdüğünde `SoulDebtManager.onUnitDeath(unit)` çağrılacak
-      + birimin `revive()` metodu yazılacak. Sistem buna HAZIR bekler.
+- [x] **Birim ölümü → diriltme TETİĞİ BAĞLANDI (Faz E):** Defender.die() → SoulDebtManager.onUnitDeath;
+      cooldown + soul sonrası Defender.revive() birimi çıpasında kaldırır. Uçtan uca test edildi.
 - Not: Düşman-orantılı breach hasarı (K12) — Faz C'de breach SABİT kaldı (`NECROMANCER.breachDamage`).
       K33 kararıyla hat ihlali borç YAZMAZ (yalnız can). Orantılı breach HASARI hâlâ açık kalem:
       düşman gücüne göre can-kesintisi ölçeklensin mi? Faz E/denge sırasında playtest ile değerlendir.
 
-### Faz E — Savaş Modeli
-- [ ] Dur-dövüş (yoluna çıkan ilk birime çarp, karşılıklı HP) — en ağır kod işi
-- [ ] Serbest (x,y) yerleştirme + ankerli otonomi (çıpa dairesi; önce sabit, sonra otonomi cilası)
-- [ ] Kat-arası kurulum fazı (savaş durur, diz/absorbe/ekle)
-- [ ] Harita zemini: tek yıkıntı-dungeon (engeller/köprü/meydan/dar boğaz)
-- [ ] Düşman akışı: random spawn → yönel + engelden kaç (A* değil)
-- [ ] Necromancer'ı oyuncu yerleştirir (büyük range)
-- [ ] Object pooling reset() yeni alanlarla güncel
+### Faz E — Savaş Modeli 🟡
+- [x] Dur-dövüş: düşman yoluna çıkan ilk MELEE tıkaça çarpar + durur, karşılıklı HP (K8/K34)
+- [x] Melee = tıkaç + lunge (lungeRadius ile yakalama, çıpaya dönüş); ranged = sabit, kiting yok (K34)
+- [x] Birim HP'si + ölüm → SoulDebtManager.onUnitDeath → diriltme (Faz D tetiği BAĞLANDI)
+- [x] Lane SÖKÜLDÜ: drawLanes/syncDefenders lane matematiği kaldırıldı; random Y spawn (K27)
+- [x] Serbest (x,y) yerleştirme: birime tık→seç, boş yere tık→çıpa taşı (K24); necromancer hedefiyle çakışmaz
+- [x] Birim HP barları + seçim halkası + unitDeath ölüm efekti
+- [x] cannon → MELEE blokçu (mevcut kadroda gerçek tank yoktu; Golem gelince Faz G'de devralır)
+- [ ] **Kat-arası tam-duraklama kurulum fazı:** Şu an örme/taşıma SAVAŞTA açık (K28 — tasarıma uygun).
+      Ayrı "savaş durur, ince diz" fazı + absorbe Faz E cilası / sonraki iterasyon.
+- [ ] **Harita engel-ÇARPIŞMASI:** drawObstacles şu an yalnız görsel doku. Gerçek engel/köprü/dar-boğaz
+      + düşman steering (engelden kaç) sonraki iterasyon (K27). A* park'ta kalır.
+- [ ] **Ankerli otonomi cilası (ranged):** ranged birimler çıpada tam sabit; menzile hizalanma
+      otonomisi (K24 daire) henüz yok — cila katmanı, çekirdek bağımlılığı değil (DESIGN 6.2).
+- Not: config.LANE_COUNT artık ÖLÜ sabit (kullanılmıyor) — K23 temizliğiyle Faz G'de silinebilir.
 
 ### Faz F — Prestige
 - [ ] Gönüllü (tanrıyı yen → tam) + zorlanmış (necromancer öl → yarı, Diş 1)

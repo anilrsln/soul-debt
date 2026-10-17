@@ -185,6 +185,25 @@ Soul-debt'in oyuncuya tam olarak ne yaptığı netleştirildi (Faz D tasarımı,
   borç bindirsin, yeni koşu borçla başlasın" fikri (Model B) tematik olarak güçlü ama yeni koşuyu
   boğma riski var; playtest etmeden kalıcı yapılmaz. Faz F (prestige) yazılırken değerlendirilecek.
 
+
+### K34 — Melee = tıkaç (+ lunge cilası); ranged = sabit; kiting yok
+Faz E savaş modeli netleştirildi. Sorun: K24'ün "ankerli otonomi dairesi" melee için
+çalışmıyordu — çıpaya bağlı melee, dairesi dışından geçen düşmana ulaşamayıp "anlamsızca el
+pençe bekliyor" (görsel olarak ölü). Çözüm, melee ve ranged'i AYNI kalıba sokmayı bırakmak:
+- **Melee = TIKAÇ (blocker), avcı değil.** Dur-dövüş (K8) zaten "düşman birime çarpınca durur"
+  diyor — yani düşman melee'ye GELİR, melee peşinden koşmaz. Melee yolun üstündeyse iş görür;
+  değilse o düşman onun derdi değil (arkadaki ranged/necromancer halleder). Oyuncunun işi melee'yi
+  düşmanın geçeceği yere koymaktır (K24: "tankı yola koymazsan sızarlar") — yanlış koymak strateji
+  hatası, mekanik kusur değil. Melee çıpada "nöbet" idle'ı oynar (el pençe değil; doğru animasyonla canlı).
+- **Lunge cilası (çekirdek sonrası):** Melee'ye küçük bir `lungeRadius` — tam yanından/dibinden
+  geçmeye çalışan düşmanı kısa mesafede yakalar (intercept), sonra çıpasına döner. "Dibimden geçti
+  ama kılıç kalkmadı" boşluğunu kapatır. Çekirdek bağımlılığı değil; önce tıkaç çalışır, lunge eklenir.
+- **Ranged = SABİT, kiting YOK.** Okçu/büyücü çıpada durur, menzilindekini vurur. Geri-çekilme/vur-kaç
+  (kiting) EKLENMEDİ: mikro-yönetim + refleks ister, K4/K9 (planlama, idle-güvenli) kimliğinin tam
+  karşıtı. Ranged'in korunması oyuncunun dizilim işidir (önüne tank koy), refleksle değil.
+- **İlişki:** K24'ün otonomi dairesi fikri ranged için zaten mantıklıydı (menzile hizalanma);
+  melee için "daire" yerine "tıkaç + lunge" modeli geçerli. K8 dur-dövüş korunur.
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)

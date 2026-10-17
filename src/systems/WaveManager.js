@@ -11,12 +11,9 @@ export default class WaveManager {
     this.waveBreakTimer = 0;
     this.isWaveBreak = false;
 
-    const corridorTop = CONFIG.CORRIDOR_TOP;
-    const corridorBottom = CONFIG.CORRIDOR_BOTTOM;
-    const laneCount = CONFIG.LANE_COUNT;
-    const laneSpacing = (corridorBottom - corridorTop) / laneCount;
-    // Tum lane'leri merkez noktalarinda tut
-    this.lanes = Array.from({ length: laneCount }, (_, i) => corridorTop + laneSpacing * (i + 0.5));
+    // K27: lane YOK — düşmanlar savaş alanının rastgele Y'sinde doğar (serbest akış).
+    this._spawnBandTop = CONFIG.CORRIDOR_TOP + 20;
+    this._spawnBandBottom = CONFIG.CORRIDOR_BOTTOM - 20;
     this.calculateWaveEnemies();
   }
 
@@ -69,14 +66,15 @@ export default class WaveManager {
     // Boss dalgası: orta şeritte tek büyük boss, girişinde duyuru
     if (this.isBossWave()) {
       const bossType = this.getBossType(GameState.wave.current);
-      const boss = this.scene.enemyPool.acquire(this.scene, bossType, GameState.wave.current, this.lanes[1], { boss: true });
+      const bossY = (this._spawnBandTop + this._spawnBandBottom) / 2;
+      const boss = this.scene.enemyPool.acquire(this.scene, bossType, GameState.wave.current, bossY, { boss: true });
       this.enemies.push(boss);
       GameState.wave.enemiesSpawned++;
       this.scene.events.emit('boss-wave', { wave: GameState.wave.current, bossType });
       return;
     }
     const type = this.selectEnemyType();
-    const laneY = this.lanes[Math.floor(Math.random() * this.lanes.length)];
+    const laneY = this._spawnBandTop + Math.random() * (this._spawnBandBottom - this._spawnBandTop);
     const enemy = this.scene.enemyPool.acquire(this.scene, type, GameState.wave.current, laneY);
     this.enemies.push(enemy);
     GameState.wave.enemiesSpawned++;

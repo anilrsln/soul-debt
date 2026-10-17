@@ -41,7 +41,7 @@ export default class GameScene extends Phaser.Scene {
     AssetProvider.createAnims(this);
     this.drawBackground();
     this.drawWall();
-    this.drawLanes();
+    this.drawObstacles(); // K27: yıkıntı-dungeon engelleri (lane yerine topografya)
 
     // Necromancer — başlangıç birimi (K25), hep sahnede, sabit konum
     this.necromancer = new Necromancer(this, CONFIG.WALL_X + 40, Math.round((CONFIG.CORRIDOR_TOP + CONFIG.CORRIDOR_BOTTOM) / 2));
@@ -51,21 +51,40 @@ export default class GameScene extends Phaser.Scene {
       GameState.necromancer.hp = GameState.necromancer.maxHp;
     }
 
-    // Yapışkan hedefleme (K25): sahaya tık → en yakın düşmanı necromancer'a yapışkan hedef yap
+    // Tık yönetimi (K24/K25): öncelik sırası —
+    //  1) Seçili birim varsa + boş zemine tık → birimi oraya taşı (çıpa güncelle)
+    //  2) Bir birime tık → o birimi SEÇ (taşımaya hazırla)
+    //  3) Bir düşmana tık → necromancer'a yapışkan hedef (K25)
+    this._selectedUnit = null;
     this.input.on('pointerdown', (pointer) => {
       if (this.isGameOver) return;
+      const px = pointer.worldX, py = pointer.worldY;
+
+      // Birime tık? (en yakın birim, 30px)
+      let unit = null, ud = 30 * 30;
+      for (const u of this.getAllUnits()) {
+        if (!u.alive || !u.sprite) continue;
+        const dx = u.x - px, dy = u.y - py;
+        const d = dx * dx + dy * dy;
+        if (d < ud) { ud = d; unit = u; }
+      }
+      if (unit) { this._selectUnit(unit); return; }
+
+      // Düşmana tık? (necromancer hedefi, 40px)
       const enemies = this.waveManager?.enemies || [];
-      let nearest = null, nd = Infinity;
+      let nearest = null, nd = 40 * 40;
       for (const e of enemies) {
         if (!e.alive || e.dying || !e.sprite) continue;
-        const dx = e.sprite.x - pointer.worldX, dy = e.sprite.y - pointer.worldY;
+        const dx = e.sprite.x - px, dy = e.sprite.y - py;
         const d = dx * dx + dy * dy;
         if (d < nd) { nd = d; nearest = e; }
       }
-      // yalnız makul yakınlıktaki tıkları hedef kabul et (40px)
-      if (nearest && nd <= 40 * 40) {
-        this.necromancer.setStickyTarget(nearest);
-        this._showTargetMarker(nearest);
+      if (nearest) { this.necromancer.setStickyTarget(nearest); this._showTargetMarker(nearest); return; }
+
+      // Boş zemin + seçili birim → taşı (yalnız savaş alanı içinde)
+      if (this._selectedUnit && px > CONFIG.WALL_X && px < CONFIG.CANVAS_WIDTH &&
+          py > CONFIG.CORRIDOR_TOP && py < CONFIG.CORRIDOR_BOTTOM) {
+        this._moveUnitAnchor(this._selectedUnit, px, py);
       }
     });
     this.archers = [];
@@ -217,17 +236,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
 
-  drawLanes() {
+  /** K27: MVP yıkıntı-dungeon zemini — hafif engel/doku işaretleri (placeholder).
+   *  Gerçek engel-çarpışması + köprü/dar-boğaz Faz E cilası/sonraki iterasyon; şimdilik görsel. */
+  drawObstacles() {
     const g = this.add.graphics().setDepth(1);
-    const corridorTop = CONFIG.CORRIDOR_TOP;
-    const corridorBottom = CONFIG.CORRIDOR_BOTTOM;
-    const laneCount = CONFIG.LANE_COUNT;
-    const laneSpacing = (corridorBottom - corridorTop) / laneCount;
-
-    g.lineStyle(1, CONFIG.COLORS.GROUND_LIGHT, 0.25);
-    for (let i = 0; i <= laneCount; i++) {
-      const y = corridorTop + laneSpacing * i;
-      g.lineBetween(0, y, CONFIG.CANVAS_WIDTH, y);
+    // Zemin dokusu: hafif noktalar (lane çizgileri yerine organik his)
+    g.fillStyle(CONFIG.COLORS.GROUND_LIGHT, 0.15);
+    for (let i = 0; i < 40; i++) {
+      const x = 180 + Math.random() * (CONFIG.CANVAS_WIDTH - 200);
+      const y = CONFIG.CORRIDOR_TOP + Math.random() * (CONFIG.CORRIDOR_BOTTOM - CONFIG.CORRIDOR_TOP);
+      g.fillCircle(x, y, 1 + Math.random() * 1.5);
     }
   }
 
@@ -249,6 +267,8 @@ export default class GameScene extends Phaser.Scene {
 
     // Necromancer (her zaman aktif)
     this.necromancer.update(delta, enemies);
+    // Birim HP barları (dur-dövüş görünürlüğü — K34)
+    this._drawUnitHpBars();
 
     // Archers
     this.syncDefenders('archer', this.archers, Archer);
@@ -288,35 +308,24 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  /** Savunucu sayısını GameState ile senkronize eder. */
+  /** Savunucu sayısını GameState ile senkronize eder (K24 serbest yerleşim).
+   *  Yeni birim bir BAŞLANGIÇ çıpasına yerleşir (melee öne, ranged arkaya); oyuncu sonra
+   *  savaş/kurulum fazında tıklayıp seçtiği birimi taşıyabilir (placeAnchor). */
   syncDefenders(type, list, DefenderClass) {
     const state = GameState.defenders[type];
     const targetCount = state.count || 0;
 
     while (list.length < targetCount) {
       const idx = list.length;
-      const corridorTop = CONFIG.CORRIDOR_TOP;
-      const corridorBottom = CONFIG.CORRIDOR_BOTTOM;
-      const laneCount = CONFIG.LANE_COUNT;
-      // Kolon x'leri: archer duvarda, diger tipler surun arkasinda
-      // Archer: sur ustunde | Cannon/Frost/Catapult: surun solunda (kale arkasi)
-      const colX = { archer: CONFIG.WALL_X, cannon: 118, frost: 68, catapult: 28 };
-      const x = colX[type] ?? (CONFIG.DEFENDER_X + 15);
-      const laneSpacing = (corridorBottom - corridorTop) / laneCount;
-      let y;
-      if (type === 'catapult') {
-        // Catapult: lane araları 2.5 ve 3.5 (şeritlerin tam ortasında, simetrik)
-        const catapultLanes = [2.5, 3.5];
-        const lanePos = catapultLanes[idx % catapultLanes.length] ?? 2.5;
-        y = corridorTop + laneSpacing * lanePos;
-      } else {
-        // Diğerleri: ortadan köşeye açılan sıra (0→orta, 1→orta-1, 2→orta+1, ...)
-        const midLane = Math.floor(laneCount / 2);
-        const offsets = [0, -1, 1, -2, 2, -3, 3];
-        const laneIdx = midLane + (offsets[idx] ?? idx);
-        const clampedLane = Phaser.Math.Clamp(laneIdx, 0, laneCount - 1);
-        y = corridorTop + laneSpacing * (clampedLane + 0.5);
-      }
+      const combatType = CONFIG.DEFENDERS[type]?.combatType || 'ranged';
+      // Varsayılan başlangıç çıpası: melee tıkaçlar öne (düşmana yakın), ranged arkaya (necromancer yanı).
+      // Oyuncu bunları taşıyana kadar makul bir savunma dizilimi.
+      const frontX = CONFIG.WALL_X + 120;  // melee öne
+      const backX = CONFIG.WALL_X + 50;    // ranged arkaya
+      const x = combatType === 'melee' ? frontX : backX;
+      const bandTop = CONFIG.CORRIDOR_TOP + 30;
+      const bandH = (CONFIG.CORRIDOR_BOTTOM - CONFIG.CORRIDOR_TOP) - 60;
+      const y = bandTop + ((idx * 53) % bandH); // dikeyde yay (çakışmayı azalt)
       list.push(new DefenderClass(this, x, y, idx));
     }
 
@@ -324,6 +333,17 @@ export default class GameScene extends Phaser.Scene {
       const removed = list.pop();
       removed.destroy();
     }
+  }
+
+  /** Dur-dövüş için: sahadaki tüm canlı MELEE birimleri (K34 tıkaçlar). Enemy._findBlocker çağırır. */
+  getMeleeBlockers() {
+    const all = [...this.cannons]; // mevcut kadroda melee = cannon; Faz G'de Golem/Bruiser eklenir
+    return all.filter(d => d.alive && d.combatType === 'melee');
+  }
+
+  /** Tüm dizilebilir birimler (necromancer hariç) — taşıma/HP bar/absorbe için. */
+  getAllUnits() {
+    return [...this.archers, ...this.cannons, ...this.frostTowers, ...this.catapults];
   }
 
   // ═══════════════ Olaylar ═══════════════
@@ -360,7 +380,9 @@ export default class GameScene extends Phaser.Scene {
 
   /** Basit ölüm parçacık efekti. */
   spawnDeathParticles(x, y, killedBy) {
-    const color = killedBy === 'breach' ? 0xcc3333 : 0xffffff;
+    const color = killedBy === 'breach' ? 0xcc3333
+      : killedBy === 'unitDeath' ? 0xc9b3ff  // birim ölümü: soul moru (iskelet dağılır)
+      : 0xffffff;
     const count = 6;
     for (let i = 0; i < count; i++) {
       const px = x + (Math.random() - 0.5) * 10;
@@ -472,6 +494,50 @@ export default class GameScene extends Phaser.Scene {
     if (!enemy?.sprite) return;
     const m = this.add.text(enemy.sprite.x, enemy.sprite.y - 24, '🎯', { fontSize: '18px' }).setOrigin(0.5).setDepth(60);
     this.tweens.add({ targets: m, y: m.y - 10, alpha: 0, duration: 700, onComplete: () => m.destroy() });
+  }
+
+  /** Bir birimi seç (taşımaya hazırla) — K24 serbest yerleştirme. */
+  _selectUnit(unit) {
+    this._selectedUnit = unit;
+    if (!this._selectRing) {
+      this._selectRing = this.add.circle(unit.x, unit.y, 18, 0x00ffff, 0).setStrokeStyle(2, 0x00ffff, 0.9).setDepth(16);
+    }
+    this._selectRing.setPosition(unit.x, unit.y).setVisible(true);
+    this.showFloatingText(i18n('game.unitSelected'), unit.x, unit.y - 24, 0x00ffff, 11, 900);
+  }
+
+  /** Seçili birimin çıpasını yeni konuma taşı (yürüyerek gider — K24). */
+  _moveUnitAnchor(unit, x, y) {
+    unit.anchorX = x;
+    unit.anchorY = y;
+    // ranged anında yeni çıpaya kayar; melee zaten lunge/return ile yürür
+    if (unit.combatType === 'ranged') {
+      this.tweens.add({ targets: unit, x, y, duration: 300, ease: 'Sine.easeInOut',
+        onUpdate: () => unit.sprite?.setPosition(unit.x, unit.y) });
+    }
+    this._selectedUnit = null;
+    if (this._selectRing) this._selectRing.setVisible(false);
+    this.game.events.emit('sfx', 'mapOpen');
+  }
+
+  /** Tüm dizilebilir birimlerin HP barlarını çiz (her frame — update'ten çağrılır). */
+  _drawUnitHpBars() {
+    if (!this._unitHpGfx) this._unitHpGfx = this.add.graphics().setDepth(12);
+    const g = this._unitHpGfx;
+    g.clear();
+    for (const u of this.getAllUnits()) {
+      if (!u.alive || !u.sprite || u.hp >= u.maxHp) continue; // tam canda bar gizli
+      const w = 18, h = 3;
+      const bx = u.x - w / 2, by = u.y - 18;
+      g.fillStyle(0x333333, 0.8); g.fillRect(bx, by, w, h);
+      const ratio = Math.max(0, u.hp / u.maxHp);
+      g.fillStyle(ratio > 0.3 ? 0x66ccff : 0xff5555, 1); // birim HP: buz mavisi (iskelet)
+      g.fillRect(bx, by, w * ratio, h);
+    }
+    // seçim halkası birimi takip etsin
+    if (this._selectedUnit && this._selectedUnit.alive && this._selectRing) {
+      this._selectRing.setPosition(this._selectedUnit.x, this._selectedUnit.y);
+    }
   }
 
   /** Dev panel: belirli bir wave'e atla. */

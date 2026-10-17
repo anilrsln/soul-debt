@@ -91,6 +91,7 @@ export default {
     waveComplete: 'Dalga {n} Tamamlandı!',
     nextWave: '→ Dalga {n}',
     necromancerHealed: '✚ Can Yenilendi',
+    unitSelected: '✋ Seçildi — boş yere tıkla',
     gameOverTitle: 'NECROMANCER DÜŞTÜ',
     gameOverSub: 'Dalga {wave}\'de tükendin. Yeraltı seni yuttu.',
     restart: '↻ Yeniden Başla',

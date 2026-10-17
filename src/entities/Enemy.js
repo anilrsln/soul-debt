@@ -112,13 +112,51 @@ export default class Enemy {
         if (this.sprite) this.sprite.clearTint();
       }
     }
+    // Dur-dövüş (K8/K34): yoluna çıkan ilk MELEE tıkaça temas edince dur, karşılıklı HP tüket.
+    const blocker = this._findBlocker();
+    if (blocker) {
+      this._engagedBy = blocker;
+      this._attackTimer = (this._attackTimer ?? 0) - delta;
+      if (this._attackTimer <= 0) {
+        this._attackTimer = 1 / CONFIG.COMBAT.enemyAttackRate;
+        const dmg = Math.max(1, Math.floor(this._attackPower()));
+        blocker.takeDamage(dmg);
+      }
+      this.updateHPBar();
+      if (this.healConfig && enemies) this._updateHeal(delta, enemies);
+      return; // dövüşürken ilerlemez
+    }
+    this._engagedBy = null;
+
+    // Önü açık: necromancer'a doğru ilerle (sola)
     this.sprite.x -= this.speed * delta;
     this.updateHPBar();
     if (this.healConfig && enemies) this._updateHeal(delta, enemies);
-    // Sur'a değince ödülsüz öl (savunucular ezip geçti sayılmaz)
-    // Hat ihlali: düşman sur hattını geçerse necromancer'a ulaşır (breachLine).
-    // Faz A: geçici olarak ödülsüz ölüm; necromancer'a hasar + soul-debt Faz C/D'de eklenir.
+    // Hat ihlali: hiçbir birime takılmadan sur hattını geçerse necromancer'a ulaşır (K13)
     if (this.sprite.x <= CONFIG.WALL_X - 14) { this.breachLine(); return; }
+  }
+
+  /** Yoluna çıkan ilk melee tıkaç (temas mesafesinde, önünde). K34. */
+  _findBlocker() {
+    const blockers = this.scene.getMeleeBlockers?.();
+    if (!blockers || blockers.length === 0) return null;
+    const r = CONFIG.COMBAT.meleeRange;
+    const ex = this.sprite.x, ey = this.sprite.y;
+    let best = null, bestDist = Infinity;
+    for (const b of blockers) {
+      if (!b.alive || !b.sprite) continue;
+      const dx = b.x - ex, dy = b.y - ey;
+      const d2 = dx * dx + dy * dy;
+      // temas yarıçapı içinde + en yakını (düşman sola gittiği için "yoluna çıkan" ~ en yakın blokçu)
+      if (d2 <= r * r && d2 < bestDist) { bestDist = d2; best = b; }
+    }
+    return best;
+  }
+
+  /** Düşmanın melee vuruş gücü (HP tabanlı placeholder; Faz G'de config'e taşınır). */
+  _attackPower() {
+    const base = CONFIG.ENEMIES[this.type]?.soul ?? 2;
+    return Math.max(2, base * 1.2); // güçlü düşman daha sert vurur
   }
 
   /** Healer: periyodik olarak menzildeki (kendisi hariç) düşmanların HP'sini yeniler.

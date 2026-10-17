@@ -49,6 +49,13 @@ export const CONFIG = {
   //   modeli (Faz E) oturunca tutulacak/değiştirilecek. Şimdilik çalışır halde bırakıldı.
   COMBAT: {
     crit: { chance: 0.15, multiplier: 2.0 }, // mermi savunucuları (archer/cannon) — PARK (bkz. K32)
+    // Dur-dövüş (K8/K34): düşman birime çarpınca durur, karşılıklı HP tüketir.
+    meleeRange: 22,       // düşman birime bu mesafede "temas" eder ve dur-dövüş başlar (px)
+    meleeAttackRate: 1.0, // melee birim saniyede kaç kez vurur (dur-dövüşte)
+    enemyAttackRate: 1.0, // düşman saniyede kaç kez vurur (dur-dövüşte)
+    lungeRadius: 70,      // melee birim çıpasından bu mesafedeki düşmanı yakalamaya "lunge" eder (K34 cila)
+    lungeSpeed: 180,      // lunge/geri-dönüş hareket hızı (px/sn)
+    anchorRadius: 40,     // ankerli otonomi dairesi yarıçapı (K24 cila; ≈ekran-h/12 placeholder)
   },
 
   // Görsel efekt (juice) anahtarları
@@ -118,12 +125,14 @@ export const CONFIG = {
     // menzilli saldırı statları; can ayrı (CONFIG.NECROMANCER + GameState.necromancer).
     laser: {
       name: 'Necromancer',
+      combatType: 'ranged', hp: 9999, // necromancer canı ayrı yönetilir (GameState.necromancer)
       damage:   { base: 5,  multiplier: 1.2,  baseCost: 10 },
       fireRate: { base: 1.2, multiplier: 1.1, baseCost: 15 },
       range:    { base: 150, multiplier: 1.08, baseCost: 20 },
     },
     archer: {
       name: 'Archer',
+      combatType: 'ranged', hp: 30, // ranged: çıpada sabit, menzilden vurur (K34)
       soulCapacity: 6, // düşük — ucuz dirilt, düşük borç (K12/K22 İskelet Okçu)
       // K30 placeholder: soul + bone (İskelet Okçu benzeri)
       craftCost: { soul: 50, bone: 10 }, craftCostMultiplier: 1.5,
@@ -135,6 +144,7 @@ export const CONFIG = {
     },
     cannon: {
       name: 'Cannon',
+      combatType: 'melee', hp: 120, // melee TIKAÇ: yolu tutar, dur-dövüş (K34 Golem benzeri blokçu)
       soulCapacity: 20, // yüksek — pahalı dirilt, çok borç (K12/K22 Taş Golem benzeri)
       // K30 placeholder: soul + essence (Golem benzeri ağır birim)
       craftCost: { soul: 200, essence: 8 }, craftCostMultiplier: 2.0,
@@ -146,6 +156,7 @@ export const CONFIG = {
     },
     frost: {
       name: 'Frost Tower',
+      combatType: 'ranged', hp: 40, // ranged yavaşlatıcı (K34)
       soulCapacity: 12, // orta (K12/K22 Büyücü benzeri)
       // K30 placeholder: soul + bone + essence (çok-metalı — Büyücü benzeri)
       craftCost: { soul: 300, bone: 15, essence: 5 }, craftCostMultiplier: 1.8,
@@ -161,6 +172,7 @@ export const CONFIG = {
     },
     catapult: {
       name: 'Catapult',
+      combatType: 'ranged', hp: 50, // ranged uzun menzil AoE (K34)
       soulCapacity: 16, // orta-yüksek (K12)
       // K30 placeholder: soul + bone + essence (çok-metalı ağır)
       craftCost: { soul: 500, bone: 20, essence: 10 }, craftCostMultiplier: 2.5,
