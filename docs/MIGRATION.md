@@ -103,7 +103,8 @@ Bu, kodun en çetrefilli ve en çok oturum-notu biriktirmiş kısmı. Soul Debt'
 
 ## 8. YENİ — Kadro (Tema + İçerik)
 
-- `config.js` ASSETS/ENEMIES/DEFENDERS: MVP'de 5 birim (DESIGN 8.1 / DECISIONS K22; en az 1 tank — Taş Golem), çekirdek çalışınca hedef kadroya doğru genişler. ~10-12 düşman arketipi (+ kat varyantları), 5 boss rotasyonu yeniden temalanır.
+- `config.js` DEFENDERS: MVP'de 5 birim (DESIGN 8.1 / DECISIONS K22; en az 1 tank — Taş Golem), çekirdek çalışınca hedef kadroya doğru genişler.
+- `config.js` ENEMIES: mevcut 8 düşman yeraltı-yaratığı temasıyla yeniden adlandırılır (DECISIONS K23) — anahtarlar da değişir: `skeleton→ghoul`, `armored→gargoyle`, `fast→imp`, `foodCarrier→soulVessel`, `elite→cursedKnight`, `shield→warden`, `splitter→ooze`, `healer→cultist`. `WAVES.typeUnlocks`, `BOSS_ROTATION` ve `Enemy.js` içindeki `CONFIG.ENEMIES[type]` referansları yeni anahtarlarla güncellenmeli. Mekanik (shield/split/heal alanları) değişmez. Boss'lar Faz G'de lore ile temalı isim alır. Kat varyantları + ~3 yeni arketip (park'ta) sonra.
 - Her birime `soulCapacity` alanı (güç/dayanıklılık/diriltme maliyeti türetilir).
 - Placeholder geometri → ileride pixel art (park'ta).
 

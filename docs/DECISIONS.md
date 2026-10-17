@@ -75,7 +75,6 @@ Böylece meta'nın kalıcı bir talebi olur: essence-birimi örmeye devam ettik�
 ### K20 — Ayrı proje (üç anlamda)
 Soul Debt artık ayrı bir yapıt. Ayrı Git repo (\`soul-debt\`, temiz başlangıç — eski repo arşiv kalır), ayrı claude.ai Project, ayrı doküman seti. Eski klon dokümanları silinmez, arşiv olarak durur.
 
-
 ### K21 — Birim açma node ağacına taşındı (tek ilerleme omurgası)
 Birim *tipini açmak* ayrı bir "birim mağazası" ekranı değil, Conquest node ağacının içinde bir node. Gerekçe: (1) Bütünlük — upgrade node'ları + birim-açma node'ları tek ağaçta; oyuncunun baktığı tek ilerleme ekranı. (2) Prerequisite zinciri bedava gelir — node ağacı zaten "şu node şunu gerektirir" mantığına sahip (K2), birim teknoloji-ağacı doğal çıkar. (3) Kod mirası — ConquestManager zaten var; yeni "unit shop" sistemi yazmak yerine mevcut node tipine `unitUnlock` türü eklenir. Tek aleyhte madde (yeni birim ağaçta kaybolabilir) bir UI-vurgu meselesi, mimari sorun değil: açılan birim node'u görsel olarak öne çıkarılır. Sonuç iki temiz katman: açmak = kalıcı ilerleme (node, bir kez), örmek = koşu-içi tekrarlı harcama (soul + meta).
 
@@ -95,6 +94,9 @@ Rol takası (ilk taslağa göre): "tank" dediğimiz iskelet bruiser'a çevrildi 
 **Healer notu:** Healer birim-HP'sini tutar (necromancer canını değil), yani hat-ihlali cezası (K13) ve soul-debt (K11) işlemeye devam eder; healer yalnız birim ölümlerini seyreltir. Kabul edilebilir ama playtest'te "healer ölümü tümden bitiriyor mu?" diye bakılacak.
 
 **Golem taunt notu (teknik):** Çoklu-hedef taunt, dur-dövüş kodunun en karmaşık parçası (bir birim ↔ birden çok düşman eşleşmesi, normal 1↔1 değil). Faz E'yi ağırlaştırır. MVP'de taunt basit tutulur (1 düşman tutar + çok yüksek HP); çoklu-hedef taunt çekirdek çalışınca açılır.
+
+### K23 — Düşman teması: yeraltı yaratıkları (iskelet-çakışması çözümü)
+Birimler iskelet/dirilmiş olduğundan (K22) düşmanların da "skeleton" olması hem tematik tutarsız (necromancer düşmanı öldürüp kendi ordusuna katar) hem de okunabilirlik sorunu (birim ve düşman aynı görünür, özellikle placeholder geometride). Çözüm: düşman tarafı tamamen **yeraltı yaratıkları** olur (etli/çürük, taş, ruhsal, lanetli). İskelet estetiği yalnız oyuncu ordusuna kalır. Mevcut 8 klon düşmanı mekanik olarak korunur; yalnız tema/isim ve config anahtarı yeniden yazılır (sıfır denge riski): `skeleton→ghoul`, `armored→gargoyle`, `fast→imp`, `foodCarrier→soulVessel`, `elite→cursedKnight`, `shield→warden`, `splitter→ooze`, `healer→cultist`. Kod anahtarları da temalanır (yalnız i18n ismi değil) — kodda "bu birim mi düşman mı?" karışıklığını önlemek için. Boss isimleri Faz G'de lore ile birlikte verilir. 8'in 7'si melee, cultist menzilli-destek; saf menzilli-saldırgan düşman park'a alındı (DESIGN 10): sıçrayıcı arketipiyle aynı "arka-saf baskısı" problemini çözdüğü için ikisinden biri playtest'le seçilecek, şimdi spekülatif tasarlanmayacak.
 
 ---
 

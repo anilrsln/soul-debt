@@ -169,13 +169,30 @@ Boss fight bu açıdan özel değildir. Necromancer boss katında ölürse: koş
 
 **Sonraki kadro adayları (park):** Diriltici/Çürütücü tipi ikinci destek ve Crystal-kademe elit birimler, çekirdek çalıştıktan sonra playtest ile değerlendirilir.
 
-### 8.2 Düşmanlar (Arketip + Kat Varyantı Modeli)
+### 8.2 Düşmanlar (Yeraltı Yaratıkları — Arketip + Kat Varyantı Modeli)
 
-Oyun sonsuza gittiği için her 10 dalgada yeni bir düşman tipi tasarlamak sürdürülemez. Bunun yerine sınırlı sayıda mekanik arketip ve bunların kat-temalı varyantları kullanılır:
+**Tema ayrımı (önemli):** Necromancer'ın *kendi ordusu* iskeletlerden/dirilmişlerden oluşur (bkz. 8.1) — iskelet estetiği bizim tarafın imzasıdır. Düşmanlar ise necromancer'ın inerken savaştığı **yeraltı yaratıklarıdır**: etli/çürük, taş, ruhsal, lanetli varlıklar. Bu ayrım hem tematik tutarlıdır (necromancer düşmanı öldürüp kendi ordusuna katar) hem de pratik bir okunabilirlik sorununu çözer: birim ve düşman asla aynı görünmez (DECISIONS K23).
 
-- Toplam yaklaşık 10-12 mekanik arketip bulunur (tank, hızlı, kalkanlı, bölünen, iyileştiren, zırhlı ve benzeri). Mevcut 8 düşman tipi temel alınır, 3-4 yeni arketip eklenir.
-- Her kat bu arketipleri yeniden temalandırır ve güçlendirir. Örneğin Kat 1'in kalkanlı iskeleti, Kat 4'te kalkanlı taş gargoyle olur: aynı mekanik, yeni görsel, daha yüksek stat. Oyuncu yeni düşman geldiğini hisseder, ancak yeni mekanik yazılmaz; yalnızca config varyantı ve asset değişir.
-- Düşman çeşitliliğinin asıl kaynağı kombinasyondur. Dalga ilerledikçe arketipler aynı dalgada karıştırılır (kalkanlı ve hızlı birlikte). Derinlik, lineer tip eklemeden değil, kombinasyondan gelir.
+**Başlangıç kadrosu — 8 arketip** (mevcut klon mekanikleri korunur, yalnızca tema/isim/anahtar yeniden yazılır; sıfır denge riski):
+
+| Anahtar (config) | Görünen ad (TR / EN) | Mekanik | Menzil |
+|---|---|---|---|
+| `ghoul` | Gulyabani / Ghoul | Zayıf, düz — taban düşman | Melee |
+| `gargoyle` | Taş Gargoyle / Stone Gargoyle | Yüksek HP, yavaş | Melee |
+| `imp` | İmp / Imp | Hızlı, kırılgan | Melee |
+| `soulVessel` | Ruh Kesesi / Soul Vessel | Ölünce bol meta (bone bonusu) düşürür | Melee |
+| `cursedKnight` | Lanetli Şövalye / Cursed Knight | Yüksek HP + yüksek ödül (elit) | Melee |
+| `warden` | Kalkanlı Muhafız / Shield Warden | Kalkan ilk darbeleri emer | Melee |
+| `ooze` | Jöle / Ooze | Ölünce küçük kopyalara bölünür | Melee |
+| `cultist` | Kültist / Cultist | Menzilindeki yaratıkları iyileştirir (destek) | Menzilli-destek |
+
+Not: 8'in 7'si melee dövüşçü; `cultist` tek menzilli (ama saldırgan değil, destek). Saf menzilli-saldırgan düşman şimdilik yok — bkz. 10 (park).
+
+**Kat varyantı modeli:** Oyun sonsuza gittiği için her 10 dalgada yeni tip tasarlamak sürdürülemez (DECISIONS R2). Bunun yerine bu arketipler kat temasıyla yeniden-görselleştirilir ve güçlendirilir. Örneğin Kat 1'in Kalkanlı Muhafız'ı, Kat 4'te daha iri ve yüksek-statlı bir taş variantına döner: aynı mekanik, yeni görsel, daha yüksek stat. Oyuncu yeni düşman geldiğini hisseder ama yeni mekanik yazılmaz; yalnızca config varyantı ve asset değişir.
+
+**Çeşitliliğin asıl kaynağı kombinasyondur:** Dalga ilerledikçe arketipler aynı dalgada karıştırılır (kalkanlı + hızlı birlikte). Derinlik, lineer tip eklemeden değil kombinasyondan gelir.
+
+**Boss isimlendirmesi:** 5 boss şu an jenerik kodda (`boss_tank`, `boss_berserker`, `boss_shaman`, `boss_splitter`, `boss_armored`). Bunlar Faz G'de lore (banner + bestiary) ile birlikte temalı isim alır — isim ve kuru-mizah dipnotu bir arada yazılsın diye o faza bırakıldı.
 
 ### 8.3 Boss'lar (Kat Bekçileri)
 
@@ -204,6 +221,7 @@ Bu fikirler kayıt altındadır ancak çekirdek çalışır hale gelene kadar ta
 - Pixel art asset'lerine tam geçiş.
 - Ses efektleri ve müzik.
 - Roguelite yönünde derinleştirme.
+- **Menzilli saldırgan düşman:** Dur-dövüş sözleşmesini kıran (durmadan, arka saftaki kırılgan birimi uzaktan vuran) bir düşman. Güçlü ama "sıçrayıcı/arka-saf sızan" arketipiyle aynı oyunsal problemi (ön safı anlamsızlaştırma baskısı) çözer — ikisi birden rol çakışır. Çekirdek dur-dövüş çalışınca playtest'le "menzilli mi sıçrayıcı mı arka-saf baskısını daha iyi veriyor?" diye karar verilir, biri seçilir. Şimdi tasarlanmaz (var olmayan savaş modeline karşı denge kurmamak için).
 
 ## 11. Açık Noktalar (Sonra Çözülecek)
 
