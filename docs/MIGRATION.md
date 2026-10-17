@@ -94,6 +94,7 @@ Bu, kodun en çetrefilli ve en çok oturum-notu biriktirmiş kısmı. Soul Debt'
 - **Mevcut lane sistemi sökülür:** `CONFIG.LANE_COUNT`, `drawLanes()`, `syncDefenders`'ın türe-göre-lane yerleştirmesi kaldırılır. Yerine: oyuncunun kurulum fazında koyduğu serbest çıpa noktaları. Birim bir `anchor:{x,y}` taşır.
 - **Ankerli otonomi (cila katmanı, sonra):** Birim çıpa merkezli otonomi dairesi (yarıçap ≈ ekran-h/10–20, CONFIG placeholder) içinde hareket eder (hizalan/boşluk-kapat/geri-dön), daireden çıkmaz. Faz E'de ÖNCE çıpa-sabit (hareketsiz) çalıştır, SONRA otonomiyi ekle — otonomi çekirdek bağımlılığı değil.
 - **Slot limiti:** Sahadaki birim sayısı slot-tabanlı (CONFIG placeholder; node'larla açılır). Konum serbest, sayı sınırlı.
+- **Harita/zemin (DESIGN 12 / K27):** MVP tek yıkıntı-dungeon. Engel bölgeleri (kaya/su) + köprü koridoru + yürünemez alanlar tanımlanır (CONFIG veya basit tilemap). Düşman akışı: random spawn → necromancer'a yönel + engelden kaç (steering/avoidance), A* YOK. Necromancer'ı oyuncu yerleştirir (büyük range). Engeller hem oyuncu yerleştirmesini hem düşman yolunu etkiler.
 - Kat-arası kurulum fazı: yeni UI/state modu (savaş durur, oyuncu serbest yerleştirir/absorbe eder, sonra iner).
 - Object pooling: korunur (Enemy + Projectile). Yeni state alanları (soul-kapasite, debt, anchor vb.) eklenince `reset()`'e de eklenmeli — yoksa havuzdan dönen nesnede eski state sızar.
 
@@ -102,6 +103,7 @@ Bu, kodun en çetrefilli ve en çok oturum-notu biriktirmiş kısmı. Soul Debt'
 - `PrestigeManager.js`: iskelet korunur. İki yol ekle: gönüllü (tanrıyı yen → tam çarpan) ve zorlanmış (necromancer öl → yarı çarpan, Diş 1 — DECISIONS K14).
 - Çarpan Model Y: ulaşılan derinliğe (kat) bağlı (DECISIONS K15). Mevcut `1 + count×0.5` formülü derinlik-ölçekli hale getirilir.
 - Kalıcı kalan: çarpan + açılmış birim tipleri. Sıfırlanan: koşu-içi her şey.
+- **Zafer/sonluluk (K26):** Tanrı Kat N'de (CONFIG placeholder). Yenince zafer ekranı + "tekrar oyna"/"endless" seçeneği (gönüllü prestige = tam çarpan). Endless/New Game+ park. `WaveManager`/`PrestigeManager` "Kat N'de tanrı spawn + yenince zafer" akışını bilmeli.
 
 ## 7. YENİ — Ritim ve Lore Katmanı
 

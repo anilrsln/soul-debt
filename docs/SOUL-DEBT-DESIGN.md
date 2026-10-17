@@ -22,7 +22,7 @@ Hikâye dekoratif değildir; her mekaniği gerekçelendirir.
 
 - Necromancer bir soul hasatçısıdır, bu yüzden soul'un merkezi kaynak olması tematik olarak tutarlıdır.
 - Tanrı soul ile beslenir, necromancer de soul toplar. Tanrıyı devirmek için tanrının yakıtını çalmak gerekir. Bu ironi, "her kat indikçe daha çok soul, en dipte tanrı" yapısını doğal kurar.
-- Necromancer bir necromancer olduğu için ölüm onu durdurmaz. Savaşta ölürse yeniden doğar (prestige), biraz daha güçlü olarak. Bu, prestige'in neden tam sıfırlama yaptığını ve oyunun neden sonsuz döngü olduğunu hikâyeyle açıklar.
+- Necromancer bir necromancer olduğu için ölüm onu durdurmaz. Savaşta ölürse yeniden doğar (prestige), biraz daha güçlü olarak. Bu, prestige'in neden tam sıfırlama yaptığını hikâyeyle açıklar. (Oyunun bir hedefi/sonu vardır — en dipteki tanrıyı yenmek; bkz. 4 ve 7. Sonsuz döngü değil, sonlu-ama-tekrarlanabilir bir yapı.)
 
 ## 3. Lore Taşıma Yöntemi (Kesintisiz)
 
@@ -43,7 +43,8 @@ Oyunun temel ritmi "10 dalga = 1 kat" döngüsüdür. Bu döngü, oyuna nefes al
 - 10. dalganın sonunda kat bekçisi (boss) belirir.
 - Kat tamamlanınca bir **kat-arası kurulum fazı** açılır: necromancer'ın canı tamamen dolar, oyuncu ordusunu yeniden dizebilir, birim ekleyebilir veya çıkarabilir (absorbe).
 - Oyuncu hazır olunca bir sonraki kata iner. Katlar derinleştikçe düşmanlar görsel ve sayısal olarak güçlenir.
-- En dipte tanrı bulunur. Tanrıyı yenmek prestige'i tetikler.
+- **Önceden belirli bir Kat N'de** (en dip) tanrı bulunur. Oyun saf-sonsuz değildir; tanrıya ulaşmak bir hedeftir. N bir placeholder'dır (playtest ile ayarlanır — ör. Kat 10 ≈ 100 dalga).
+- Tanrıyı yenmek oyunun **zafer/sonu**dur ve gönüllü prestige'i tetikler (bkz. 7). Zaferden sonra oyuncuya "tekrar oyna" ve "endless devam" seçeneği sunulur (endless + New Game+ ayrıntısı park'ta — bkz. 10).
 
 ## 5. Ekonomi
 
@@ -159,6 +160,8 @@ Necromancer yalnız bir can havuzu değil; aynı zamanda oyunun **başlangıç b
 
 Prestige, oyuncunun koşu-içi tüm ilerlemesini sıfırlayıp karşılığında kalıcı bir çarpan kazanmasıdır. Sıfırlanan şeyler: soul, meta'lar, upgrade'ler, birim adetleri, kat ilerlemesi. Kalıcı kalan şeyler: prestige çarpanı ve node ile açılmış birim *tipleri* (tip kilidi kalıcıdır, o tipten kaç adet olduğu koşu-içidir). Prestige sonrası necromancer Kat 1'den, daha güçlü olarak yeniden iner. Checkpoint veya ara seviyeden devam yoktur; prestige her zaman tam sıfırlamadır.
 
+**Sonluluk notu:** Oyun saf-sonsuz değildir. Tanrı önceden belirli Kat N'dedir (4). Gönüllü prestige (tanrıyı yenmek) oyunun hedefine ulaşmaktır ve bir **zafer** anıdır: zafer ekranı gösterilir, sonra oyuncu "tekrar oyna" veya "endless devam" seçebilir. Zorlanmış prestige (necromancer ölümü) ise yolun ortasında bir başarısızlık-reset'idir (7.2). Yani prestige iki bağlamda gelir: hedefe varınca (zafer) veya ölünce (başarısızlık). Endless mod ve New Game+ döngüsünün ayrıntısı park'tadır (10).
+
 ### 7.2 İki Prestige Yolu
 
 - **Gönüllü prestige:** Oyuncu en dibe iner ve tanrıyı yener. Bu bir zafer anıdır ve **tam** kalıcı çarpan verir.
@@ -219,7 +222,7 @@ Boss fight bu açıdan özel değildir. Necromancer boss katında ölürse: koş
 
 Not: 8'in 7'si melee dövüşçü; `cultist` tek menzilli (ama saldırgan değil, destek). Saf menzilli-saldırgan düşman şimdilik yok — bkz. 10 (park).
 
-**Kat varyantı modeli:** Oyun sonsuza gittiği için her 10 dalgada yeni tip tasarlamak sürdürülemez (DECISIONS R2). Bunun yerine bu arketipler kat temasıyla yeniden-görselleştirilir ve güçlendirilir. Örneğin Kat 1'in Kalkanlı Muhafız'ı, Kat 4'te daha iri ve yüksek-statlı bir taş variantına döner: aynı mekanik, yeni görsel, daha yüksek stat. Oyuncu yeni düşman geldiğini hisseder ama yeni mekanik yazılmaz; yalnızca config varyantı ve asset değişir.
+**Kat varyantı modeli:** Oyun sonlu ama uzundur (Kat N'e kadar çok sayıda kat); her kata elle yeni düşman tipi tasarlamak yine sürdürülemez (DECISIONS R2). Bunun yerine bu arketipler kat temasıyla yeniden-görselleştirilir ve güçlendirilir. Örneğin Kat 1'in Kalkanlı Muhafız'ı, Kat 4'te daha iri ve yüksek-statlı bir taş variantına döner: aynı mekanik, yeni görsel, daha yüksek stat. Oyuncu yeni düşman geldiğini hisseder ama yeni mekanik yazılmaz; yalnızca config varyantı ve asset değişir.
 
 **Çeşitliliğin asıl kaynağı kombinasyondur:** Dalga ilerledikçe arketipler aynı dalgada karıştırılır (kalkanlı + hızlı birlikte). Derinlik, lineer tip eklemeden değil kombinasyondan gelir.
 
@@ -252,6 +255,9 @@ Bu fikirler kayıt altındadır ancak çekirdek çalışır hale gelene kadar ta
 - Pixel art asset'lerine tam geçiş.
 - Ses efektleri ve müzik.
 - Roguelite yönünde derinleştirme.
+- **Endless mod + New Game+ döngüsü:** Tanrı yenildikten sonra devam. Basit endless (katlar artarak sürer) veya New Game+ (necromancer ve tanrı birlikte güçlenerek yeni döngü). MVP'de yalnız zafer + "tekrar oyna"/"endless" seçeneği var; bu modların denge ve prestige ayrıntısı sonra.
+- **Çoklu harita arketipleri:** Dar boğaz / çatal / meydan / engelli gibi ayrı topografik şablonlar + prosedürel/temalı varyant (düşman K17 modelinin harita versiyonu). MVP tek yıkıntı-dungeon zemini kullanır (12.1); bu, serbest yerleştirme kanıtlandıktan sonra eklenir.
+- **A\* grid pathfinding:** Düşman akışını "yönel + engelden kaç" (12.2) yerine tam en-kısa-yol hesabına yükseltmek. Daha akıllı ama pahalı; ancak haritalar karmaşıklaşırsa gerekir.
 - **Menzilli saldırgan düşman:** Dur-dövüş sözleşmesini kıran (durmadan, arka saftaki kırılgan birimi uzaktan vuran) bir düşman. Güçlü ama "sıçrayıcı/arka-saf sızan" arketipiyle aynı oyunsal problemi (ön safı anlamsızlaştırma baskısı) çözer — ikisi birden rol çakışır. Çekirdek dur-dövüş çalışınca playtest'le "menzilli mi sıçrayıcı mı arka-saf baskısını daha iyi veriyor?" diye karar verilir, biri seçilir. Şimdi tasarlanmaz (var olmayan savaş modeline karşı denge kurmamak için).
 
 ## 11. Açık Noktalar (Sonra Çözülecek)
@@ -261,3 +267,23 @@ Bu fikirler kayıt altındadır ancak çekirdek çalışır hale gelene kadar ta
 - **Otonomi dairesi yarıçapı:** ≈ ekran-yüksekliği/10–20 placeholder (DESIGN 6.2); playtest ile ayarlanır.
 - **Save uyumluluğu:** Ekonomi ve mekanik baştan değiştiği için eski save'ler uyumsuzdur. Save version bump ve temiz başlangıç gerekir. Tek oyuncu olduğundan risk düşüktür.
 - **i18n lore yükü:** MVP'de 5 birim (hedef kadro sonra genişler), yaklaşık 12 düşman arketipi, kat temaları, boss banner'ları ve bestiary hem TR hem EN yazılacaktır. Mizah birebir çevrilemez, iki dil ayrı yazılır. Bu ayrı bir iş kalemidir ve kendi fazını hak eder.
+
+## 12. Harita ve Oyun Alanı (DECISIONS K27)
+
+### 12.1 MVP: Tek Yıkıntı-Dungeon Zemini
+
+MVP tek bir elle-tasarlanmış harita kullanır: bir **yıkıntı dungeon**. İçinde yerlerde büyük kayalar/taşlar (engeller), bir köprü, bir meydan ve bir dar boğaz bulunur. Bu topografya serbest yerleştirmeyi (6.2) stratejik kılar: oyuncu tankı dar boğaza koyarsa tüm akışı tıkar, meydanı AoE için kullanır, menzilli birimi kaya arkasına gizler.
+
+Çoklu harita arketibi (dar boğaz / çatal / meydan / engelli… ayrı şablonlar) + prosedürel/temalı varyant sistemi bilinçle **park'a** alındı (10): harita seçme/planlama MVP'yi şişirir ve çekirdek oynanış kanıtlanmadan erken olur. Gerekirse ileride ekstra harita/şablon eklenir.
+
+### 12.2 Düşman Akışı (Yönel + Engelden Kaç)
+
+Düşmanlar haritada **rastgele spawn** olur (sabit giriş yolu yok). Her düşman necromancer'a doğru **yönelir** ve önüne çıkan engelden (kaya, su/uçurum) kenarından **dolaşır** (basit steering/avoidance). Köprü gibi geçitler "yürünebilir koridor", su/uçurum "yürünemez bölge" olarak işaretlidir; düşman suya giremeyeceği için köprüye yönelmesi doğal olarak çıkar — ayrı bir "köprüyü bul" mantığı yazmaya gerek yok.
+
+Bu bilinçli olarak **tam grid pathfinding (A\*) DEĞİLDİR.** A\* en "akıllı" çözüm ama MVP'nin en pahalı teknik kalemi olurdu ve dur-dövüşü geciktirirdi. "Hedefe yönel + engelden kaç" davranışı oyuncuya yeterince akıllı görünür, çok daha ucuzdur. (İleride gerekirse A\*'a yükseltilebilir — park.)
+
+Hedefleme (6.1) bununla uyumlu: düşman necromancer'a yönelirken yoluna çıkan ilk birime çarpıp durur.
+
+### 12.3 Necromancer Yerleşimi
+
+Necromancer'ı **oyuncu yerleştirir** (kurulum fazında, diğer birimler gibi — 6.2). Büyük bir menzil (range) taşır; en arkaya konup geniş alanı tarayabilir. Kaybetme koşulu olduğu için (6.5) konumu bilinçli bir risktir: öne koyarsan daha çok vurur ama hat ihlalinde daha çabuk ölür. Necromancer da kat-arası kurulum fazında yeniden konumlanabilir.

@@ -53,15 +53,19 @@
 - [ ] Diriltme maliyeti soul-kapasiteyle ölçeklenir
 
 ### Faz E — Savaş Modeli
-- [ ] Dur-dövüş (lane-blocking, karşılıklı HP) — en ağır kod işi
-- [ ] Oyuncu dizilimi, kat aralarında değişir, savaş içinde sabit
+- [ ] Dur-dövüş (yoluna çıkan ilk birime çarp, karşılıklı HP) — en ağır kod işi
+- [ ] Serbest (x,y) yerleştirme + ankerli otonomi (çıpa dairesi; önce sabit, sonra otonomi cilası)
 - [ ] Kat-arası kurulum fazı (savaş durur, diz/absorbe/ekle)
+- [ ] Harita zemini: tek yıkıntı-dungeon (engeller/köprü/meydan/dar boğaz)
+- [ ] Düşman akışı: random spawn → yönel + engelden kaç (A* değil)
+- [ ] Necromancer'ı oyuncu yerleştirir (büyük range)
 - [ ] Object pooling reset() yeni alanlarla güncel
 
 ### Faz F — Prestige
 - [ ] Gönüllü (tanrıyı yen → tam) + zorlanmış (necromancer öl → yarı, Diş 1)
 - [ ] Model Y: çarpan derinliğe bağlı
 - [ ] Kalıcı: çarpan + açılmış birim tipleri; gerisi sıfırlanır
+- [ ] Tanrı Kat N'de + zafer ekranı + tekrar/endless seçeneği (K26)
 
 ### Faz G — Ritim + Kadro + Lore
 - [ ] 10 wave = kat döngüsü, kat geçiş kartları

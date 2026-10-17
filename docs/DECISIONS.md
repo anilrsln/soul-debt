@@ -20,6 +20,8 @@ Bone (yaygın → temel tipler), Essence (nadir → üst tipler), Crystal (boss 
 ### K4 — Tür: idle değil, aktif descent-TD
 Kullanıcı "%100 idle yapmak zorunda değilim" dedi. Son kararların tümü (unit ölümü, necromancer'a ulaşan hat ihlali, üç ceza, kaybedilebilirlik) aktif-TD'yi tarif ediyordu. Tür bilinçli olarak bu şekilde kilitlendi. İdle'dan miras: oto-savaş, üstel büyüme, kalıcı ilerleme, offline-idare-eder.
 
+**Revize (K26):** Oyun saf-sonsuz DEĞİL — tanrı önceden belirli Kat N'de; ona ulaşıp yenmek oyunun hedefi/zaferi. Sonsuz döngü yerine sonlu-ama-tekrarlanabilir yapı.
+
 ### K5 — Özgünleştirme: klonun DNA'sını kırmak
 Sadece asset değiştirmek "makyaj" olurdu. ZSK'nın imza mekaniklerinden ikisi bilinçli kırıldı: (1) tek yönlü koridor → dikey iniş (descent); (2) pasif kral → kaybedilebilir, canı olan necromancer + unit ölümü. Gerisi miras alındı (~%70 kod).
 
@@ -113,6 +115,14 @@ Necromancer yalnız can havuzu (K10) değil, aynı zamanda oyunun başlangıç b
 - **Aktif yetenekler (MVP değil):** node'dan açılan, soul maliyetli + cooldown'lu, ara sıra kullanılan yetenekler (lanetle/yavaşlat/ruh patlaması) ileride eklenir. Çekirdek çalışınca; yeni input/cooldown/hedef sistemleri çekirdekten önce yük olmasın. Necromancer'ın temel damage hali MVP'ye girer.
 - **UX:** tıklanan düşmanda görsel hedef işareti (Faz C/D).
 
+### K26 — Oyun sonlu: tanrı Kat N'de, zafer + opsiyonel devam
+Oyun saf-sonsuz tasarlanmaz (K4 revize). Tanrı önceden belirli bir Kat N'de (placeholder; playtest — ör. Kat 10 ≈ 100 dalga). Tanrıyı yenmek oyunun hedefi ve **zaferi**: zafer ekranı → oyuncuya "tekrar oyna" ve "endless devam" seçeneği. Gerekçe: sonsuz oyun dengelenemez/test edilemez; sonlu oyun oynanıp bitirilebilir. Prestige iki bağlamda gelir: zafer (gönüllü, tam çarpan) veya ölüm (zorlanmış, yarı — K14). Endless mod + New Game+ döngüsü park'ta (DESIGN 10); MVP yalnız zafer + tekrar/endless seçeneği sunar.
+
+### K27 — Harita: tek yıkıntı-dungeon + yönel-kaç akışı + oyuncu-yerleştirmeli necromancer
+- **MVP tek elle-tasarlanmış harita:** yıkıntı dungeon — kayalar/taşlar (engel), köprü, meydan, dar boğaz. Topografya serbest yerleştirmeyi (K24) stratejik kılar (tankı boğaza koy, meydanı AoE'ye kullan, menzilliyi kaya arkasına gizle). Çoklu harita arketibi + prosedürel şablon park'ta (DESIGN 10) — harita planlama MVP'yi şişirir, çekirdek kanıtlanmadan erken.
+- **Düşman akışı:** random spawn → necromancer'a yönel + engelden kaç (basit steering/avoidance). Köprü=yürünebilir, su/uçurum=yürünemez → köprüye yönelme doğal çıkar (ayrı "köprü bul" mantığı yok). Tam A* grid pathfinding bilinçle reddedildi (MVP'nin en pahalı kalemi, dur-dövüşü geciktirir); "yönel+kaç" yeterince akıllı görünür. A* park'ta.
+- **Necromancer yerleşimi:** oyuncu yerleştirir (kurulum fazında, diğer birimler gibi — K24), büyük range. En arkaya konup alanı tarar; kaybetme koşulu olduğundan (K25/6.5) konum bilinçli risk. Kat-arası fazda yeniden konumlanabilir.
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)
@@ -121,7 +131,7 @@ Necromancer yalnız can havuzu (K10) değil, aynı zamanda oyunun başlangıç b
 Kullanıcı aktif, kaybedilebilir bir oyun istedi. İdle sözleşmesi (AFK güvenli, kayıp imkansız) bu istekle çeliştiği için tür değiştirildi. İdle *özellikleri* yine de miras alındı.
 
 ### R2 — "Her 10 wave'de yeni düşman tipi"
-Oyun sonsuz; sonsuz tip tasarlanamaz. 5-6 tipten sonra oyuncu yeniyi "yeni mekanik" olarak algılamayı bırakır. Yerine arketip + kat varyantı modeli (K17).
+Oyun sonlu ama uzundur (Kat N'e kadar çok kat; K26); yine de her kata elle yeni tip tasarlamak sürdürülemez. 5-6 tipten sonra oyuncu yeniyi "yeni mekanik" olarak algılamayı bırakır. Yerine arketip + kat varyantı modeli (K17).
 
 ### R3 — Saf unit ölümü, manuel re-diriltme (Model C)
 AFK'yi cezalandırır, idle mirasını yok eder. Yerine otomatik diriltme + üç ceza (K11). Kullanıcı da "%100 idle istemiyorum ama bu kadar da aktif değil" çizgisinde durdu.
