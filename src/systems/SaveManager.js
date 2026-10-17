@@ -123,9 +123,12 @@ const SaveManager = {
     try {
       const migrated = this._migrate(savedData);
       const gs = migrated.gameState || {};
-    // Resources
-    GameState.resources.soul = gs.resources?.soul || 0;
-    GameState.resources.bone = gs.resources?.bone || 0;
+    // Resources — 4 kaynak (soul + 3 meta). v6 ekonomisi; eksik yükleme bug'ı giderildi.
+    GameState.resources.soul    = gs.resources?.soul    || 0;
+    GameState.resources.bone    = gs.resources?.bone    || 0;
+    GameState.resources.essence = gs.resources?.essence || 0;
+    GameState.resources.crystal = gs.resources?.crystal || 0;
+    GameState.lifetimeSoul = gs.lifetimeSoul || 0; // onboarding tetiği (K19)
     // Wave
     Object.assign(GameState.wave, gs.wave || {});
     // Defenders

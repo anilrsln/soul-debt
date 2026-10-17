@@ -47,7 +47,7 @@ const GameState = {
   },
   achievements: { unlocked: [] },
   // soulRate/metaRate: oynarken ölçülen gerçek kazanım hızı (idle için kullanılır)
-  meta: { lastSaveTime: Date.now(), totalPlayTime: 0, saveVersion: 2, soulRate: 0, metaRate: 0, onboardingSeen: false },
+  meta: { lastSaveTime: Date.now(), totalPlayTime: 0, saveVersion: 6, soulRate: 0, metaRate: 0, onboardingSeen: false }, // saveVersion save anında CONFIG.SAVE_VERSION ile üzerine yazılır
 };
 
 /**

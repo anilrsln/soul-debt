@@ -19,12 +19,15 @@ const ConquestManager = {
     return node.requires.every(req => this.isUnlocked(req));
   },
 
-  /** Node satın alınabilir mi? (maliyet + gereksinim) */
+  /** Node satın alınabilir mi? (maliyet + gereksinim)
+   *  Maliyet herhangi bir kaynak kombinasyonu olabilir ({soul, bone, essence, crystal});
+   *  K21 unitUnlock node'ları geldiğinde çok-kaynaklı maliyetler de doğru kontrol edilir. */
   canPurchase(nodeId) {
     if (!this.isAvailable(nodeId)) return false;
     const node = CONFIG.CONQUEST_NODES[nodeId];
-    if (node.cost.soul && GameState.resources.soul < node.cost.soul) return false;
-    if (node.cost.bone && GameState.resources.bone < node.cost.bone) return false;
+    for (const [res, amt] of Object.entries(node.cost)) {
+      if ((GameState.resources[res] || 0) < amt) return false;
+    }
     return true;
   },
 
@@ -33,9 +36,10 @@ const ConquestManager = {
     if (!this.canPurchase(nodeId)) return false;
     const node = CONFIG.CONQUEST_NODES[nodeId];
 
-    // Kaynak harca
-    if (node.cost.soul) GameState.resources.soul -= node.cost.soul;
-    if (node.cost.bone) GameState.resources.bone -= node.cost.bone;
+    // Kaynak harca — maliyetteki tüm kaynaklar (soul/bone/essence/crystal)
+    for (const [res, amt] of Object.entries(node.cost)) {
+      GameState.resources[res] = (GameState.resources[res] || 0) - amt;
+    }
 
     // Node'u aç
     GameState.conquestMap.unlockedNodes.push(nodeId);
@@ -100,7 +104,7 @@ const ConquestManager = {
         break;
       }
       case 'incomeMultiplier': {
-        // Tüm geliri çarpan (exp + food) — economy multiplier üzerine ek katman
+        // Tüm geliri çarpan (soul + meta) — economy multiplier üzerine ek katman
         bonuses.incomeMultiplier = (bonuses.incomeMultiplier || 0) + effect.value;
         break;
       }
