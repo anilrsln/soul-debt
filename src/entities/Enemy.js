@@ -6,7 +6,7 @@ import EconomyManager from '../systems/EconomyManager.js';
 import ComboManager from '../systems/ComboManager.js';
 import AssetProvider from '../systems/AssetProvider.js';
 
-/** Enemy — Sağdan spawn, sola yürü, lava veya savunucu ölümü. */
+/** Enemy — Sağdan spawn, sola yürü, hat ihlali veya savunucu ölümü. */
 export default class Enemy {
   constructor(scene, type, waveNumber, laneY, options = {}) {
     // Pool sözleşmesi: tüm kurulum reset()'te; constructor tek yol kullanır.
@@ -115,9 +115,9 @@ export default class Enemy {
     this.updateHPBar();
     if (this.healConfig && enemies) this._updateHeal(delta, enemies);
     // Sur'a değince ödülsüz öl (savunucular ezip geçti sayılmaz)
-    if (this.sprite.x <= CONFIG.WALL_X - 14) { this.dieToWall(); return; }
-    // Lava: sur geçilip lavaya ulaşılırsa (normalde olmaz ama fallback)
-    if (this.sprite.x <= CONFIG.LAVA_X + 10) this.dieToLava();
+    // Hat ihlali: düşman sur hattını geçerse necromancer'a ulaşır (breachLine).
+    // Faz A: geçici olarak ödülsüz ölüm; necromancer'a hasar + soul-debt Faz C/D'de eklenir.
+    if (this.sprite.x <= CONFIG.WALL_X - 14) { this.breachLine(); return; }
   }
 
   /** Healer: periyodik olarak menzildeki (kendisi hariç) düşmanların HP'sini yeniler.
@@ -252,7 +252,7 @@ export default class Enemy {
     const exp = this.expReward * expMult;
     const food = this.foodReward * foodMult;
     this._grantRewards(exp, food, 'defender');
-    // Splitter: savunucu ile ölünce küçük çocuklara bölünür (lavada bölünmez)
+    // Splitter: savunucu ile ölünce küçük çocuklara bölünür (hat ihlalinde bölünmez)
     if (this.splitConfig && !this.noSplit) {
       const sc = this.splitConfig;
       this.scene.game.events.emit('enemy-split', {
@@ -268,8 +268,10 @@ export default class Enemy {
     this.hpBar.clear();
   }
 
-  /** Sura çarptı — ödül yok, sessizce yok ol. */
-  dieToWall() {
+  /** Hat ihlali — düşman hattı geçip necromancer'a ulaştı.
+   *  Faz A iskeleti: ödül yok, sessizce yok ol (eski dieToWall davranışı).
+   *  Faz C/D: necromancer'ın canından hasar + soul-debt bindirilecek. */
+  breachLine() {
     if (this.dying) return;
     this.dying = true; this.alive = false;
     // wave kotasına sayılır (spawn edildi), ama ödül verilmez
@@ -277,35 +279,14 @@ export default class Enemy {
     GameState.stats.totalEnemiesKilled++;
     this.scene.events.emit('enemy-killed', {
       type: this.type, exp: 0, food: 0,
-      x: this.sprite.x, y: this.sprite.y, killedBy: 'wall',
+      x: this.sprite.x, y: this.sprite.y, killedBy: 'breach',
     });
-    this.scene.game.events.emit('sfx', 'deathLava');
+    this.scene.game.events.emit('sfx', 'deathDefender');
     this.hpBar.clear();
     this.scene.tweens.add({
       targets: this.sprite, alpha: 0, scaleX: 0.5, scaleY: 0.5, duration: 250, ease: 'Power2',
       onComplete: () => { this.dying = false; }, // release: WaveManager havuza döndürür
     });
-  }
-
-  dieToLava() {
-    if (this.dying) return;
-    this.dying = true; this.alive = false;
-    // Lavaya düşen düşman KISMİ ödül verir. Varsayılan oran getLavaExpRate()
-    // (0.5); 'lavaConversion' Conquest node'u alınınca 0.8'e çıkar. Food sabit 0.5.
-    const dbg = CONFIG.DEBUG?.gainMultiplier ?? 1;
-    const expMult = GameState.prestige.multiplier * ConquestManager.getEconomyMultiplier('expMultiplier') * dbg * EconomyManager.getEconomyBoostMultiplier('expBoost');
-    const foodMult = GameState.prestige.multiplier * ConquestManager.getEconomyMultiplier('foodMultiplier') * dbg * EconomyManager.getEconomyBoostMultiplier('foodBoost');
-    const lavaRate = ConquestManager.getLavaExpRate(); // varsayılan 0.5; lavaConversion → 0.8
-    const exp = Math.floor(this.expReward * lavaRate * expMult);
-    const food = Math.floor(this.foodReward * 0.5 * foodMult);
-    this._grantRewards(exp, food, 'lava');
-    this.sprite.setTint(CONFIG.COLORS.LAVA);
-    const lavaY = CONFIG.CANVAS_HEIGHT - CONFIG.LAVA_HEIGHT + 10;
-    this.scene.tweens.add({
-      targets: this.sprite, y: lavaY, alpha: 0, scaleX: 0.5, scaleY: 0.3, duration: 400, ease: 'Power2',
-      onComplete: () => { this.dying = false; }, // release: WaveManager havuza döndürür
-    });
-    this.hpBar.clear();
   }
 
   _grantRewards(exp, food, killedBy) {
@@ -320,7 +301,7 @@ export default class Enemy {
       type: this.type, exp, food,
       x: this.sprite.x, y: this.sprite.y, killedBy,
     });
-    this.scene.game.events.emit('sfx', killedBy === 'lava' ? 'deathLava' : 'deathDefender');
+    this.scene.game.events.emit('sfx', 'deathDefender');
   }
 
   updateHPBar() {

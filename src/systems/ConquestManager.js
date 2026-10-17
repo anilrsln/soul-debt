@@ -99,11 +99,6 @@ const ConquestManager = {
         bonuses.bossBonus = (bonuses.bossBonus || 0) + effect.value;
         break;
       }
-      case 'lavaExpRate': {
-        // Lava ölümlerindeki EXP oranını override eder (0..1 arası oran)
-        bonuses.lavaExpRate = effect.value;
-        break;
-      }
       case 'incomeMultiplier': {
         // Tüm geliri çarpan (exp + food) — economy multiplier üzerine ek katman
         bonuses.incomeMultiplier = (bonuses.incomeMultiplier || 0) + effect.value;
@@ -147,11 +142,6 @@ const ConquestManager = {
   /** Boss'lara ek hasar çarpanı (1 + bonus). */
   getBossBonus() {
     return 1 + (GameState.conquestMap.bonuses.bossBonus || 0);
-  },
-
-  /** Lava EXP oranı (varsayılan 0.5; lavaConversion node'u 0.8 yapar). */
-  getLavaExpRate() {
-    return GameState.conquestMap.bonuses.lavaExpRate ?? 0.5;
   },
 
   /** Archer splash konfigürasyonu — null ise aktif değil. */

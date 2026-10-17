@@ -11,11 +11,9 @@ export const CONFIG = {
   CORRIDOR_TOP: 35,    // topbar (30px) hemen alti
   CORRIDOR_BOTTOM: 375,// alt UI panelinin (panelY=380) 5px ustunde biter
   LANE_COUNT: 5,       // toplam lane sayisi (tam oyun alani)
-  LAVA_X: 50,
   SPAWN_X: 780,
   LANE_Y: 250,
   LANE_HEIGHT: 200,
-  LAVA_HEIGHT: 60,
   DEFENDER_X: 100,
 
   // Kaydetme
@@ -76,7 +74,6 @@ export const CONFIG = {
   // Renk paleti
   COLORS: {
     WALL: 0x4a4a6a, WALL_TOP: 0x5a5a7a,
-    LAVA: 0xff4500, LAVA_GLOW: 0xff6a00,
     GROUND: 0x111120, GROUND_LIGHT: 0x2a2a48, GROUND_EDGE: 0x33335a,
     SKY: 0x1a1a2e, SKY_TOP: 0x15152a, SKY_BOTTOM: 0x1b1b33,
     LASER: 0x00ffff, ARCHER: 0x7cfc00, CANNON: 0xff8c00,
@@ -253,7 +250,6 @@ export const CONFIG = {
       archerFire:    { engine: 'tone',  type: 'triangle', freq: 880, freqEnd: 480, duration: 0.07, gain: 0.12, throttleMs: 45 },
       cannonFire:    { engine: 'noise', freq: 400, freqEnd: 60,  duration: 0.30, gain: 0.40, throttleMs: 60 },
       deathDefender: { engine: 'tone',  type: 'square',   freq: 420, freqEnd: 180, duration: 0.09, gain: 0.16, throttleMs: 25 },
-      deathLava:     { engine: 'noise', freq: 600, freqEnd: 120, duration: 0.22, gain: 0.22, throttleMs: 40 },
       upgrade:       { engine: 'tone',  type: 'sine',     freq: 660, freqEnd: 990, duration: 0.12, gain: 0.25 },
       hire:          { engine: 'sequence', type: 'sine', gain: 0.28, notes: [{ freq: 523, duration: 0.09 }, { freq: 784, duration: 0.12 }] },
       waveComplete:  { engine: 'sequence', type: 'triangle', gain: 0.26, notes: [{ freq: 523, duration: 0.10 }, { freq: 659, duration: 0.10 }, { freq: 784, duration: 0.14 }] },
@@ -363,19 +359,12 @@ export const CONFIG = {
       effect: { type: 'economy', stat: 'foodMultiplier', value: 0.3 },
       requires: ['foodBoost'], x: 100, y: 560,
     },
-    lavaConversion: {
-      id: 'lavaConversion', name: 'Lava Income Conversion',
-      description: 'Lava\'ya düşen düşmanlardan EXP verimi %50\'den %80\'e yükselir',
-      cost: { exp: 600 },
-      effect: { type: 'lavaExpRate', value: 0.8 },
-      requires: ['expMultiplier'], x: 280, y: 440,
-    },
     kingsDecree1: {
       id: 'kingsDecree1', name: "King's Decree I",
       description: '+40% tüm EXP ve Yiyecek kazanımı',
       cost: { exp: 1500 },
       effect: { type: 'incomeMultiplier', value: 0.4 },
-      requires: ['lavaConversion', 'foodBoost2'], x: 100, y: 680,
+      requires: ['foodBoost2'], x: 100, y: 680,
     },
     kingsDecree2: {
       id: 'kingsDecree2', name: "King's Decree II",

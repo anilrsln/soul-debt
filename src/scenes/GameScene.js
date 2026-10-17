@@ -19,7 +19,7 @@ import ObjectPool from '../systems/ObjectPool.js';
 
 /**
  * GameScene — Ana savaş alanı.
- * Duvar, lavalar, şeritler, savunucular, dalga yönetimi.
+ * Duvar, hat ihlali, şeritler, savunucular, dalga yönetimi.
  */
 export default class GameScene extends Phaser.Scene {
   constructor() { super({ key: 'GameScene' }); }
@@ -41,7 +41,6 @@ export default class GameScene extends Phaser.Scene {
     AssetProvider.createAnims(this);
     this.drawBackground();
     this.drawWall();
-    this.drawLava();
     this.drawLanes();
 
     // Savunucular
@@ -193,35 +192,6 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  drawLava() {
-    // Lava: lazer (WALL_X+40) hemen sağında, corridor boyunca dikey ateş şeridi
-    const laserX = CONFIG.WALL_X + 40;
-    const lavaW = 18;
-    const lavaCX = laserX + 22 + lavaW / 2;  // lazer sağından 22px boşluk (biraz daha sağa)
-    const lavaH = CONFIG.CORRIDOR_BOTTOM - CONFIG.CORRIDOR_TOP;
-    const lavaCY = CONFIG.CORRIDOR_TOP + lavaH / 2;
-
-    // CONFIG.LAVA_X'i runtime'da güncelle — Enemy trigger buradan okur
-    CONFIG.LAVA_X = Math.round(lavaCX - lavaW / 2);
-
-    this.lavaRect = this.add.rectangle(
-      lavaCX, lavaCY, lavaW, lavaH, CONFIG.COLORS.LAVA
-    ).setDepth(3).setAlpha(0.75);
-
-    this.tweens.add({
-      targets: this.lavaRect, alpha: 0.45,
-      duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
-    });
-
-    // Glow: sağ tarafında ince şerit
-    const glowRect = this.add.rectangle(
-      lavaCX + lavaW / 2 + 3, lavaCY, 6, lavaH, CONFIG.COLORS.LAVA_GLOW
-    ).setDepth(3).setAlpha(0.4);
-    this.tweens.add({
-      targets: glowRect, alpha: 0.12,
-      duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
-    });
-  }
 
   drawLanes() {
     const g = this.add.graphics().setDepth(1);
@@ -364,8 +334,8 @@ export default class GameScene extends Phaser.Scene {
 
   /** Basit ölüm parçacık efekti. */
   spawnDeathParticles(x, y, killedBy) {
-    const color = killedBy === 'lava' ? CONFIG.COLORS.LAVA : 0xffffff;
-    const count = killedBy === 'lava' ? 4 : 6;
+    const color = killedBy === 'breach' ? 0xcc3333 : 0xffffff;
+    const count = 6;
     for (let i = 0; i < count; i++) {
       const px = x + (Math.random() - 0.5) * 10;
       const py = y + (Math.random() - 0.5) * 10;
