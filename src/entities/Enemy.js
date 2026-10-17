@@ -3,7 +3,6 @@ import GameState from '../state/GameState.js';
 import { calculateEnemyHP, calculateEnemySoul } from '../utils/MathUtils.js';
 import ConquestManager from '../systems/ConquestManager.js';
 import EconomyManager from '../systems/EconomyManager.js';
-import ComboManager from '../systems/ComboManager.js';
 import AssetProvider from '../systems/AssetProvider.js';
 
 /** Enemy — Sağdan spawn, sola yürü, hat ihlali veya savunucu ölümü. */
@@ -244,12 +243,9 @@ export default class Enemy {
   dieToDefender() {
     if (this.dying) return;
     this.dying = true; this.alive = false;
-    // Combo: savunucu ile öldürmek combo'yu besler ve ödülü çarpar
-    ComboManager.registerKill();
-    const comboMult = ComboManager.getMultiplier();
     const dbg = CONFIG.DEBUG?.gainMultiplier ?? 1;
-    const soulMult = GameState.prestige.multiplier * ConquestManager.getEconomyMultiplier('soulMultiplier') * dbg * EconomyManager.getEconomyBoostMultiplier('soulBoost') * comboMult;
-    const metaMult = GameState.prestige.multiplier * ConquestManager.getEconomyMultiplier('metaMultiplier') * dbg * EconomyManager.getEconomyBoostMultiplier('metaBoost') * comboMult;
+    const soulMult = GameState.prestige.multiplier * ConquestManager.getEconomyMultiplier('soulMultiplier') * dbg * EconomyManager.getEconomyBoostMultiplier('soulBoost');
+    const metaMult = GameState.prestige.multiplier * ConquestManager.getEconomyMultiplier('metaMultiplier') * dbg * EconomyManager.getEconomyBoostMultiplier('metaBoost');
     const soul = this.soulReward * soulMult;
     const meta = this.metaReward * metaMult;
     this._grantRewards(soul, meta, 'defender');

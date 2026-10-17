@@ -45,7 +45,7 @@ AchievementManager.init(game);
  * MenuScene gibi 'data' ile başlatılan sahnelerde mevcut data yeniden verilir.
  */
 onLocaleChange(() => {
-  // GameScene'i YENİDEN BAŞLATMA — create() WaveManager'ı ve combo'yu sıfırlar,
+  // GameScene'i YENİDEN BAŞLATMA — create() WaveManager'ı sıfırlar,
   // bu da dalga ilerlemesini kaybettirir. Onun kalıcı metinleri UIScene'de;
   // geçici floating text'ler bir sonraki olayda zaten yeni dilde gelir.
   // Sadece arayüz sahnelerini yeniden çiz.

@@ -4,7 +4,6 @@ import WaveManager from '../systems/WaveManager.js';
 import IdleManager from '../systems/IdleManager.js';
 import SaveManager from '../systems/SaveManager.js';
 import AchievementManager from '../systems/AchievementManager.js';
-import ComboManager from '../systems/ComboManager.js';
 import LaserMonument from '../entities/LaserMonument.js';
 import Archer from '../entities/Archer.js';
 import Cannon from '../entities/Cannon.js';
@@ -65,9 +64,6 @@ export default class GameScene extends Phaser.Scene {
     this.game.events.off('crit-hit', this.onCritHit, this);
     this.game.events.on('crit-hit', this.onCritHit, this);
     this.events.once('shutdown', () => this.game.events.off('crit-hit', this.onCritHit, this));
-
-    // Combo yeni oyun/sahne başında sıfır
-    ComboManager.reset();
 
     // Dev panel: belirli bir wave'e atla
     this.game.events.off('dev-jump-wave', this.onDevJumpWave, this);
@@ -239,9 +235,6 @@ export default class GameScene extends Phaser.Scene {
 
     // Floating text güncelleme
     this.updateFloatingTexts(delta);
-
-    // Combo penceresi
-    ComboManager.update(delta);
 
     // Başarım kontrolü (gerçek zamanlı ~1 sn'de bir)
     this._achvTimer = (this._achvTimer ?? 0) - deltaMs / 1000;

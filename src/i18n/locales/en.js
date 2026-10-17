@@ -7,7 +7,6 @@ export default {
     enemies: 'E: {killed}/{total}',
     fps: '{n} FPS',
     prestigeMult: '✦{n}x',
-    combo: 'x{n} COMBO  (+{pct}%)',
     mapBtn: '⚔ MAP',
     prestigeBtn: '✦ PRESTIGE',
     tab: {

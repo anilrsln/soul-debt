@@ -8,7 +8,6 @@ export default {
     enemies: 'D: {killed}/{total}',
     fps: '{n} FPS',
     prestigeMult: '✦{n}x',
-    combo: 'x{n} KOMBO  (+{pct}%)',
     mapBtn: '⚔ HARİTA',
     prestigeBtn: '✦ PRESTIGE',
     // Sekmeler

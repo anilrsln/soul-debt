@@ -4,7 +4,6 @@ import { formatNumber } from '../utils/NumberFormatter.js';
 import UpgradeManager from '../systems/UpgradeManager.js';
 import EconomyManager from '../systems/EconomyManager.js';
 import PrestigeManager from '../systems/PrestigeManager.js';
-import ComboManager from '../systems/ComboManager.js';
 import { t, toggleLocale, getLocale } from '../i18n/index.js';
 
 /**
@@ -28,12 +27,6 @@ export default class UIScene extends Phaser.Scene {
     this.enemyText = this.add.text(480, 5, '', this.textStyle(11, '#aaaaaa')).setDepth(101);
     this.prestigeText = this.add.text(560, 5, '', this.textStyle(10, '#9b59b6')).setDepth(101);
     this.fpsText = this.add.text(720, 5, '', this.textStyle(11, '#666666')).setDepth(101);
-
-    // Combo göstergesi (saha üstü, ortada)
-    this.comboText = this.add.text(CONFIG.CANVAS_WIDTH / 2, 48, '', {
-      fontSize: '20px', fontFamily: 'monospace', color: '#ff8800',
-      stroke: '#000', strokeThickness: 3,
-    }).setOrigin(0.5).setDepth(120).setAlpha(0);
 
     // Wave progress bar (top bar altı)
     this.waveProgressBg = this.add.rectangle(CONFIG.CANVAS_WIDTH / 2, 31, CONFIG.CANVAS_WIDTH, 3, 0x333333, 0.6).setDepth(100);
@@ -120,40 +113,6 @@ export default class UIScene extends Phaser.Scene {
     this.game.events.on('achievement-unlocked', this.showAchievementToast, this);
     this.events.once('shutdown', () => this.game.events.off('achievement-unlocked', this.showAchievementToast, this));
 
-    // Wave milestone bildirimi
-    const gs2 = this.scene.get('GameScene');
-    gs2.events.on('wave-milestone', this.showMilestoneToast, this);
-    this.events.once('shutdown', () => gs2.events.off('wave-milestone', this.showMilestoneToast, this));
-  }
-
-  /** Wave milestone ödülü bildirimi. */
-  showMilestoneToast(data) {
-    if (this._milestoneToast) this._milestoneToast.forEach(e => e.destroy());
-    const cx = CONFIG.CANVAS_WIDTH / 2, y = 100;
-    const isBig = data.isBig;
-    const borderColor = isBig ? 0xffd700 : 0x66ccff;
-    const titleTxt = isBig ? `🌟 Büyük Milestone! Dalga ${data.wave}` : `⚡ Milestone! Dalga ${data.wave}`;
-    const rewardTxt = `+${formatNumber(data.soul)} 👻  +${formatNumber(data.meta)} 🦴`;
-    const bgColor = isBig ? 0x1a1000 : 0x001a1a;
-    const bg = this.add.rectangle(cx, y, 320, isBig ? 52 : 46, bgColor, 0.97).setDepth(252).setStrokeStyle(2, borderColor);
-    const title = this.add.text(cx, y - 10, titleTxt, this.textStyle(isBig ? 13 : 12, isBig ? '#ffd700' : '#66ccff')).setOrigin(0.5).setDepth(253);
-    const reward = this.add.text(cx, y + 10, rewardTxt, this.textStyle(11, '#ffffff')).setOrigin(0.5).setDepth(253);
-    const els = [bg, title, reward];
-    this._milestoneToast = els;
-    els.forEach(e => e.setAlpha(0));
-    this.tweens.add({ targets: els, alpha: 1, duration: 300 });
-    if (isBig) {
-      // Büyük milestone için hafif pulse animasyonu
-      this.tweens.add({ targets: bg, scaleX: 1.04, scaleY: 1.04, duration: 200, yoyo: true, repeat: 2, ease: 'Sine.easeInOut' });
-    }
-    const dur = isBig ? 4000 : 3000;
-    this.time.delayedCall(dur, () => {
-      this.tweens.add({
-        targets: els, alpha: 0, duration: 500,
-        onComplete: () => els.forEach(e => e.destroy()),
-      });
-      if (this._milestoneToast === els) this._milestoneToast = null;
-    });
   }
 
   /** Başarım açıldığında üstte kısa bir bildirim. */
@@ -509,16 +468,6 @@ export default class UIScene extends Phaser.Scene {
       this.prestigeText.setText('');
     }
     this.fpsText.setText(t('ui.fps', { n: Math.round(this.game.loop.actualFps) }));
-
-    // Combo göstergesi — 2+ combo'da görünür, pencere azaldıkça soluklaşır
-    const combo = ComboManager.getCombo();
-    if (combo >= 2) {
-      const mult = ComboManager.getMultiplier();
-      this.comboText.setText(t('ui.combo', { n: combo, pct: Math.round((mult - 1) * 100) }));
-      this.comboText.setAlpha(0.35 + 0.65 * ComboManager.getTimerFraction());
-    } else {
-      this.comboText.setAlpha(0);
-    }
 
     // Flash efektleri
     if (this.soulFlashTimer > 0) {

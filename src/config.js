@@ -42,10 +42,13 @@ export const CONFIG = {
     jumpWaveTarget: 10, // "wave'e atla" hedefi
   },
 
-  // Savaş: kritik vuruş + combo (kill-streak ödül çarpanı)
+  // Savaş: kritik vuruş.
+  // NOT (K32): combo (kill-streak ödül çarpanı) Soul Debt kurgusuna aykırı olduğu için
+  //   kaldırıldı (refleks ödülü; K4/K9 planlama kimliği + K12 soul matematiğiyle çelişir).
+  //   crit PARK EDİLDİ: ekonomiye dokunmuyor (yalnız hasar varyansı), dur-dövüş savaş
+  //   modeli (Faz E) oturunca tutulacak/değiştirilecek. Şimdilik çalışır halde bırakıldı.
   COMBAT: {
-    crit: { chance: 0.15, multiplier: 2.0 }, // mermi savunucuları (archer/cannon)
-    combo: { window: 2.5, bonusPerKill: 0.03, maxBonus: 1.0 }, // +%3/kill, cap +100%, 2.5sn pencere
+    crit: { chance: 0.15, multiplier: 2.0 }, // mermi savunucuları (archer/cannon) — PARK (bkz. K32)
   },
 
   // Görsel efekt (juice) anahtarları
@@ -231,17 +234,6 @@ export const CONFIG = {
     typeUnlocks: { skeleton: 1, armored: 5, fast: 8, foodCarrier: 3, elite: 15, shield: 10, splitter: 12, healer: 14 },
   },
 
-  // Wave milestone ödülleri — her milestoneInterval wave'de bir bonus
-  // bigMilestoneEvery: bu katında 'büyük' milestone (3x çarpan)
-  // soulBonus/metaBonus: o anki gelir oranına göre kaç saniyelik bonus
-  MILESTONE: {
-    milestoneInterval: 25,   // her 25. wave'de milestone
-    bigMilestoneEvery: 2,    // her 2. milestone (50, 100, …) büyük milestone
-    soulBonus: 60,           // 60 saniyelik soul kazancı
-    metaBonus: 60,           // 60 saniyelik meta kazancı
-    bigMultiplier: 3,        // büyük milestone'da 3x
-  },
-
   // Prestige
   PRESTIGE: { multiplierPerPrestige: 0.5 },
 
@@ -266,8 +258,6 @@ export const CONFIG = {
       mapOpen:       { engine: 'tone',  type: 'sine',     freq: 440, freqEnd: 660, duration: 0.10, gain: 0.18 },
       frostFire:     { engine: 'tone',  type: 'sine',     freq: 880, freqEnd: 1200, duration: 0.08, gain: 0.14, throttleMs: 50 },
       boulderFire:   { engine: 'noise', freq: 200, freqEnd: 40,  duration: 0.45, gain: 0.35, throttleMs: 80 },
-      milestone:     { engine: 'sequence', type: 'sine', gain: 0.32, notes: [{ freq: 659, duration: 0.09 }, { freq: 784, duration: 0.09 }, { freq: 1047, duration: 0.18 }] },
-      bigMilestone:  { engine: 'sequence', type: 'triangle', gain: 0.36, notes: [{ freq: 523, duration: 0.09 }, { freq: 659, duration: 0.09 }, { freq: 784, duration: 0.09 }, { freq: 1047, duration: 0.09 }, { freq: 1319, duration: 0.22 }] },
     },
   },
 

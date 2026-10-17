@@ -151,6 +151,16 @@ Gerekçe: çok-metalı maliyet daha zengin build baskısı yaratır ("bu birimi 
 ### K30 — Birim örme maliyeti: serbest çoklu-meta
 Bir birim örme maliyeti soul + **herhangi sayıda meta** olabilir (tek meta zorunlu değil — önceki K22 "tek-meta" varsayımı kaldırıldı). Örnekler: İskelet Bruiser/Okçu = soul + bone; Taş Golem = soul + essence; Hasar Büyücüsü ve Healer Büyücü = soul + bone + essence (iki meta). Gerekçe: çoklu-meta "bu birimi örmek için hem bone hem essence biriktirmeliyim" build baskısı yaratır — K3'ün stratejik eksen fikrini güçlendirir. Config yapısı: her birimde `craftCost: { soul, bone?, essence?, crystal? }` (hangisi varsa). Değerler ve meta kombinasyonları placeholder; playtest'te değişir (MVP başlangıç önerisi: 3 bone-ağırlıklı + 2 essence-ağırlıklı birim, iki büyücü bone+essence karması). Diriltme hâlâ YALNIZ soul (K29); meta yalnız örmede.
 
+
+### K31 — Yabancı klon sistemleri temizliği: combo kaldırıldı, milestone kaldırıldı
+Klon kökünden miras kalan iki sistem Soul Debt kurgusuna aykırı bulunup söküldü (kod işi, 2026-10-17):
+- **ComboManager (kill-streak ödül çarpanı) — KALDIRILDI.** Combo bir *refleks/akış* ödülüydü ("pencere kapanmadan art arda öldür, çarpanı büyüt"). Soul Debt kimliği planlama + dur-dövüş + idle-güvenli (K4/K9). Dur-dövüşte (düşman birime çarpıp durur) öldürmeler düzensiz aralığa yayılır, 2.5sn combo penceresi çoğu zaman boş döner — mekanik zaten anlamını yitiriyordu. Daha önemlisi: soul evrensel kaynak (K12) ve diriltme maliyeti ona bağlı; combo soul'u şişirince K12'nin risk/ödül matematiği bozuluyordu. `ComboManager.js` silindi; Enemy ekonomi çarpanından `comboMult` çıkarıldı; GameScene/UIScene/config/i18n/main referansları temizlendi.
+- **MILESTONE (her 25/50/100 wave'de soul/meta bonusu) — KALDIRILDI.** "Her N wave" = sonsuz-wave varsayımı; K26 oyunu sonlu yaptı (10 wave = 1 kat, tanrı Kat N'de). Milestone kat ritmini (K7) yok sayıp paralel bir ödül takvimi işletiyordu; ayrıca "60 saniyelik gelir bonusu" pasif-gelir mantığı (Soul Debt'te gelir öldürmeden gelir). Ödül yeri = kat-sonu (K7: can full + kurulum fazı). config MILESTONE + milestone/bigMilestone SFX, WaveManager bloğu, UIScene toast + event kaldırıldı.
+
+### K32 — Crit PARK, Achievements içeriği Faz G'ye ertelendi
+- **Kritik vuruş (crit) — PARK EDİLDİ (kaldırılmadı).** Combo'nun aksine crit ekonomiye dokunmaz (yalnız archer/cannon mermilerinde hasar varyansı). Dur-dövüş savaş modeli (Faz E) oturmadan silmek erken/gereksiz iş olurdu. config `COMBAT.crit` ve ilgili kod (Defender.rollDamage, Projectile.isCrit, Enemy._critFlash, GameScene.onCritHit) çalışır halde bırakıldı; Faz E'de yeni savaş modeline göre tutulacak veya değiştirilecek.
+- **ACHIEVEMENTS — SİSTEM TUTULDU, içerik Faz G'ye ertelendi.** AchievementManager + UI sağlam ve ölü değil. Ama içerik eski kurguya bağlı: `wave50/wave100` sonsuz-wave varsayımı (K26 ile çelişir), `cannonUnlock/archerFull` eski kadroya (K22'de değişecek) bağlı. Şimdi silinmedi/yeniden yazılmadı — Faz G'de kadro + kat + soul-debt kurgusu oturunca Soul Debt'e özgü başarımlarla (necromancer ölümü, ilk tanrı, N. kat, soul-debt zirvesi vb.) doldurulacak.
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)
