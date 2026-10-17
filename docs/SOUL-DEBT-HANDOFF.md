@@ -28,7 +28,8 @@ Repo'nun docs/ klasöründeki dosyalar tüm tasarımı içerir — başka yere b
 ## Çekirdek Tasarım (özet — detay DESIGN'da)
 - Ekonomi: SOUL (evrensel kaynak, eski EXP; düşman değeri + birim gücü + tüm
   harcamalar) + 3 meta: Bone/Essence/Crystal (birim TİPİ açar). Birim ÖRMEK soul
-  ister (Model 2). Level gate YOK; node'lar yalnız soul + prerequisite.
+  ister — örme = soul + o birimin meta'sı (Model 3); tip açma node'dan.
+  Level gate YOK; node'lar yalnız soul + prerequisite.
 - Ritim: 10 wave = 1 kat. Kat sonu: necromancer canı full + kat-arası kurulum fazı
   (dizilim değiştir, birim ekle/absorbe). En dip = tanrı = gönüllü prestige.
 - Savaş: DUR-DÖVÜŞ (düşman birime varınca durur, karşılıklı HP) → ön/arka saf.

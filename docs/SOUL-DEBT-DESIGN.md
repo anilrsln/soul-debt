@@ -61,27 +61,29 @@ Soul oyunun merkezi ve evrensel birimidir. Eski EXP'nin yerini alır, ancak kaps
 
 ### 5.2 Dungeon Meta'ları
 
-Soul'un yanında üç meta kaynağı bulunur. Bunlar eski Food kaynağının yerini alır ve genişletir. Meta'lar birim *örmez*; birim **tiplerinin kilidini açar**. Bir birim tipini ilk kez açmak için ilgili meta harcanır. Tip açıldıktan sonra o tipten tek tek birim örmek soul ister (bkz. 5.2b). Her meta farklı bir düşman grubundan düşer ve farklı bir stratejik ekseni temsil eder.
+Soul'un yanında üç meta kaynağı bulunur. Bunlar eski Food kaynağının yerini alır ve genişletir. Meta'lar birim tipi *açmaz* (açma node'dan, soul ile olur — bkz. 5.2b); meta, bir birimi her **örerken** soul'un yanında harcanan ikincil kaynaktır. Her birim tipi belirli bir meta'ya bağlıdır: o tipten birim örmek o meta'yı tüketir. Her meta farklı bir düşman grubundan düşer ve farklı bir stratejik ekseni temsil eder.
 
-| Meta | Kaynak | Açtığı | Stratejik eksen |
-|------|--------|--------|-----------------|
-| **Bone** | Yaygın düşmanların çoğu | Temel birim tipleri, erken node'lar | Hacim: çok topla, geniş ordu kur |
-| **Essence** | Nadir ve özel düşmanlar (kalkanlı, iyileştiren, elite) | Üst seviye birim tipleri, orta node'lar | Seçicilik: zor düşman öldür, kaliteli tip aç |
-| **Crystal** | Yalnızca kat bekçileri (boss) | En üst seviye birim tipleri, geç node'lar, prestige | Kilometre taşı: boss'a ulaş, elit güç aç |
+| Meta | Kaynak | Bağlı birimler | Stratejik eksen |
+|------|--------|----------------|-----------------|
+| **Bone** | Yaygın düşmanların çoğu | Temel birim tipleri | Hacim: çok topla, geniş ordu ör |
+| **Essence** | Nadir ve özel düşmanlar (kalkanlı, iyileştiren, elite) | Üst seviye birim tipleri | Seçicilik: zor düşman öldür, elit birim örmeyi sürdür |
+| **Crystal** | Yalnızca kat bekçileri (boss) | En üst seviye birim tipleri, prestige | Kilometre taşı: boss'a ulaş, elit güç besle |
 
-Bu yapı stratejiktir çünkü hangi düşmanı önceliklendirdiğin hangi meta'yı biriktirdiğini belirler, o da hangi birim tiplerini açabildiğini belirler. "Bone ordusu mu, Essence elitleri mi?" bir build kararıdır.
+Bu yapı stratejiktir çünkü hangi düşmanı önceliklendirdiğin hangi meta'yı biriktirdiğini belirler, o da hangi birim tiplerini *örmeyi sürdürebildiğini* belirler. Meta tek seferlik bir eşik değil, süregiden bir talep olduğundan (Model 3) "Bone ordusu mu, Essence elitleri mi?" kararı oyun boyu canlı kalır.
 
-### 5.2b Birim Yaratma Ekonomisi (Model 2)
+### 5.2b Birim Yaratma Ekonomisi (Model 3)
 
-Bir birim soul'dan örülür, bu yüzden birim örmek soul harcar. Bu, 5.1'deki "soul birimin yapısında" ilkesinin doğrudan sonucudur: necromancer ruhtan beden örer.
+> Not: Bu bölüm eski "Model 2"nin (tip açma = tek-seferlik meta) yerine geçer. Gerekçe: DECISIONS K18 + R13. Tek-seferlik meta kapısı meta'yı erken ölü kaynağa çeviriyordu.
 
-Sonuç olarak oyuncunun temel günlük kararı tek kaynak üzerinden netleşir: **"soul'umu bir node'a mı, yoksa yeni bir birim örmeye mi harcayayım?"** Diriltme de soul'dan gittiği için (birim öldüğünde onu yeniden örmek), tüm birim-ilişkili maliyetler tek ve tutarlı bir mantıkta toplanır: soul = birimin ruhu; onu yaratmak da diriltmek de soul yakar.
+Bir birim soul'dan örülür, bu yüzden birim örmek soul harcar — bu, 5.1'deki "soul birimin yapısında" ilkesinin doğrudan sonucudur: necromancer ruhtan beden örer. Ancak birim örmek yalnız soul değil, o birimin meta'sından da az miktarda tüketir. Böylece meta'nın kalıcı bir talebi olur ve oyun ilerledikçe ölü kaynağa dönüşmez.
 
-Meta yalnızca "o birim tipini açma" aşamasında, daha seyrek devreye girer. Yani:
+Üç ayrı eylem, üç ayrı maliyet:
 
-- **Birim tipini açmak** → meta (Bone / Essence / Crystal), bir kez.
-- **O tipten birim örmek** → soul, her seferinde.
+- **Birim tipini açmak** → Conquest **node'u** (soul + prerequisite node), bir kez. Meta harcanmaz. Açma, ayrı bir "birim mağazası" değil; node ağacının — oyunun tek ilerleme omurgasının — bir parçasıdır (DECISIONS K21).
+- **O tipten birim örmek** → **ağır soul + az o-birimin-meta'sı** (Bone / Essence / Crystal), her seferinde.
 - **Ölen birimi diriltmek** → soul (+ soul-debt), her seferinde.
+
+Meta oranı "soul ağır + az meta" olarak ayarlanır: örme meta'yı yavaş ama sürekli tüketir, dar boğaz değil kalıcı bir baskı yaratır. Oyuncunun temel kararı hâlâ nettir — **"soul'umu bir node'a mı, yeni bir birim örmeye mi harcayayım?"** — ama artık ikincil bir eksen taşır: "essence-birimlerini örmeye devam edebilmek için yeterli essence topluyor muyum?" Bu, "bone ordusu mu essence elitleri mi?" build kararını (5.2) oyun boyu canlı tutar.
 
 ### 5.3 Soul'un İkili Rolü ve Onboarding
 
@@ -93,7 +95,7 @@ Oyuncu ilk kez ilk node'u almaya yetecek lifetime soul eşiğini geçtiğinde, o
 
 ### 6.1 Dur-Dövüş
 
-Düşman bir birime ulaştığında durur ve karşılıklı dövüşürler. İkisi de HP kaybeder, biri ölene kadar. Bu, ön saf ve arka saf oyununu anlamlı kılar: dayanıklı bir tank birimi önde düşmanı bloklar, hasar veren birimler arkada güvenle vurur. Bu nedenle 8 birimlik kadroda en az bir veya iki blokçu/tank arketipi bulunması zorunludur.
+Düşman bir birime ulaştığında durur ve karşılıklı dövüşürler. İkisi de HP kaybeder, biri ölene kadar. Bu, ön saf ve arka saf oyununu anlamlı kılar: dayanıklı bir tank birimi önde düşmanı bloklar, hasar veren birimler arkada güvenle vurur. Bu nedenle kadroda en az bir blokçu/tank arketipi bulunması zorunludur (MVP'de bu rol Taş Golem; bkz. 8.1).
 
 ### 6.2 Dizilim
 
@@ -145,9 +147,27 @@ Boss fight bu açıdan özel değildir. Necromancer boss katında ölürse: koş
 
 ## 8. Kadro
 
-### 8.1 Birimler (8 adet)
+### 8.1 Birimler (MVP: 5 adet; hedef kadro sonra genişler)
 
-Tüm birimler yeniden tasarlanır. Kadroda en az bir veya iki blokçu/tank arketipi zorunludur (dur-dövüş gereği). Birim *tipleri* üç meta kademesine dağılır (örnek dağılım: 3 tip Bone ile, 3 tip Essence ile, 2 tip Crystal ile açılır). Açıldıktan sonra her tipten birim soul ile örülür. Her birimin bir soul-kapasitesi vardır ve bu kapasite gücünü, dayanıklılığını ve diriltme maliyetini belirler. Birimlerin tam listesi ve rolleri bir sonraki tasarım adımında detaylandırılır.
+Çekirdek önce çalışsın diye MVP 5 birimle başlar (8 değil); eksik görülürse eklenir (DECISIONS K22). Dağılım rol-merkezlidir ve dur-dövüşün dört ihtiyacını karşılar: blokla / tek-hedef-erit / kalabalık-biç / ayakta-tut. Her birimin bir soul-kapasitesi vardır; bu kapasite gücünü, dayanıklılığını ve diriltme maliyetini belirler. Birim *tipleri* node ağacından açılır (soul); açıldıktan sonra her tipten birim soul + o birimin meta'sıyla örülür (Model 3, 5.2b).
+
+| # | Birim (çalışma adı) | Rol | Soul-kapasite | Örme meta'sı |
+|---|---|---|---|---|
+| 1 | İskelet Bruiser | Ön-saf hasar/blok karışımı — yarı-tank ama pasif durmaz, döver | Orta-yüksek | Bone |
+| 2 | İskelet Okçu | Uzak tek-hedef DPS — ucuz, çok öl-dirilt, borç düşük | Düşük | Bone |
+| 3 | Hasar Büyücüsü | Alan hasarı (AoE) — kalabalık dalgaları biçer | Orta | Bone |
+| 4 | Healer Büyücü | Destek — birim HP yenileme, ön safı ayakta tutar | Orta | Essence |
+| 5 | Taş Golem | Asıl tank — taunt ile birden çok düşmanın ilgisini çeker, aynı anda birkaçıyla dövüşür | Yüksek | Essence |
+
+**Meta dağılımı (MVP):** 3 Bone + 2 Essence. Crystal MVP'de kullanılmaz (yalnız kat bekçilerinden düşer, boss sistemi geç faz). Böylece oyuncu ilk boss'a ulaşmadan tüm MVP kadrosunu açabilir.
+
+**Rol mantığı:** Taş Golem taunt'la 2-3 düşmanı tutarken arkadaki okçu (2) ve büyücü (3) güvenle vurur; bruiser (1) golemin yanında ön safı destekler veya golem düşerse boşluğu tutar; healer (4) ön safı ayakta tutarak dur-dövüşü sürdürülebilir kılar. Beş birim beş ayrı iş yapar, hiçbiri fazlalık değildir.
+
+**Healer dengesi (izlenecek):** Healer birim-HP'sini yeniler, necromancer canını değil — yani hat-ihlali cezası (6.5) ve soul-debt (6.4) işlemeye devam eder; healer yalnız birim ölüm sıklığını düşürür. Klasik ve gerekli bir TD rolü, ama playtest'te "healer ölüm cezasını tümden siliyor mu?" diye bakılır.
+
+**Golem taunt'u (teknik uyarı):** Çoklu-hedef taunt, dur-dövüş kodunun en karmaşık parçasıdır (bir birim ↔ birden çok düşman eşleşmesi; normal model 1↔1'dir). Faz E'yi ağırlaştırır. MVP'de taunt basit tutulur (golem tek düşman tutar + çok yüksek HP); çoklu-hedef taunt çekirdek çalışır hale gelince açılır.
+
+**Sonraki kadro adayları (park):** Diriltici/Çürütücü tipi ikinci destek ve Crystal-kademe elit birimler, çekirdek çalıştıktan sonra playtest ile değerlendirilir.
 
 ### 8.2 Düşmanlar (Arketip + Kat Varyantı Modeli)
 
@@ -169,7 +189,7 @@ Kat-arası kurulum fazında oyuncu bir birimi geri emebilir (absorbe). Bu absorb
 
 **Korunan (~%70):** Sahne mimarisi (Boot/Menu/Game/UI/Conquest), manager sistemi, WaveManager, EconomyManager, UpgradeManager, ConquestManager, object pooling, i18n altyapısı, save/load, prestige iskeleti, idle gelir, combo, achievement, syncDefenders deseni, projectile sistemi.
 
-**Değişen veya yeni:** Ölüm ve ödül mantığı (tamamen yeniden), para birimleri (EXP→Soul, Food→üç meta), tema ve asset (tamamen yeni), necromancer varlığı ve canı (yeni), soul-debt sistemi (yeni), dur-dövüş ve lane-blocking (yeni), oyuncu-dizilimli kurulum fazı (yeni), kat döngüsü ritmi (yeni), Model 2 birim ekonomisi (yeni).
+**Değişen veya yeni:** Ölüm ve ödül mantığı (tamamen yeniden), para birimleri (EXP→Soul, Food→üç meta), tema ve asset (tamamen yeni), necromancer varlığı ve canı (yeni), soul-debt sistemi (yeni), dur-dövüş ve lane-blocking (yeni), oyuncu-dizilimli kurulum fazı (yeni), kat döngüsü ritmi (yeni), Model 3 birim ekonomisi (yeni).
 
 **Kaldırılan:** Lava mekaniği tamamen kaldırılır. `dieToLava()`, `dieToWall()`, `getLavaExpRate()`, `drawLava()` ve `CONFIG.LAVA_X` runtime override silinir. Bunların yerini tek bir "hat ihlali" olayı alır (düşman WALL_X'i geçer, necromancer'a ulaşır).
 
@@ -189,4 +209,4 @@ Bu fikirler kayıt altındadır ancak çekirdek çalışır hale gelene kadar ta
 
 - **4-sayaç UI düzeni:** Soul ve üç meta ekranda dört sayaç demektir. Ekran kalabalığı yönetilmeli.
 - **Save uyumluluğu:** Ekonomi ve mekanik baştan değiştiği için eski save'ler uyumsuzdur. Save version bump ve temiz başlangıç gerekir. Tek oyuncu olduğundan risk düşüktür.
-- **i18n lore yükü:** 8 birim, yaklaşık 12 düşman arketipi, kat temaları, boss banner'ları ve bestiary hem TR hem EN yazılacaktır. Mizah birebir çevrilemez, iki dil ayrı yazılır. Bu ayrı bir iş kalemidir ve kendi fazını hak eder.
+- **i18n lore yükü:** MVP'de 5 birim (hedef kadro sonra genişler), yaklaşık 12 düşman arketipi, kat temaları, boss banner'ları ve bestiary hem TR hem EN yazılacaktır. Mizah birebir çevrilemez, iki dil ayrı yazılır. Bu ayrı bir iş kalemidir ve kendi fazını hak eder.

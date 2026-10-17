@@ -62,9 +62,9 @@ Bu, kodun en çetrefilli ve en çok oturum-notu biriktirmiş kısmı. Soul Debt'
 ## 2. DEĞİŞECEK — Ekonomi (EXP→Soul, Food→3 Meta)
 
 - `GameState.js`: `resources.exp` → `resources.soul`; `resources.food` → `resources.bone`, `resources.essence`, `resources.crystal`. `lifetimeSoul` sayacı ekle (onboarding tetiği, bkz. DESIGN 5.3).
-- `EconomyManager.js`: EXP kazanım/harcama → soul. Food kazanım → meta drop (düşman tipine göre bone/essence/crystal). Hire mantığı Model 2'ye göre yeniden yaz (tip açma = meta; birim örme = soul — bkz. DESIGN 5.2b).
+- `EconomyManager.js`: EXP kazanım/harcama → soul. Food kazanım → meta drop (düşman tipine göre bone/essence/crystal). Hire mantığı Model 3'e göre yeniden yaz (tip açma = node/soul; birim örme = soul + o birimin meta'sı — bkz. DESIGN 5.2b / DECISIONS K18).
 - `UpgradeManager.js`: maliyet kaynağı EXP→soul. Formüller aynı (`baseCost × 1.15^level`).
-- `ConquestManager.js`: node maliyetleri soul (+ meta gereken tip-unlock node'ları). Level gate yok (DECISIONS K2).
+- `ConquestManager.js`: node maliyetleri soul. Yeni `unitUnlock` node türü ekle — birim *tipini* açan node'lar (yalnız soul + prerequisite; meta örmede harcanır, açmada değil — DECISIONS K21/K18). Level gate yok (DECISIONS K2).
 - `NumberFormatter.js`: değişmez (soul da büyük sayı).
 - **UI:** 4 sayaç (soul + 3 meta). Ekran kalabalığı açık nokta (DESIGN 11).
 
@@ -103,7 +103,7 @@ Bu, kodun en çetrefilli ve en çok oturum-notu biriktirmiş kısmı. Soul Debt'
 
 ## 8. YENİ — Kadro (Tema + İçerik)
 
-- `config.js` ASSETS/ENEMIES/DEFENDERS: 8 birim yeniden tasarlanır (en az 1-2 tank — dur-dövüş gereği), ~10-12 düşman arketipi (+ kat varyantları), 5 boss rotasyonu yeniden temalanır.
+- `config.js` ASSETS/ENEMIES/DEFENDERS: MVP'de 5 birim (DESIGN 8.1 / DECISIONS K22; en az 1 tank — Taş Golem), çekirdek çalışınca hedef kadroya doğru genişler. ~10-12 düşman arketipi (+ kat varyantları), 5 boss rotasyonu yeniden temalanır.
 - Her birime `soulCapacity` alanı (güç/dayanıklılık/diriltme maliyeti türetilir).
 - Placeholder geometri → ileride pixel art (park'ta).
 
@@ -118,12 +118,12 @@ Bu, kodun en çetrefilli ve en çok oturum-notu biriktirmiş kısmı. Soul Debt'
 Her faz çalışır bir ara durum bırakmalı; büyük patlama yerine kademeli.
 
 1. **Faz A — Temizlik:** Lava sök (bölüm 1). Oyun hâlâ çalışır (düşman sur'da ödülsüz ölür, geçici).
-2. **Faz B — Ekonomi:** EXP→Soul, Food→meta, Model 2 (bölüm 2). UI 4 sayaç.
+2. **Faz B — Ekonomi:** EXP→Soul, Food→meta, Model 3 (bölüm 2). UI 4 sayaç.
 3. **Faz C — Necromancer + hat ihlali:** Varlık, can, breachLine (bölüm 3).
 4. **Faz D — Soul-debt + oto-diriltme:** (bölüm 4).
 5. **Faz E — Dur-dövüş + dizilim + kurulum fazı:** En ağır kod işi (bölüm 5).
 6. **Faz F — Prestige (iki yol, Model Y):** (bölüm 6).
-7. **Faz G — Ritim + kadro + lore:** Kat döngüsü, 8 birim/arketipler, banner/bestiary (bölüm 7-8).
+7. **Faz G — Ritim + kadro + lore:** Kat döngüsü, MVP 5 birim + arketipler, banner/bestiary (bölüm 7-8). (Not: MVP kadrosu 5; birimler Faz B'den itibaren kademeli gelir, Faz G sadece tam içerik/temayı kapatır.)
 8. **Faz H — Save + cila:** Version bump, denge, playtest (bölüm 9).
 
 Denge değerleri baştan sona placeholder; playtest ile iteratif ayarlanır.

@@ -12,12 +12,12 @@
 |-----|----------|-------|
 | 0 | Repo kurulumu (soul-debt, temiz başlangıç, Pages) | 🟡 kısmen (kopya + ilk commit tamam; GitHub repo + push + Pages kullanıcıda) |
 | A | Lava mekaniğini tamamen sök | ⬜ |
-| B | Ekonomi: EXP→Soul, Food→3 meta, Model 2, 4-sayaç UI | ⬜ |
+| B | Ekonomi: EXP→Soul, Food→3 meta, Model 3, 4-sayaç UI | ⬜ |
 | C | Necromancer varlığı + canı + hat ihlali (breachLine) | ⬜ |
 | D | Soul-debt sistemi + otomatik diriltme (üç ceza) | ⬜ |
 | E | Dur-dövüş + oyuncu dizilimi + kat-arası kurulum fazı | ⬜ |
 | F | Prestige: iki yol (gönüllü/zorlanmış), Model Y çarpan | ⬜ |
-| G | Ritim (kat döngüsü) + kadro (8 birim, ~12 arketip) + lore | ⬜ |
+| G | Ritim (kat döngüsü) + kadro (MVP 5 birim, ~12 arketip) + lore | ⬜ |
 | H | Save version bump + denge + playtest cila | ⬜ |
 
 ## Faz Detayları
@@ -37,7 +37,7 @@
 
 ### Faz B — Ekonomi
 - [ ] GameState: soul + bone/essence/crystal + lifetimeSoul
-- [ ] EconomyManager: soul kazanım/harcama, meta drop'ları, Model 2 hire
+- [ ] EconomyManager: soul kazanım/harcama, meta drop'ları, Model 3 hire (örme = soul + meta)
 - [ ] UpgradeManager + ConquestManager: maliyet → soul, level gate yok
 - [ ] UI: 4 sayaç
 - [ ] Onboarding: ilk lifetime-soul eşiğinde node ekranını bir kez tanıt
@@ -65,7 +65,7 @@
 
 ### Faz G — Ritim + Kadro + Lore
 - [ ] 10 wave = kat döngüsü, kat geçiş kartları
-- [ ] 8 birim (1-2 tank dahil), soulCapacity alanları
+- [ ] MVP 5 birim (Taş Golem tank; DECISIONS K22), soulCapacity alanları
 - [ ] ~10-12 düşman arketipi + kat varyantları, 5 boss rotasyonu
 - [ ] Lore: boss banner, bestiary, idle popup necromancer sesi
 - [ ] i18n: TR + EN parite (lore ayrı yazılır, birebir çeviri değil)

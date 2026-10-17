@@ -59,14 +59,42 @@ Kat arası bir birimi geri emmek meta'nın %50-70'ini iade eder. Tam iade redded
 ### K17 — Düşman modeli: ~10-12 arketip + kat varyantları
 Lineer tip ekleme değil; arketipleri kat temasıyla yeniden-görselleştir/güçlendir, kombinasyonla çeşitlendir.
 
-### K18 — Birim ekonomisi: Model 2
-Birim *tipini açmak* → meta (bir kez). O tipten birim *örmek* → soul (her sefer). Diriltmek → soul (+ borç). Böylece "soul'u node'a mı birime mi?" kararı tek kaynaktan net doğar. Kullanıcı mantığı: "birim soul'dan yapılıyorsa, yaratırken soul harcamak tutarlı."
+### K18 — Birim ekonomisi: Model 3 (revize — eski Model 2 yerine)
+**Önceki Model 2:** tip açmak → meta (bir kez); örmek → soul (her sefer). Bu REDDEDİLDİ (bkz. R13): tek-seferlik meta kapısı, birkaç birim açıldıktan sonra meta'yı ölü kaynağa çeviriyordu.
+
+**Model 3 (geçerli):**
+- Birim *tipini açmak* → **Conquest node'u** (soul + prerequisite node). Meta yok. Açma, ilerleme omurgasının (node ağacı) bir parçası — bkz. K21.
+- O tipten birim *örmek* → **ağır soul + az o-birimin-meta'sı**, her seferinde.
+- Diriltmek → soul (+ soul-debt), her seferinde.
+
+Böylece meta'nın kalıcı bir talebi olur: essence-birimi örmeye devam ettikçe essence lazım, yani nadir düşman öldürme baskısı oyun boyu canlı kalır (K3'ün asıl niyeti). Takas: "soul'u node'a mı birime mi?" kararının tek-kaynak sadeliği (eski Model 2'nin güzelliği) feda edildi; örme artık çift kaynak (soul + meta) ister. Bilinçli: MVP'de sadelik iyiydi ama uzun vadede meta'ların ölmesi daha büyük sorun. Meta oranı: soul ağır + az meta (örme yavaş-sürekli meta tüketir, engelleyici değil).
 
 ### K19 — Onboarding: lifetime-soul tetiği, olduğu gibi kalır
 İlk kez ilk node'a yetecek lifetime soul biriktiğinde oyun bir kez durup node ekranını tanıtır. Node alıp almamak yine oyuncunun kararı; bu sadece ekranı tanıtan tek seferlik an.
 
 ### K20 — Ayrı proje (üç anlamda)
 Soul Debt artık ayrı bir yapıt. Ayrı Git repo (\`soul-debt\`, temiz başlangıç — eski repo arşiv kalır), ayrı claude.ai Project, ayrı doküman seti. Eski klon dokümanları silinmez, arşiv olarak durur.
+
+
+### K21 — Birim açma node ağacına taşındı (tek ilerleme omurgası)
+Birim *tipini açmak* ayrı bir "birim mağazası" ekranı değil, Conquest node ağacının içinde bir node. Gerekçe: (1) Bütünlük — upgrade node'ları + birim-açma node'ları tek ağaçta; oyuncunun baktığı tek ilerleme ekranı. (2) Prerequisite zinciri bedava gelir — node ağacı zaten "şu node şunu gerektirir" mantığına sahip (K2), birim teknoloji-ağacı doğal çıkar. (3) Kod mirası — ConquestManager zaten var; yeni "unit shop" sistemi yazmak yerine mevcut node tipine `unitUnlock` türü eklenir. Tek aleyhte madde (yeni birim ağaçta kaybolabilir) bir UI-vurgu meselesi, mimari sorun değil: açılan birim node'u görsel olarak öne çıkarılır. Sonuç iki temiz katman: açmak = kalıcı ilerleme (node, bir kez), örmek = koşu-içi tekrarlı harcama (soul + meta).
+
+### K22 — MVP kadrosu: 5 birim, rol-merkezli
+Çekirdek önce çalışsın: 8 yerine 5 birimle başla, eksik görülürse ekle (sonraki adaylar: Diriltici/Çürütücü destek ve Crystal-kademe elitler — park'ta). Rol-merkezli dağılım, dur-dövüşün dört ihtiyacını (blokla / tek-hedef-erit / kalabalık-biç / ayakta-tut) karşılar:
+
+| # | Birim (çalışma adı) | Rol | Soul-kapasite | Örme meta'sı |
+|---|---|---|---|---|
+| 1 | İskelet Bruiser | Ön-saf hasar/blok karışımı (yarı-tank, döver) | Orta-yüksek | Bone |
+| 2 | İskelet Okçu | Uzak tek-hedef DPS | Düşük | Bone |
+| 3 | Hasar Büyücüsü | Alan hasarı (AoE) | Orta | Bone |
+| 4 | Healer Büyücü | Destek — birim HP yenileme | Orta | Essence |
+| 5 | Taş Golem | Asıl tank — taunt (çoklu-hedef ilgi çekme), aynı anda birden çok düşmanla dövüşür | Yüksek | Essence |
+
+Rol takası (ilk taslağa göre): "tank" dediğimiz iskelet bruiser'a çevrildi (tank özelliği düşük, döver); asıl tank rolü Taş Golem'e verildi. Golem taunt'la 2-3 düşmanı tutar, arkadaki okçu/büyücü güvenle vurur — dur-dövüşte "ön saf neden önemli"nin en net cevabı. MVP meta dağılımı: 3 Bone + 2 Essence; **Crystal MVP'de kullanılmaz** (yalnız boss'tan düşer, boss sistemi geç faz). Oyuncu ilk boss'a ulaşmadan tüm MVP kadrosunu açabilir.
+
+**Healer notu:** Healer birim-HP'sini tutar (necromancer canını değil), yani hat-ihlali cezası (K13) ve soul-debt (K11) işlemeye devam eder; healer yalnız birim ölümlerini seyreltir. Kabul edilebilir ama playtest'te "healer ölümü tümden bitiriyor mu?" diye bakılacak.
+
+**Golem taunt notu (teknik):** Çoklu-hedef taunt, dur-dövüş kodunun en karmaşık parçası (bir birim ↔ birden çok düşman eşleşmesi, normal 1↔1 değil). Faz E'yi ağırlaştırır. MVP'de taunt basit tutulur (1 düşman tutar + çok yüksek HP); çoklu-hedef taunt çekirdek çalışınca açılır.
 
 ---
 
@@ -88,7 +116,7 @@ Ceza sistemini (K11, K14) tersine çevirir: ölüm ödül olur, oyuncu birimleri
 İç içe iki prestige = incremental tasarımında kafa karışıklığının zirvesi. Tek prestige ekseni (necromancer → tanrı → yeniden iniş) net kalsın.
 
 ### R6 — Beşinci bir kaynak ("node mu unit mi?" için ayrı meta)
-Dört kaynak (soul + 3 meta) zaten var; beşincisi UI'ı ve takibi boğar. O karar zaten soul-vs-meta gerginliğinden doğuyor; Model 2 (K18) ile de "soul'u node'a mı birime mi?" tek kaynaktan net çıkıyor. Yeni kaynağa gerek yok.
+Dört kaynak (soul + 3 meta) zaten var; beşincisi UI'ı ve takibi boğar. O karar zaten soul-vs-meta gerginliğinden doğuyor; Model 3 (K18) birim örmeyi soul + o birimin meta'sına bağlar; "soul'u node'a mı birime mi?" kararı yine bu iki mevcut kaynaktan çıkar. Beşinci kaynağa gerek yok.
 
 ### R7 — Diş 0 (gönüllü = zorlanmış prestige aynı ödül)
 Ölmeyi kısayola çevirir; oyuncu tanrıya inmek yerine bilerek ölür. Oyunun hedefini sabote eder. Diş 1 seçildi (K14).
@@ -107,3 +135,6 @@ Her kat başında bedelsiz yeniden kurulum yaratır; meta ekonomisini ve dizilim
 
 ### R12 — Zorunlu boss sinematiği
 İdle/akış sözleşmesini bozar, oyuncuyu sinirlendirir. Non-blocking banner + opsiyonel bestiary seçildi (K6). Tek istisna: atlanabilir ilk-boss tanıtımı.
+
+### R13 — Tek-seferlik meta kapısı (eski Model 2)
+"Birim tipini açmak için meta harca (bir kez), sonra örmek yalnız soul" modeli reddedildi. Sorun: meta tek-seferlik bir eşiğe iner; birkaç birim açıldıktan sonra bone/essence çöp olur ve "bone ordusu mu essence elitleri mi?" build kararı (K3'ün ruhu) buharlaşır. Yerine Model 3 (K18): meta örmede sürekli harcanır, kalıcı talep kazanır. Açma işi ise node'a taşındı (K21), meta'dan arındı.
