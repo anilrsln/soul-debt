@@ -1,27 +1,56 @@
 import { CONFIG } from '../config.js';
 import Defender from './Defender.js';
+import GameState from '../state/GameState.js';
 import ConquestManager from '../systems/ConquestManager.js';
 import AssetProvider from '../systems/AssetProvider.js';
 
 /**
- * LaserMonument — Sürekli lazer ışını, her zaman sabit konumda.
- * Çift çizgi: kalın dış + ince iç çekirdek, glow animasyonu.
+ * Necromancer — oyunun başlangıç birimi (K25). Sabit konumlu, menzilli, hep sahnede.
+ * Sürekli ışın hasarı verir (eski LaserMonument mantığı korunur) VE bir can havuzudur
+ * (K10/K13): hat ihlalinde (Enemy.breachLine) canından kesilir, 0'da koşu biter.
+ *
+ * Hedefleme (K25): varsayılan en yakın düşman; oyuncu bir düşmanı tıklarsa YAPIŞKAN hedef
+ * (o ölene/menzilden çıkana kadar), sonra otomatiğe döner. Yalnız necromancer yönlendirilir.
+ *
+ * NOT: config/state anahtarı tarihsel olarak 'laser' (dönüşüm seçeneği A); anahtar yeniden
+ * adlandırma Faz G (K23 ile). Sprite anahtarı 'defender-laser' asset olarak korunur.
  */
-export default class LaserMonument extends Defender {
+export default class Necromancer extends Defender {
   constructor(scene, x, y) {
     super(scene, 'laser', x, y);
     this.sprite = scene.add.image(x, y, 'defender-laser').setDepth(5);
     AssetProvider.applySprite(this.sprite, 'defender-laser');
-    this.laserGraphics = scene.add.graphics().setDepth(6);
+    this.beamGraphics = scene.add.graphics().setDepth(6);
     this.glowPhase = 0;
     this.damageAccumulator = 0;
     this.isBeamActive = false;
+    this.stickyTarget = null; // oyuncunun tıkladığı yapışkan hedef (K25)
+  }
+
+  /** Oyuncu bir düşmanı tıkladı — yapışkan hedef ata (K25). */
+  setStickyTarget(enemy) {
+    this.stickyTarget = enemy;
+  }
+
+  /** Hedef seçimi: geçerli yapışkan hedef menzildeyse onu, değilse en yakını. */
+  findTarget(enemies) {
+    const range = this.getRange();
+    // Yapışkan hedef hâlâ geçerli mi (canlı + menzilde)?
+    if (this.stickyTarget) {
+      const s = this.stickyTarget;
+      if (s.alive && !s.dying && s.sprite) {
+        const dist = Math.sqrt((s.sprite.x - this.x) ** 2 + (s.sprite.y - this.y) ** 2);
+        if (dist <= range) return s;
+      }
+      this.stickyTarget = null; // öldü/menzilden çıktı → otomatiğe dön
+    }
+    return super.findTarget(enemies);
   }
 
   update(delta, enemies) {
     if (!this.alive) return;
     this.target = this.findTarget(enemies);
-    this.laserGraphics.clear();
+    this.beamGraphics.clear();
 
     if (this.target) {
       this.isBeamActive = true;
@@ -41,18 +70,18 @@ export default class LaserMonument extends Defender {
 
     // Dış ışın (kalın, yarı saydam)
     const glowAlpha = 0.3 + Math.sin(this.glowPhase) * 0.1;
-    this.laserGraphics.lineStyle(6, CONFIG.COLORS.LASER, glowAlpha);
-    this.laserGraphics.beginPath();
-    this.laserGraphics.moveTo(this.x, this.y);
-    this.laserGraphics.lineTo(tx, ty);
-    this.laserGraphics.strokePath();
+    this.beamGraphics.lineStyle(6, CONFIG.COLORS.LASER, glowAlpha);
+    this.beamGraphics.beginPath();
+    this.beamGraphics.moveTo(this.x, this.y);
+    this.beamGraphics.lineTo(tx, ty);
+    this.beamGraphics.strokePath();
 
     // İç çekirdek (ince, parlak)
-    this.laserGraphics.lineStyle(2, 0xffffff, 0.9);
-    this.laserGraphics.beginPath();
-    this.laserGraphics.moveTo(this.x, this.y);
-    this.laserGraphics.lineTo(tx, ty);
-    this.laserGraphics.strokePath();
+    this.beamGraphics.lineStyle(2, 0xffffff, 0.9);
+    this.beamGraphics.beginPath();
+    this.beamGraphics.moveTo(this.x, this.y);
+    this.beamGraphics.lineTo(tx, ty);
+    this.beamGraphics.strokePath();
   }
 
   applyDamage(delta) {
@@ -65,7 +94,7 @@ export default class LaserMonument extends Defender {
     if (this.damageAccumulator >= 1) {
       const dmg = Math.floor(this.damageAccumulator);
       this.damageAccumulator -= dmg;
-      this.target.takeDamage(dmg, false); // lazer flash yok (sürekli hasar)
+      this.target.takeDamage(dmg, false); // ışın flash yok (sürekli hasar)
 
       // Laser Enhancement II: chain — en yakın ikinci hedefe ek hasar
       const chain = ConquestManager.getLaserChain();
@@ -73,7 +102,7 @@ export default class LaserMonument extends Defender {
     }
   }
 
-  /** Laser Chain: ana hedeften sonra en yakın ikinci düşmana zincirleme hasar. */
+  /** Chain: ana hedeften sonra en yakın ikinci düşmana zincirleme hasar. */
   _applyChain(primaryDmg, fraction) {
     const enemies = this.scene.waveManager?.enemies;
     if (!enemies || !this.target?.sprite) return;
@@ -87,7 +116,6 @@ export default class LaserMonument extends Defender {
     }
     if (!chainTarget) return;
     chainTarget.takeDamage(Math.max(1, Math.floor(primaryDmg * fraction)), false);
-    // Görsel: zincir çizgisi
     const g = this.scene.add.graphics().setDepth(7);
     g.lineStyle(1, 0x44eeff, 0.55);
     g.beginPath();
@@ -104,7 +132,7 @@ export default class LaserMonument extends Defender {
 
   destroy() {
     super.destroy();
-    this.laserGraphics?.destroy();
+    this.beamGraphics?.destroy();
     this.sprite?.destroy();
     this.sprite = null;
   }

@@ -5,6 +5,8 @@
 const GameState = {
   resources: { soul: 0, bone: 0, essence: 0, crystal: 0 },
   lifetimeSoul: 0, // toplam kazanılan soul (harcanmaz; onboarding tetiği — K19/5.3)
+  // Necromancer can havuzu (K10/K13) — maxHpLevel soul ile artar; hp koşu-içi, kat sonu full dolar.
+  necromancer: { hp: 100, maxHp: 100, maxHpLevel: 0 },
   wave: {
     current: 1, enemiesInWave: 5,
     enemiesSpawned: 0, enemiesKilled: 0, inProgress: true,
@@ -57,6 +59,7 @@ const GameState = {
 export function resetAll(state) {
   state.resources = { soul: 0, bone: 0, essence: 0, crystal: 0 };
   state.lifetimeSoul = 0;
+  state.necromancer = { hp: 100, maxHp: 100, maxHpLevel: 0 };
   state.wave = { current: 1, enemiesInWave: 5, enemiesSpawned: 0, enemiesKilled: 0, inProgress: true };
   state.defenders = {
     laser: { damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
@@ -78,6 +81,7 @@ export function resetForPrestige(state) {
   state.resources = { soul: 0, bone: 0, essence: 0, crystal: 0 };
   // lifetimeSoul prestige'de sıfırlanır; onboardingSeen KORUNUR (onboarding bir kez olur)
   state.lifetimeSoul = 0;
+  state.necromancer = { hp: 100, maxHp: 100, maxHpLevel: 0 };
   state.wave = { current: 1, enemiesInWave: 5, enemiesSpawned: 0, enemiesKilled: 0, inProgress: true };
   state.defenders.laser = { damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
   state.defenders.archer = { unlocked: false, count: 0, maxCount: 5, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };

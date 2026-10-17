@@ -127,6 +127,31 @@ const EconomyManager = {
     return this._canAfford(cost);
   },
 
+  // ═══════════════ Necromancer maxHp upgrade (soul ile — K10) ═══════════════
+
+  /** Necromancer maxHp upgrade maliyeti (soul). */
+  getNecroHpCost() {
+    const cfg = CONFIG.NECROMANCER.maxHp;
+    const level = GameState.necromancer.maxHpLevel || 0;
+    return Math.floor(cfg.baseCost * Math.pow(cfg.costMultiplier, level));
+  },
+
+  canAffordNecroHp() {
+    return GameState.resources.soul >= this.getNecroHpCost();
+  },
+
+  /** maxHp upgrade satın al: maxHp += perLevel, hp de aynı miktar artar (anında fayda). */
+  purchaseNecroHp() {
+    const cost = this.getNecroHpCost();
+    if (GameState.resources.soul < cost) return false;
+    GameState.resources.soul -= cost;
+    const cfg = CONFIG.NECROMANCER.maxHp;
+    GameState.necromancer.maxHpLevel = (GameState.necromancer.maxHpLevel || 0) + 1;
+    GameState.necromancer.maxHp += cfg.perLevel;
+    GameState.necromancer.hp += cfg.perLevel; // yükseltme anında can da artar
+    return true;
+  },
+
   // ═══════════════ Ekonomi upgrade'leri (soul/meta kazanç çarpanı) ═══════════════
 
   /** 'soulBoost' | 'metaBoost' için mevcut çarpan (1 + level × bonus). */

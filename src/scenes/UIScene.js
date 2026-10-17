@@ -26,6 +26,10 @@ export default class UIScene extends Phaser.Scene {
     this.waveText = this.add.text(340, 5, '', this.textStyle(14, '#ffffff')).setDepth(101);
     this.enemyText = this.add.text(480, 5, '', this.textStyle(11, '#aaaaaa')).setDepth(101);
     this.prestigeText = this.add.text(560, 5, '', this.textStyle(10, '#9b59b6')).setDepth(101);
+    // Necromancer can göstergesi (saha üstü, necromancer yakını) — K10/K13
+    this.necroHpText = this.add.text(CONFIG.CANVAS_WIDTH / 2, 44, '', {
+      fontSize: '13px', fontFamily: 'monospace', color: '#ff6b6b', stroke: '#000', strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(120);
     this.fpsText = this.add.text(720, 5, '', this.textStyle(11, '#666666')).setDepth(101);
 
     // Wave progress bar (top bar altı)
@@ -256,7 +260,7 @@ export default class UIScene extends Phaser.Scene {
       this.upgradeElements.push(bg, costLabel);
     });
 
-    // Hire butonu (archer/cannon için)
+    // Hire butonu (archer/cannon için) — necromancer (laser) hire edilmez; onun yerine maxHp upgrade
     if (this.activeTab !== 'laser') {
       const hireX = CONFIG.CANVAS_WIDTH - 90;
       const hireY = startY + 20;
@@ -267,6 +271,27 @@ export default class UIScene extends Phaser.Scene {
         `${info.count}/${info.maxCount}`, this.textStyle(10, '#aaaaaa')
       ).setOrigin(0.5).setDepth(102);
       this.upgradeElements.push(countText);
+    } else {
+      // Necromancer: soul ile Max Can yükseltme kolu (K10)
+      const hpX = CONFIG.CANVAS_WIDTH - 90;
+      const hpY = startY + 14;
+      const hpCost = EconomyManager.getNecroHpCost();
+      const canAfford = EconomyManager.canAffordNecroHp();
+      const lbl = this.add.text(hpX, hpY - 14, t('ui.maxHpLabel', { n: GameState.necromancer.maxHpLevel }), this.textStyle(10, '#ff9b9b')).setOrigin(0.5).setDepth(102);
+      const bg = this.add.rectangle(hpX, hpY + 14, 150, 24, canAfford ? CONFIG.COLORS.UI_BUTTON : CONFIG.COLORS.UI_BUTTON_DISABLED, 1).setDepth(102).setInteractive({ useHandCursor: true });
+      const costLabel = this.add.text(hpX, hpY + 14, t('ui.maxHpUpgrade', { cost: formatNumber(hpCost) }), this.textStyle(9, canAfford ? '#ffd700' : '#666666')).setOrigin(0.5).setDepth(103);
+      bg.on('pointerdown', () => {
+        if (EconomyManager.purchaseNecroHp()) {
+          this.flashButton(bg);
+          this.panelDirty = true;
+          this.game.events.emit('sfx', 'upgrade');
+        } else {
+          this.game.events.emit('sfx', 'uiDenied');
+        }
+      });
+      bg.on('pointerover', () => { if (canAfford) bg.setFillStyle(CONFIG.COLORS.UI_BUTTON_HOVER); });
+      bg.on('pointerout', () => { bg.setFillStyle(canAfford ? CONFIG.COLORS.UI_BUTTON : CONFIG.COLORS.UI_BUTTON_DISABLED); });
+      this.upgradeElements.push(lbl, bg, costLabel);
     }
   }
 
@@ -468,6 +493,14 @@ export default class UIScene extends Phaser.Scene {
       this.prestigeText.setText('');
     }
     this.fpsText.setText(t('ui.fps', { n: Math.round(this.game.loop.actualFps) }));
+
+    // Necromancer canı (K10/K13) — düşükken kırmızıya kayar
+    const n = GameState.necromancer;
+    if (n) {
+      const ratio = n.maxHp > 0 ? n.hp / n.maxHp : 0;
+      this.necroHpText.setText(t('ui.necroHp', { hp: Math.ceil(n.hp), max: n.maxHp }));
+      this.necroHpText.setColor(ratio > 0.3 ? '#ff9b9b' : '#ff3030');
+    }
 
     // Flash efektleri
     if (this.soulFlashTimer > 0) {

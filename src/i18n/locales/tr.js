@@ -8,11 +8,14 @@ export default {
     enemies: 'D: {killed}/{total}',
     fps: '{n} FPS',
     prestigeMult: '✦{n}x',
+    necroHp: '☠ {hp}/{max}',
+    maxHpLabel: 'Max Can (Sv {n})',
+    maxHpUpgrade: '+Can {cost}👻',
     mapBtn: '⚔ HARİTA',
     prestigeBtn: '✦ PRESTIGE',
     // Sekmeler
     tab: {
-      laser: 'Lazer', archer: 'Okçu', cannon: 'Top',
+      laser: 'Necromancer', archer: 'Okçu', cannon: 'Top',
       frost: 'Frost', catapult: 'Mancınık', economy: 'Ekonomi',
     },
     // Yükseltme / kiralama
@@ -86,9 +89,13 @@ export default {
     boss: 'BOSS',
     waveComplete: 'Dalga {n} Tamamlandı!',
     nextWave: '→ Dalga {n}',
+    necromancerHealed: '✚ Can Yenilendi',
+    gameOverTitle: 'NECROMANCER DÜŞTÜ',
+    gameOverSub: 'Dalga {wave}\'de tükendin. Yeraltı seni yuttu.',
+    restart: '↻ Yeniden Başla',
   },
   defender: {
-    laser: 'Lazer Anıtı',
+    laser: 'Necromancer',
     archer: 'Okçu',
     cannon: 'Top',
     frost: 'Frost Tower',

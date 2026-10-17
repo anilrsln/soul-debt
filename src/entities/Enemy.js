@@ -265,12 +265,15 @@ export default class Enemy {
     this.hpBar.clear();
   }
 
-  /** Hat ihlali — düşman hattı geçip necromancer'a ulaştı.
-   *  Faz A iskeleti: ödül yok, sessizce yok ol (eski dieToWall davranışı).
-   *  Faz C/D: necromancer'ın canından hasar + soul-debt bindirilecek. */
+  /** Hat ihlali — düşman hattı geçip necromancer'a ulaştı (K13).
+   *  Faz C: necromancer'ın canından sabit breachDamage keser (necromancer bir can havuzu,
+   *  düşmanla bire bir dövüşmez — bir ısırık alır ve yok olur). Düşman-orantılı hasar (K12)
+   *  + soul-debt (K11) Faz D'de eklenecek. Ödül verilmez (hattı aşan düşman ezilmiş sayılmaz). */
   breachLine() {
     if (this.dying) return;
     this.dying = true; this.alive = false;
+    // Necromancer can havuzundan sabit kesinti (GameScene merkezi yönetir)
+    this.scene.damageNecromancer?.(CONFIG.NECROMANCER.breachDamage);
     // wave kotasına sayılır (spawn edildi), ama ödül verilmez
     if (!this.isChild) GameState.wave.enemiesKilled++;
     GameState.stats.totalEnemiesKilled++;

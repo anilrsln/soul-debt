@@ -58,6 +58,11 @@ const MIGRATIONS = {
     gs.conquestMap = { unlockedNodes: [], bonuses: {} };
     return gs;
   },
+  // v6 → v7: necromancer can havuzu (Faz C). Eski save'lerde yoktu; varsayılanla ekle.
+  6: (gs) => {
+    if (!gs.necromancer) gs.necromancer = { hp: 100, maxHp: 100, maxHpLevel: 0 };
+    return gs;
+  },
 };
 
 const SaveManager = {
@@ -129,6 +134,8 @@ const SaveManager = {
     GameState.resources.essence = gs.resources?.essence || 0;
     GameState.resources.crystal = gs.resources?.crystal || 0;
     GameState.lifetimeSoul = gs.lifetimeSoul || 0; // onboarding tetiği (K19)
+    // Necromancer can havuzu (K10/K13)
+    if (gs.necromancer) Object.assign(GameState.necromancer, gs.necromancer);
     // Wave
     Object.assign(GameState.wave, gs.wave || {});
     // Defenders

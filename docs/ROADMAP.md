@@ -13,7 +13,7 @@
 | 0 | Repo kurulumu (soul-debt, temiz başlangıç, Pages) | 🟡 kısmen (kopya + ilk commit tamam; GitHub repo + push + Pages kullanıcıda) |
 | A | Lava mekaniğini tamamen sök | ✅ |
 | B | Ekonomi: EXP→Soul, Food→3 meta, Model 3, 4-sayaç UI | ✅ |
-| C | Necromancer varlığı + canı + hat ihlali (breachLine) | ⬜ |
+| C | Necromancer varlığı + canı + hat ihlali (breachLine) | ✅ |
 | D | Soul-debt sistemi + otomatik diriltme (üç ceza) | ⬜ |
 | E | Dur-dövüş + oyuncu dizilimi + kat-arası kurulum fazı | ⬜ |
 | F | Prestige: iki yol (gönüllü/zorlanmış), Model Y çarpan | ⬜ |
@@ -42,15 +42,23 @@
 - [x] UI: 4 sayaç (soul 👻 + bone 🦴 + essence 🔮 + crystal 💎)
 - [x] Onboarding: ilk lifetime-soul eşiğinde node ekranını bir kez tanıt
 
-### Faz C — Necromancer
-- [ ] Sahnede konumlu, can havuzlu necromancer
-- [ ] breachLine → can hasarı + soul-debt
-- [ ] Her 10 wave full dolum; soul ile maxHp upgrade
+### Faz C — Necromancer ✅
+- [x] Sahnede konumlu, can havuzlu necromancer (eski LaserMonument → Necromancer; K25 seçenek A)
+- [x] breachLine → necromancer canından sabit `breachDamage` kesinti (K13)
+- [x] Her 10 wave (kat sonu) full dolum; soul ile maxHp upgrade kolu (K10)
+- [x] Yönlendirilebilir hedefleme: düşmana tık → yapışkan hedef (K25)
+- [x] Can 0 → tam dur + "öldün" ekranı (placeholder; prestige bağlama Faz F)
+- [x] GameState.necromancer + SaveManager v7 migration
+- Not: soul-debt breachLine'a BURADA bağlanmadı — o Faz D (K11). Can anahtarı/sprite 'laser'
+  tarihsel; K23 ile Faz G'de temizlenir. Necromancer düşmanla bire bir DÖVÜŞMEZ (can havuzu).
 
 ### Faz D — Soul-Debt
 - [ ] Otomatik diriltme: anlık soul + cooldown + biriken borç
 - [ ] Borç zamanla + kill ile azalır
 - [ ] Diriltme maliyeti soul-kapasiteyle ölçeklenir
+- [ ] **Düşman-orantılı breachLine hasarı (K12):** Faz C'de breach hasarı sabit (`CONFIG.NECROMANCER.breachDamage`)
+      girdi; Faz D'de düşmanın gücü/soul-kapasitesiyle ölçeklenecek (güçlü düşman = büyük ısırık + çok borç).
+      ATLANMAYACAK — soul-debt matematiğiyle birlikte gelir.
 
 ### Faz E — Savaş Modeli
 - [ ] Dur-dövüş (yoluna çıkan ilk birime çarp, karşılıklı HP) — en ağır kod işi

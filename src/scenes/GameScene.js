@@ -1,10 +1,10 @@
 import { CONFIG } from '../config.js';
-import GameState from '../state/GameState.js';
+import GameState, { resetForPrestige } from '../state/GameState.js';
 import WaveManager from '../systems/WaveManager.js';
 import IdleManager from '../systems/IdleManager.js';
 import SaveManager from '../systems/SaveManager.js';
 import AchievementManager from '../systems/AchievementManager.js';
-import LaserMonument from '../entities/LaserMonument.js';
+import Necromancer from '../entities/Necromancer.js';
 import Archer from '../entities/Archer.js';
 import Cannon from '../entities/Cannon.js';
 import FrostTower from '../entities/FrostTower.js';
@@ -42,8 +42,31 @@ export default class GameScene extends Phaser.Scene {
     this.drawWall();
     this.drawLanes();
 
-    // Savunucular
-    this.laserMonument = new LaserMonument(this, CONFIG.WALL_X + 40, Math.round((CONFIG.CORRIDOR_TOP + CONFIG.CORRIDOR_BOTTOM) / 2));
+    // Necromancer — başlangıç birimi (K25), hep sahnede, sabit konum
+    this.necromancer = new Necromancer(this, CONFIG.WALL_X + 40, Math.round((CONFIG.CORRIDOR_TOP + CONFIG.CORRIDOR_BOTTOM) / 2));
+    this.isGameOver = false;
+    // Necromancer canını başlat (yeni oyun) — yüklenen save applyLoad'da üzerine yazar
+    if (GameState.necromancer.hp == null || GameState.necromancer.hp <= 0) {
+      GameState.necromancer.hp = GameState.necromancer.maxHp;
+    }
+
+    // Yapışkan hedefleme (K25): sahaya tık → en yakın düşmanı necromancer'a yapışkan hedef yap
+    this.input.on('pointerdown', (pointer) => {
+      if (this.isGameOver) return;
+      const enemies = this.waveManager?.enemies || [];
+      let nearest = null, nd = Infinity;
+      for (const e of enemies) {
+        if (!e.alive || e.dying || !e.sprite) continue;
+        const dx = e.sprite.x - pointer.worldX, dy = e.sprite.y - pointer.worldY;
+        const d = dx * dx + dy * dy;
+        if (d < nd) { nd = d; nearest = e; }
+      }
+      // yalnız makul yakınlıktaki tıkları hedef kabul et (40px)
+      if (nearest && nd <= 40 * 40) {
+        this.necromancer.setStickyTarget(nearest);
+        this._showTargetMarker(nearest);
+      }
+    });
     this.archers = [];
     this.cannons = [];
     this.frostTowers = [];
@@ -142,7 +165,7 @@ export default class GameScene extends Phaser.Scene {
       this._lastRateSoul = GameState.stats.totalSoulEarned;
       this._lastRateMeta = GameState.stats.totalMetaEarned;
       // Elementleri temizle
-      [bg, title, info, expLine, foodLine, collectBtn, collectLabel].forEach(el => el.destroy());
+      [bg, title, info, soulLine, metaLine, collectBtn, collectLabel].forEach(el => el.destroy());
     });
   }
 
@@ -205,6 +228,7 @@ export default class GameScene extends Phaser.Scene {
 
   // ═══════════════ Güncelleme ═══════════════
   update(time, deltaMs) {
+    if (this.isGameOver) return; // koşu bitti — simülasyon durur (K26 ölüm)
     // Oyun hızı çarpanı (dev panel) — tüm simülasyona uygulanır
     const delta = (deltaMs / 1000) * (CONFIG.DEBUG?.timeScale ?? 1);
 
@@ -214,8 +238,8 @@ export default class GameScene extends Phaser.Scene {
     // Tüm düşmanlar listesi
     const enemies = this.waveManager.enemies;
 
-    // Laser Monument (her zaman aktif)
-    this.laserMonument.update(delta, enemies);
+    // Necromancer (her zaman aktif)
+    this.necromancer.update(delta, enemies);
 
     // Archers
     this.syncDefenders('archer', this.archers, Archer);
@@ -356,12 +380,18 @@ export default class GameScene extends Phaser.Scene {
       CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 - 30,
       0xffd700, 24, 1500
     );
+    // Kat sonu (her 10 wave) necromancer canı full dolar (K7/K10)
+    const floorSize = CONFIG.WAVES.bossEvery || 10;
+    if (CONFIG.NECROMANCER.floorHealFull && data.completedWave % floorSize === 0) {
+      GameState.necromancer.hp = GameState.necromancer.maxHp;
+      this.showFloatingText(i18n('game.necromancerHealed'), this.necromancer.x, this.necromancer.y - 30, 0x66ff88, 16, 1400);
+    }
   }
 
   /** Upgrade geri bildirimi: ilgili savunucu sprite'larını kısa pulse ile büyüt. */
   onDefenderUpgraded(data) {
     const type = data && data.type;
-    const list = type === 'laser' ? [this.laserMonument]
+    const list = type === 'laser' ? [this.necromancer]
       : type === 'archer' ? this.archers
       : type === 'cannon' ? this.cannons : [];
     for (const d of list) {
@@ -376,6 +406,63 @@ export default class GameScene extends Phaser.Scene {
   /** Splitter öldü — WaveManager çocukları spawn etsin. */
   onEnemySplit(data) {
     if (this.waveManager) this.waveManager.spawnChildren(data);
+  }
+
+  /** Hat ihlali — necromancer can havuzundan kesinti (K13). Enemy.breachLine çağırır. */
+  damageNecromancer(amount) {
+    if (this.isGameOver) return;
+    const n = GameState.necromancer;
+    n.hp = Math.max(0, n.hp - amount);
+    // Necromancer sprite'ında kısa kırmızı flash + hafif kamera sarsıntısı
+    if (this.necromancer?.sprite) {
+      this.necromancer.sprite.setTintFill(0xff3333);
+      this.time.delayedCall(90, () => this.necromancer?.sprite?.clearTint());
+    }
+    if (CONFIG.FX?.screenShake) this.cameras.main.shake(120, 0.006);
+    this.game.events.emit('sfx', 'uiDenied');
+    if (n.hp <= 0) this._onNecromancerDeath();
+  }
+
+  /** Necromancer öldü — koşu biter (K26). Faz F'de zorlanmış prestige (yarı çarpan) bağlanacak. */
+  _onNecromancerDeath() {
+    if (this.isGameOver) return;
+    this.isGameOver = true;
+    SaveManager.save();
+    this.game.events.emit('sfx', 'deathDefender');
+    if (CONFIG.FX?.screenShake) this.cameras.main.shake(500, 0.02);
+
+    const cx = CONFIG.CANVAS_WIDTH / 2, cy = CONFIG.CANVAS_HEIGHT / 2;
+    const overlay = this.add.rectangle(cx, cy, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT, 0x000000, 0).setDepth(400);
+    this.tweens.add({ targets: overlay, fillAlpha: 0.78, duration: 500 });
+    const title = this.add.text(cx, cy - 40, i18n('game.gameOverTitle'), {
+      fontSize: '32px', fontFamily: 'monospace', color: '#ff4444', stroke: '#000', strokeThickness: 4,
+    }).setOrigin(0.5).setDepth(401).setAlpha(0);
+    const sub = this.add.text(cx, cy + 4, i18n('game.gameOverSub', { wave: GameState.wave.current }), {
+      fontSize: '14px', fontFamily: 'monospace', color: '#cccccc', stroke: '#000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(401).setAlpha(0);
+    // Placeholder: yeniden başla butonu (Faz F'de prestige/çarpan ekranına dönüşecek)
+    const btn = this.add.rectangle(cx, cy + 56, 160, 36, 0x3a1a1a).setDepth(401).setStrokeStyle(2, 0xff4444).setAlpha(0).setInteractive({ useHandCursor: true });
+    const btnLabel = this.add.text(cx, cy + 56, i18n('game.restart'), {
+      fontSize: '14px', fontFamily: 'monospace', color: '#ffffff', stroke: '#000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(402).setAlpha(0);
+    this.tweens.add({ targets: [title, sub, btn, btnLabel], alpha: 1, duration: 500, delay: 300 });
+    btn.on('pointerover', () => btn.setFillStyle(0x5a2a2a));
+    btn.on('pointerout', () => btn.setFillStyle(0x3a1a1a));
+    btn.on('pointerdown', () => {
+      // Placeholder reset: koşu-içi sıfırla (prestige çarpanı Faz F'de uygulanacak)
+      resetForPrestige(GameState);
+      GameState.necromancer.hp = GameState.necromancer.maxHp;
+      SaveManager.save();
+      this.scene.stop('UIScene');
+      this.scene.restart();
+    });
+  }
+
+  /** Yapışkan hedef işareti (K25) — tıklanan düşmanın üstünde kısa görsel. */
+  _showTargetMarker(enemy) {
+    if (!enemy?.sprite) return;
+    const m = this.add.text(enemy.sprite.x, enemy.sprite.y - 24, '🎯', { fontSize: '18px' }).setOrigin(0.5).setDepth(60);
+    this.tweens.add({ targets: m, y: m.y - 10, alpha: 0, duration: 700, onComplete: () => m.destroy() });
   }
 
   /** Dev panel: belirli bir wave'e atla. */

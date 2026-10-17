@@ -70,32 +70,41 @@ Repo'nun docs/ klasöründeki dosyalar tüm tasarımı içerir — başka yere b
   gereksiz işi ve yarım bırakılmış kararları sevmez. Açık uç çoğaltmak yerine
   karar kapatmayı tercih eder.
 
-## Mevcut Durum (2026-10-17 itibarıyla)
+## Mevcut Durum (2026-10-17, denetim+temizlik oturumu sonrası)
 - **Faz A (lava temizliği): TAMAM.** dieToWall → breachLine iskeleti (geçici ödülsüz
   ölüm; necromancer hasarı + soul-debt Faz C/D'de gelecek).
-- **Faz B (ekonomi): TAMAM.** EXP→Soul, Food→bone/essence/crystal; Model 3 craftCost
-  (çoklu-meta, K30); meta-drop düşman metaType'ına göre; 4 sayaç UI; onboarding tetiği
-  (lifetimeSoul); SaveManager v6 migration. resources.* tamamen soul/meta.
-- Tasarım kararları K1-K30, reddedilenler R1-R13 (DECISIONS.md). Sıradaki: Faz C.
+- **Faz B (ekonomi): TAMAM + bug'ları kapandı.** EXP→Soul, Food→bone/essence/crystal;
+  Model 3 craftCost (çoklu-meta, K30); meta-drop düşman metaType'ına göre; 4 sayaç UI;
+  onboarding tetiği (lifetimeSoul); SaveManager v6 migration. resources.* tamamen soul/meta.
+- **Denetim yapıldı (mimari-kurgu tutarlılığı):** K1-K32 koda karşı denetlendi. Faz A/B
+  iddiaları gerçek çıktı. İki gizli bug bulunup DÜZELTİLDİ:
+  1. SaveManager.applyLoad yalnız soul+bone yüklüyordu → 4 kaynak + lifetimeSoul yüklenir hale geldi.
+  2. ConquestManager canPurchase/purchase yalnız soul+bone kontrol ediyordu → maliyetteki
+     tüm kaynaklar (soul/bone/essence/crystal) döngüyle kontrol/harcanır (K21 unitUnlock'a hazır).
+- **Yabancı klon sistemleri temizlendi (K31/K32):** ComboManager KALDIRILDI (kill-streak
+  ödül çarpanı, K4/K9/K12 ile çelişiyordu); MILESTONE KALDIRILDI (sonsuz-wave varsayımı,
+  K7/K26 ile çelişiyordu); crit PARK (ekonomiye dokunmaz, Faz E'de karar); ACHIEVEMENTS
+  sistemi tutuldu, içeriği Faz G'ye ertelendi.
+- Tasarım kararları K1-K32, reddedilenler R1-R13 (DECISIONS.md). **Sıradaki: Faz C.**
 - Not: `PerkManager.js` ölü kod (hiçbir yere import edilmemiş) — Faz H'de silinebilir.
   Düşman isimleri hâlâ eski (foodCarrier vb.); K23 yeniden-adlandırma Faz G işi.
+  Lane sistemi (LANE_COUNT/drawLanes/syncDefenders) hâlâ aktif; K24 serbest-yerleşim Faz E işi.
 
-## Bu Oturumda Ne Yapacağız? (İLK MADDE: mimari-kurgu denetimi)
-**1. ÖNCE: Mevcut kod, tasarım kurgusuyla tutarlı mı denetle.** Önceki oturumlarda
-   repo beklenenden ileri çıktı; "ne yapılmış, ne eksik" net değil. Şunu doğrula:
-   DECISIONS.md'deki K1-K30 kararları koda yansımış mı? Özellikle Faz A/B iddiaları
-   (breachLine iskeleti, soul/meta ekonomisi, Model 3 craftCost, metaType drop,
-   4 sayaç, onboarding) gerçekten kodda tutarlı mı, yoksa yarım/çelişkili mi?
-   Mimari (sahne/manager/pool desenleri) oyun kurgusunu (dur-dövüş, serbest yerleşim,
-   ankerli otonomi, necromancer-birim, soul-debt) taşıyabilecek yapıda mı, yoksa
-   eski klon varsayımları (lane, menzilli-kule-only, pasif kral) hâlâ engel mi?
-   Bulguları Anıl'a raporla. Gerekirse düzelt.
-2. Sonra Anıl'a hangi fazdan devam edileceğini sor (Faz C önerilir: necromancer
-   varlığı + canı + breachLine'ı gerçek hasara bağlama).
-3. Repo durumunu kontrol et. **GIT NOTU:** bu oturumda commit/push'u KULLANICI yapar
-   (bridge sandbox'ında .git kilidi takılıyor); sen docs/src dosyalarını yaz, git
-   komutlarını Anıl'a bırak.
-Kod yazmadan önce o fazın kapsamını netleştir.
+## Bu Oturumda Ne Yapacağız? (Faz C)
+**Denetim + yabancı-sistem temizliği TAMAMLANDI (yukarı bak).** Sıradaki iş Faz C.
+
+**Faz C — Necromancer varlığı + canı + breachLine'ı gerçek hasara bağlama** (MIGRATION §3):
+- GameState'e `necromancer: { hp, maxHp }` ekle; saveVersion bump + migration adımı.
+- Necromancer = başlangıç birimi (K25): mevcut `laser`/LaserMonument'ın damage/range/
+  fireRate mantığı necromancer'a taşınır; hiring yok, hep sahnede, sabit konum + menzilli.
+- `Enemy.breachLine()` artık gerçek: necromancer canından keser (şimdilik soul-debt YOK —
+  o Faz D). Can biterse kaybetme koşulu tetiklenir (zorlanmış prestige iskeleti Faz F'de).
+- Her 10 wave (kat sonu) necromancer full dolum; soul ile maxHp upgrade kolu.
+- Yönlendirilebilir hedefleme (K25): düşmana tık → yapışkan hedef; MVP'ye girer,
+  aktif yetenekler GİRMEZ (sonraki faz).
+- UI: necromancer can barı (üst barda veya necromancer üstünde).
+- **GIT NOTU:** commit/push'u KULLANICI (Anıl) yapar; sen docs/src yazarsın.
+Kod yazmadan önce faz kapsamını Anıl'la netleştir.
 ```
 
 ---

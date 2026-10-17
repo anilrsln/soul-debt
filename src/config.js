@@ -19,7 +19,7 @@ export const CONFIG = {
   // Kaydetme
   SAVE_KEY: 'idle-kingdom-defense-save',
   SAVE_INTERVAL: 30000,
-  SAVE_VERSION: 6, // save şema sürümü — v6: EXP/Food → Soul+3meta (Soul Debt ekonomisi)
+  SAVE_VERSION: 7, // save şema sürümü — v7: necromancer varlığı (hp/maxHp) — Faz C
 
   // Idle sistemi
   IDLE_EFFICIENCY: 0.5,
@@ -88,10 +88,23 @@ export const CONFIG = {
     UI_BUTTON_HOVER: 0x1a4a7a, UI_BUTTON_DISABLED: 0x333333,
   },
 
+  // Necromancer — oyunun başlangıç birimi (K25). Sabit konumlu, menzilli, hep sahnede.
+  // Can havuzu (K10/K13): hat ihlalinde (breachLine) canından kesilir; 0'da koşu biter.
+  // NOT: config/state anahtarı tarihsel olarak 'laser' (K25 dönüşümü, seçenek A); görünen
+  //   kimlik necromancer. Anahtar yeniden adlandırma Faz G (K23 ile birlikte).
+  NECROMANCER: {
+    maxHp:        { base: 100, perLevel: 50, baseCost: 80, costMultiplier: 1.25 }, // soul ile maxHp upgrade kolu (K10)
+    breachDamage: 10,   // hat ihlali başına necromancer canından sabit kesinti (placeholder; K13)
+                        // Faz D: düşman-orantılı breach hasarı (K12) soul-debt ile birlikte eklenecek
+    floorHealFull: true, // her 10 wave (kat sonu) necromancer canı full dolar (K7/K10)
+  },
+
   // Savunucu başlangıç değerleri
   DEFENDERS: {
+    // 'laser' anahtarı = NECROMANCER (K25 seçenek A). Damage/range/fireRate necromancer'ın
+    // menzilli saldırı statları; can ayrı (CONFIG.NECROMANCER + GameState.necromancer).
     laser: {
-      name: 'Laser Monument',
+      name: 'Necromancer',
       damage:   { base: 5,  multiplier: 1.2,  baseCost: 10 },
       fireRate: { base: 1.2, multiplier: 1.1, baseCost: 15 },
       range:    { base: 150, multiplier: 1.08, baseCost: 20 },
