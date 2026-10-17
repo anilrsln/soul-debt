@@ -102,7 +102,11 @@ Düşman bir birime ulaştığında durur ve karşılıklı dövüşürler. İki
 
 ### 6.2 Yerleştirme ve Ankerli Otonomi
 
-**Bu bir lane/saf-dizme oyunu değildir.** Birimler ızgaraya veya şeritlere dizilmez; oyuncu her birimi oyun alanında **istediği (x, y) noktasına** serbestçe yerleştirir. Bu nokta birimin **çıpasıdır** (anchor). Yerleştirme yalnızca kat-arası kurulum fazında yapılır; kat içindeki savaş sırasında oyuncu birim taşımaz.
+**Bu bir lane/saf-dizme oyunu değildir.** Birimler ızgaraya veya şeritlere dizilmez; oyuncu her birimi oyun alanında **istediği (x, y) noktasına** serbestçe yerleştirir. Bu nokta birimin **çıpasıdır** (anchor).
+
+**Örme ve yerleştirme savaşta da açıktır — ama opsiyoneldir (K28):** Oyuncu hem kat-arası kurulum fazında hem de savaş sırasında yeni birim örüp serbestçe yerleştirebilir (ör. hat çöküyorsa acil bir tank örüp boşluğa koymak). Bu **zorunlu değildir**: oyuncu hiç dokunmazsa mevcut ordu + necromancer idle olarak hattı tutmaya devam eder (K4 idle mirası). Fark kritiktir — refleks oyunu müdahaleyi *zorunlu* kılar; Soul Debt müdahaleyi *ödüllü* kılar: tıklarsan daha iyi oynarsın, tıklamazsan idle olarak idare edersin. Böylece idle sözleşmesi korunurken üstüne opsiyonel aktif stratejik derinlik eklenir.
+
+**Kapsam:** Savaşta serbest yerleştirme yeni örülen (ve istenirse yeni konumlanan) birimler içindir. Mevcut birimler savaşta çıpalarında kalır (ankerli otonomi dairesi dışında taşınmaz); asıl ince dizilim ve absorbe kat-arası kurulum fazında yapılır — orası savaşta aceleyle koyulanı düzeltme/optimize etme anıdır. Yani savaşta yerleştirme "kaba/acil", kat-arası faz "ince ayar"dır.
 
 **Ankerli otonomi:** Savaş sırasında birim çıpasına çakılı durmaz; çıpa merkezli küçük bir **otonomi dairesi** içinde kendi kendine hareket eder. Bu hareket birimin rolünü *yerine getirmek* içindir, oyuncunun yerleşimini *geçersiz kılmak* için değil:
 
@@ -115,7 +119,7 @@ Birim **çıpanın otonomi dairesinden asla çıkmaz**. Böylece oyuncunun yerle
 
 **Yerleşme animasyonu:** Oyuncu bir çıpa noktası seçtiğinde birim oraya ışınlanmaz, yürüyerek gider.
 
-**Neden bu model (K9 ile ilişki):** Önceki "dizilim savaşta tamamen sabit" ifadesi, çıpa-sabit + yerel-otonom olarak yumuşatıldı (DECISIONS K24). Oyun hâlâ bir planlama oyunudur — oyuncu çıpaları konumlandırarak stratejiyi kurar — ama savaş içi mikro-hareket otonomiye bırakılır; oyuncu savaş kaosunda panik tıklama yapmaz. Lane tabanlı "arka arkaya diz" stratejisi bilinçle reddedildi.
+**Neden bu model (K9 ile ilişki):** K9'un özgün "dizilim savaşta tamamen sabit" ifadesi iki kez yumuşatıldı: önce çıpa-sabit + yerel-otonom (K24), sonra savaşta opsiyonel örme/yerleştirme (K28). Oyun hâlâ bir planlama oyunudur — ana strateji çıpaları konumlandırmakla kurulur ve savaşta panik *zorunlu değildir* — ama artık isteyen oyuncu savaşta da müdahale edebilir. K9'un asıl amacı "oyuncu kaybetmemek için panik tıklamak zorunda kalmasın" idi; bu korunur (idle oyuncu dokunmadan idare eder). Lane tabanlı "arka arkaya diz" stratejisi bilinçle reddedildi.
 
 **Faz sırası (teknik):** Faz E'de önce saf çıpa-sabit (hareketsiz) dur-dövüş çalıştırılır; ankerli otonomi bir **cila katmanı** olarak üstüne eklenir. Otonomi kodu olmasa da oyun oynanabilir kalır — çekirdek bağımlılığı değildir.
 

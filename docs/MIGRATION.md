@@ -96,6 +96,7 @@ Bu, kodun en çetrefilli ve en çok oturum-notu biriktirmiş kısmı. Soul Debt'
 - **Slot limiti:** Sahadaki birim sayısı slot-tabanlı (CONFIG placeholder; node'larla açılır). Konum serbest, sayı sınırlı.
 - **Harita/zemin (DESIGN 12 / K27):** MVP tek yıkıntı-dungeon. Engel bölgeleri (kaya/su) + köprü koridoru + yürünemez alanlar tanımlanır (CONFIG veya basit tilemap). Düşman akışı: random spawn → necromancer'a yönel + engelden kaç (steering/avoidance), A* YOK. Necromancer'ı oyuncu yerleştirir (büyük range). Engeller hem oyuncu yerleştirmesini hem düşman yolunu etkiler.
 - Kat-arası kurulum fazı: yeni UI/state modu (savaş durur, oyuncu serbest yerleştirir/absorbe eder, sonra iner).
+- **Savaşta örme/yerleştirme (K28):** Örme ve serbest yerleştirme savaş sırasında da açık ama opsiyonel (acil müdahale). Mevcut birimler savaşta taşınmaz (çıpa sabit); kat-arası faz ince ayar. Input: savaşta da "birim ör + yerleştir" akışı çalışır.
 - Object pooling: korunur (Enemy + Projectile). Yeni state alanları (soul-kapasite, debt, anchor vb.) eklenince `reset()`'e de eklenmeli — yoksa havuzdan dönen nesnede eski state sızar.
 
 ## 6. DEĞİŞECEK — Prestige

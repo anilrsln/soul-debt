@@ -123,6 +123,13 @@ Oyun saf-sonsuz tasarlanmaz (K4 revize). Tanrı önceden belirli bir Kat N'de (p
 - **Düşman akışı:** random spawn → necromancer'a yönel + engelden kaç (basit steering/avoidance). Köprü=yürünebilir, su/uçurum=yürünemez → köprüye yönelme doğal çıkar (ayrı "köprü bul" mantığı yok). Tam A* grid pathfinding bilinçle reddedildi (MVP'nin en pahalı kalemi, dur-dövüşü geciktirir); "yönel+kaç" yeterince akıllı görünür. A* park'ta.
 - **Necromancer yerleşimi:** oyuncu yerleştirir (kurulum fazında, diğer birimler gibi — K24), büyük range. En arkaya konup alanı tarar; kaybetme koşulu olduğundan (K25/6.5) konum bilinçli risk. Kat-arası fazda yeniden konumlanabilir.
 
+### K28 — Savaşta örme/yerleştirme açık ama opsiyonel (idle + aktif derinlik)
+Soru: wave (savaş) içinde yeni birim örülebilir mi, ve örülürse konumunu oyuncu mu verir? Gerilim: tam serbestlik stratejik derinlik verir ama refleks oyununa kaydırır (idle'dan uzaklaşır); tam kapalı idle/planlamayı korur ama savaşı durağanlaştırır, derinliği öldürür. Çözüm iki ekseni ayırmak:
+- **Örme (ekonomik):** savaşta her zaman açık — soul birikir, ordu büyür (idle mirası K4'ün kalbi).
+- **Yerleştirme (stratejik):** savaşta da serbest AMA **opsiyonel**. Oyuncu örüp istediği yere koyabilir (acil müdahale) ama dokunmazsa mevcut ordu + necromancer idle olarak hattı tutar. Refleks oyunu müdahaleyi *zorunlu* kılar; Soul Debt *ödüllü* kılar (tıklarsan daha iyi, tıklamazsan idare). İdle sözleşmesi korunur, üstüne opsiyonel aktif derinlik eklenir.
+- **Kapsam:** yeni örülen/konumlanan birimler savaşta yerleştirilir; mevcut birimler savaşta çıpalarında kalır (ankerli otonomi dairesi dışına taşınmaz). İnce dizilim + absorbe kat-arası fazda; savaş yerleştirmesi "kaba/acil", kat-arası "ince ayar".
+- **K9/K24 ilişkisi:** K9'un "savaşta tamamen sabit dizilim" kuralı bir kez daha yumuşadı. Asıl amaç ("panik zorunlu olmasın") korunur; panik hâlâ opsiyonel. (Mevcut birimleri de savaşta taşıma seçeneği reddedildi — mikro-yönetim/refleks riski en yüksek oydu.)
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)
