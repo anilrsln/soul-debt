@@ -129,6 +129,10 @@ export const CONFIG = {
       damage:   { base: 5,  multiplier: 1.2,  baseCost: 10 },
       fireRate: { base: 1.2, multiplier: 1.1, baseCost: 15 },
       range:    { base: 150, multiplier: 1.08, baseCost: 20 },
+      // Hedef kilidi (K35): seçtiği hedefi ölene/menzilden çıkana kadar vurur (zıplama yok).
+      // İstisna: necromancer'a bu mesafeden yakın düşman belirirse kilit kırılır (can havliyle
+      // son-savunma müdahalesi). px cinsinden; necromancer'ın x'ine yatay yakınlık.
+      emergencyThreatDist: 70,
     },
     archer: {
       name: 'Archer',

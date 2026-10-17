@@ -204,6 +204,29 @@ pençe bekliyor" (görsel olarak ölü). Çözüm, melee ve ranged'i AYNI kalıb
 - **İlişki:** K24'ün otonomi dairesi fikri ranged için zaten mantıklıydı (menzile hizalanma);
   melee için "daire" yerine "tıkaç + lunge" modeli geçerli. K8 dur-dövüş korunur.
 
+
+### K35 — Necromancer hedef kilidi + acil-tehdit istisnası
+Sorun (playtest gözlemi): Necromancer her frame menzildeki EN YAKIN düşmanı yeniden seçiyordu →
+hedef zıplaması (target flickering). Az canlı bir hedefi bırakıp daha yakın/tam canlı bir düşmana
+geçiyor, DPS birden çok yarı-canlı düşmana saçılıyor, hiçbiri temizlenmiyordu — yarı-canlı düşmanlar
+birikip hatta ilerliyor, necromancer hasar yiyordu. En-yakın + her-frame-yeniden-seçim kombinasyonu
+hatalıydı (kalan can hiç hesaba katılmıyordu).
+
+**Çözüm — hedef kilidi + acil-tehdit istisnası (öncelik sırası):**
+1. **Yapışkan hedef (K25):** oyuncu bir düşmanı tıkladıysa her şeyin üstünde — o öncelikli.
+2. **Acil tehdit:** necromancer'a kritik yakın (`emergencyThreatDist`, placeholder 70px) bir düşman
+   belirirse kilit KIRILIR, ona geçer. Lore: bıkkın necromancer geride durmak ister ama dibine
+   dayanan tehdide "can havliyle" isteksizce el atar (son savunma refleksi — K25'in "köşeye
+   sıkışınca kendi vurur" temasıyla birebir). Mekaniği açıklanabilir kılar, kusur gibi görünmez.
+3. **Kilitli otomatik hedef:** seçtiği hedefi ÖLENE veya menzilden çıkana kadar vurur — her frame
+   zıplamaz. Overkill/DPS saçılması biter, düşmanlar tek tek temizlenir.
+4. **Yeni kilit:** kilit boşaldığında menzildeki en yakını seçer.
+
+Kapsam: şimdilik yalnız necromancer. Diğer ranged birimler (okçu/büyücü) aynı zıplama sorununu
+yaşayabilir — Faz G kadro gelince aynı kilit mantığı base Defender.findTarget'a taşınabilir
+(şimdilik spekülatif değil; necromancer'da kanıtlandıktan sonra). "En az canlıyı bitir" politikası
+alternatifi değerlendirildi ama kilit + en-yakın yeterli ve daha okunur bulundu.
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)

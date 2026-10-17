@@ -25,6 +25,7 @@ export default class Necromancer extends Defender {
     this.damageAccumulator = 0;
     this.isBeamActive = false;
     this.stickyTarget = null; // oyuncunun tıkladığı yapışkan hedef (K25)
+    this._autoLock = null;    // otomatik kilitli hedef (K35) — ölene/menzilden çıkana kadar sadık
   }
 
   /** Oyuncu bir düşmanı tıkladı — yapışkan hedef ata (K25). */
@@ -32,19 +33,49 @@ export default class Necromancer extends Defender {
     this.stickyTarget = enemy;
   }
 
-  /** Hedef seçimi: geçerli yapışkan hedef menzildeyse onu, değilse en yakını. */
+  /** Hedef geçerli mi (canlı + menzilde)? */
+  _targetValid(t, range) {
+    if (!t || !t.alive || t.dying || !t.sprite) return false;
+    const dist = Math.sqrt((t.sprite.x - this.x) ** 2 + (t.sprite.y - this.y) ** 2);
+    return dist <= range;
+  }
+
+  /**
+   * Hedef seçimi (K35) — öncelik sırası:
+   *  1) Yapışkan hedef (oyuncu tıkladı) — her şeyin üstünde.
+   *  2) Acil tehdit: necromancer'a kritik yakın (emergencyThreatDist) düşman → kilit kırılır,
+   *     "can havliyle" ona müdahale eder (son savunma refleksi).
+   *  3) Kilitli otomatik hedef: seçtiği hedefi ölene/menzilden çıkana kadar vurur (zıplama YOK).
+   *  4) Yeni kilit: menzildeki en yakını seç.
+   */
   findTarget(enemies) {
     const range = this.getRange();
-    // Yapışkan hedef hâlâ geçerli mi (canlı + menzilde)?
+
+    // 1) Yapışkan (oyuncu komutu)
     if (this.stickyTarget) {
-      const s = this.stickyTarget;
-      if (s.alive && !s.dying && s.sprite) {
-        const dist = Math.sqrt((s.sprite.x - this.x) ** 2 + (s.sprite.y - this.y) ** 2);
-        if (dist <= range) return s;
-      }
-      this.stickyTarget = null; // öldü/menzilden çıktı → otomatiğe dön
+      if (this._targetValid(this.stickyTarget, range)) return this.stickyTarget;
+      this.stickyTarget = null;
     }
-    return super.findTarget(enemies);
+
+    // 2) Acil tehdit — necromancer'a çok yakın bir düşman varsa kilidi kır, ona geç
+    const threatDist = this.config.emergencyThreatDist ?? 70;
+    let threat = null, td = Infinity;
+    for (const e of enemies) {
+      if (!e.alive || e.dying || !e.sprite) continue;
+      const dx = e.sprite.x - this.x, dy = e.sprite.y - this.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d <= threatDist && d < td) { td = d; threat = e; }
+    }
+    if (threat) { this._autoLock = threat; return threat; }
+
+    // 3) Kilitli otomatik hedef hâlâ geçerliyse ONA SADIK KAL (zıplama yok)
+    if (this._autoLock && this._targetValid(this._autoLock, range)) {
+      return this._autoLock;
+    }
+
+    // 4) Yeni kilit: menzildeki en yakın
+    this._autoLock = super.findTarget(enemies);
+    return this._autoLock;
   }
 
   update(delta, enemies) {
