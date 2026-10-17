@@ -95,11 +95,28 @@ Oyuncu ilk kez ilk node'u almaya yetecek lifetime soul eşiğini geçtiğinde, o
 
 ### 6.1 Dur-Dövüş
 
-Düşman bir birime ulaştığında durur ve karşılıklı dövüşürler. İkisi de HP kaybeder, biri ölene kadar. Bu, ön saf ve arka saf oyununu anlamlı kılar: dayanıklı bir tank birimi önde düşmanı bloklar, hasar veren birimler arkada güvenle vurur. Bu nedenle kadroda en az bir blokçu/tank arketipi bulunması zorunludur (MVP'de bu rol Taş Golem; bkz. 8.1).
+Düşman bir birime ulaştığında durur ve karşılıklı dövüşürler. İkisi de HP kaybeder, biri ölene kadar.
 
-### 6.2 Dizilim
+**Hedefleme kuralı:** Düşman necromancer'a doğru ilerler ve **yoluna çıkan ilk birime** çarpıp durur (en yakına değil — yoluna çıkana). Bunun sonucu: konumlandırma gerçek bir karardır. Oyuncu dayanıklı bir birimi düşman yoluna koyarsa onu bloklar ve arkadaki kırılgan birimler (okçu/büyücü) güvende vurur; tankı yola koymazsa düşman doğrudan arkadaki kırılgan birime ulaşır. Bu nedenle kadroda en az bir blokçu/tank arketipi bulunması zorunludur (MVP'de bu rol Taş Golem; bkz. 8.1). "Ön/arka saf" kavramı burada lane'lerden değil, oyuncunun serbest yerleştirmesinden (6.2) doğar: önde olan, düşman yoluna daha yakın konumlanandır.
 
-Oyuncu birimlerini kendisi yerleştirir. Dizilim yalnızca kat-arası kurulum fazında değiştirilebilir; kat içindeki savaş sırasında dizilim sabittir. Bu kasıtlıdır: oyun bir refleks oyunu değil, bir planlama oyunudur. Oyuncu "bir sonraki kat kalkanlı düşman ağırlıklı, tankı öne alayım" biçiminde kat öncesi planlı karar verir, savaş kaosunda panik tıklama yapmaz.
+### 6.2 Yerleştirme ve Ankerli Otonomi
+
+**Bu bir lane/saf-dizme oyunu değildir.** Birimler ızgaraya veya şeritlere dizilmez; oyuncu her birimi oyun alanında **istediği (x, y) noktasına** serbestçe yerleştirir. Bu nokta birimin **çıpasıdır** (anchor). Yerleştirme yalnızca kat-arası kurulum fazında yapılır; kat içindeki savaş sırasında oyuncu birim taşımaz.
+
+**Ankerli otonomi:** Savaş sırasında birim çıpasına çakılı durmaz; çıpa merkezli küçük bir **otonomi dairesi** içinde kendi kendine hareket eder. Bu hareket birimin rolünü *yerine getirmek* içindir, oyuncunun yerleşimini *geçersiz kılmak* için değil:
+
+- Menzilli birim, menzilindeki düşmana hizalanmak için daire içinde kayar/nişan alır.
+- Ön çıpadaki birim ölünce yakınındaki birim boşluğu kapatmak için daire içinde öne adımlar.
+- Üst üste binen birimler hafifçe ayrışır (görsel düzen).
+- Tehdit geçince birim çıpasına geri döner.
+
+Birim **çıpanın otonomi dairesinden asla çıkmaz**. Böylece oyuncunun yerleşimi belirleyici kalır (planlama oyunu kimliği korunur), ama birimler savaşta cansız-sabit değil, canlı ve tepkiseldir. Otonomi dairesinin yarıçapı ne çok büyük ne çok küçük olmalı; başlangıç placeholder'ı ≈ ekran yüksekliğinin 1/10–1/20'si (playtest ile ayarlanır).
+
+**Yerleşme animasyonu:** Oyuncu bir çıpa noktası seçtiğinde birim oraya ışınlanmaz, yürüyerek gider.
+
+**Neden bu model (K9 ile ilişki):** Önceki "dizilim savaşta tamamen sabit" ifadesi, çıpa-sabit + yerel-otonom olarak yumuşatıldı (DECISIONS K24). Oyun hâlâ bir planlama oyunudur — oyuncu çıpaları konumlandırarak stratejiyi kurar — ama savaş içi mikro-hareket otonomiye bırakılır; oyuncu savaş kaosunda panik tıklama yapmaz. Lane tabanlı "arka arkaya diz" stratejisi bilinçle reddedildi.
+
+**Faz sırası (teknik):** Faz E'de önce saf çıpa-sabit (hareketsiz) dur-dövüş çalıştırılır; ankerli otonomi bir **cila katmanı** olarak üstüne eklenir. Otonomi kodu olmasa da oyun oynanabilir kalır — çekirdek bağımlılığı değildir.
 
 ### 6.3 Birim Ölümü ve Otomatik Diriltme
 
@@ -225,6 +242,8 @@ Bu fikirler kayıt altındadır ancak çekirdek çalışır hale gelene kadar ta
 
 ## 11. Açık Noktalar (Sonra Çözülecek)
 
-- **4-sayaç UI düzeni:** Soul ve üç meta ekranda dört sayaç demektir. Ekran kalabalığı yönetilmeli.
+- **4-sayaç UI düzeni:** Soul + üç meta = dört sayaç. MVP'de basit tutulur (düz yan yana, placeholder); hiyerarşi/cila Faz B'de ele alınır. Karar bekleyen yapısal sorun değil.
+- **Slot limiti değerleri:** Başlangıç slot sayısı ve node'larla kaç slot açıldığı placeholder; playtest ile ayarlanır.
+- **Otonomi dairesi yarıçapı:** ≈ ekran-yüksekliği/10–20 placeholder (DESIGN 6.2); playtest ile ayarlanır.
 - **Save uyumluluğu:** Ekonomi ve mekanik baştan değiştiği için eski save'ler uyumsuzdur. Save version bump ve temiz başlangıç gerekir. Tek oyuncu olduğundan risk düşüktür.
 - **i18n lore yükü:** MVP'de 5 birim (hedef kadro sonra genişler), yaklaşık 12 düşman arketipi, kat temaları, boss banner'ları ve bestiary hem TR hem EN yazılacaktır. Mizah birebir çevrilemez, iki dil ayrı yazılır. Bu ayrı bir iş kalemidir ve kendi fazını hak eder.

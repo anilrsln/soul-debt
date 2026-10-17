@@ -83,12 +83,16 @@ Bu, kodun en çetrefilli ve en çok oturum-notu biriktirmiş kısmı. Soul Debt'
 - Borç zamanla + kill ile azalır.
 - Diriltme maliyeti birimin soul-kapasitesiyle ölçeklenir (DECISIONS K12).
 
-## 5. YENİ/DEĞİŞEN — Savaş Modeli (Dur-Dövüş + Dizilim)
+## 5. YENİ/DEĞİŞEN — Savaş Modeli (Dur-Dövüş + Serbest Yerleşim + Ankerli Otonomi)
 
-- `Enemy.js` + `Defender.js`: lane-blocking. Düşman birime ulaşınca durur; karşılıklı HP döngüsü. Bu mevcut "menzilden vur, düşman geçer" modelini değiştirir — en büyük kod işi burada.
-- `GameScene.syncDefenders`: korunur ama kurulum fazıyla entegre olur (dizilim kat aralarında değişir, savaş içinde sabit — DESIGN 6.2).
-- Kat-arası kurulum fazı: yeni UI/state modu (savaş durur, oyuncu dizer/absorbe eder, sonra iner).
-- Object pooling: korunur (Enemy + Projectile). Yeni state alanları (soul-kapasite, debt vb.) eklenince `reset()`'e de eklenmeli — yoksa havuzdan dönen nesnede eski state sızar.
+> Model: DESIGN 6.1-6.2 / DECISIONS K24. Lane YOK — serbest (x,y) yerleşim + çıpa + daire-içi otonomi.
+
+- `Enemy.js` + `Defender.js`: dur-dövüş. Düşman *yoluna çıkan ilk birime* çarpıp durur; karşılıklı HP döngüsü. Bu mevcut "menzilden vur, düşman geçer" modelini değiştirir — en büyük kod işi burada. Hedefleme "en yakın" değil "yola çıkan ilk" (DESIGN 6.1).
+- **Mevcut lane sistemi sökülür:** `CONFIG.LANE_COUNT`, `drawLanes()`, `syncDefenders`'ın türe-göre-lane yerleştirmesi kaldırılır. Yerine: oyuncunun kurulum fazında koyduğu serbest çıpa noktaları. Birim bir `anchor:{x,y}` taşır.
+- **Ankerli otonomi (cila katmanı, sonra):** Birim çıpa merkezli otonomi dairesi (yarıçap ≈ ekran-h/10–20, CONFIG placeholder) içinde hareket eder (hizalan/boşluk-kapat/geri-dön), daireden çıkmaz. Faz E'de ÖNCE çıpa-sabit (hareketsiz) çalıştır, SONRA otonomiyi ekle — otonomi çekirdek bağımlılığı değil.
+- **Slot limiti:** Sahadaki birim sayısı slot-tabanlı (CONFIG placeholder; node'larla açılır). Konum serbest, sayı sınırlı.
+- Kat-arası kurulum fazı: yeni UI/state modu (savaş durur, oyuncu serbest yerleştirir/absorbe eder, sonra iner).
+- Object pooling: korunur (Enemy + Projectile). Yeni state alanları (soul-kapasite, debt, anchor vb.) eklenince `reset()`'e de eklenmeli — yoksa havuzdan dönen nesnede eski state sızar.
 
 ## 6. DEĞİŞECEK — Prestige
 

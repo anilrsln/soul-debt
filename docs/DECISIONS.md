@@ -98,6 +98,14 @@ Rol takası (ilk taslağa göre): "tank" dediğimiz iskelet bruiser'a çevrildi 
 ### K23 — Düşman teması: yeraltı yaratıkları (iskelet-çakışması çözümü)
 Birimler iskelet/dirilmiş olduğundan (K22) düşmanların da "skeleton" olması hem tematik tutarsız (necromancer düşmanı öldürüp kendi ordusuna katar) hem de okunabilirlik sorunu (birim ve düşman aynı görünür, özellikle placeholder geometride). Çözüm: düşman tarafı tamamen **yeraltı yaratıkları** olur (etli/çürük, taş, ruhsal, lanetli). İskelet estetiği yalnız oyuncu ordusuna kalır. Mevcut 8 klon düşmanı mekanik olarak korunur; yalnız tema/isim ve config anahtarı yeniden yazılır (sıfır denge riski): `skeleton→ghoul`, `armored→gargoyle`, `fast→imp`, `foodCarrier→soulVessel`, `elite→cursedKnight`, `shield→warden`, `splitter→ooze`, `healer→cultist`. Kod anahtarları da temalanır (yalnız i18n ismi değil) — kodda "bu birim mi düşman mı?" karışıklığını önlemek için. Boss isimleri Faz G'de lore ile birlikte verilir. 8'in 7'si melee, cultist menzilli-destek; saf menzilli-saldırgan düşman park'a alındı (DESIGN 10): sıçrayıcı arketipiyle aynı "arka-saf baskısı" problemini çözdüğü için ikisinden biri playtest'le seçilecek, şimdi spekülatif tasarlanmayacak.
 
+### K24 — Savaş modeli: serbest yerleşim + ankerli otonomi (lane değil)
+Oyun lane/saf-dizme stratejisine bağlı DEĞİL. Birimler ızgaraya/şeride dizilmez; oyuncu her birimi serbest (x,y) noktaya yerleştirir (kurulum fazında). O nokta birimin *çıpası*. Savaşta birim çıpa merkezli küçük bir *otonomi dairesi* içinde kendi kendine hareket eder (hizalanma, boşluk kapatma, nişan, geri dönme) ama daireden çıkmaz. Yarıçap placeholder'ı ≈ ekran-yüksekliği/10–20 (playtest). Gerekçe: oyuncu "birimler arka arkaya dizilsin" istemiyor; otonomi savaşı canlı kılar ama çıpa oyuncunun yerleşimini belirleyici tutar.
+- **Hedefleme:** düşman necromancer'a ilerler, *yoluna çıkan ilk birime* çarpar (en yakına değil). Konumlama gerçek karar; tankı yola koymazsan sızarlar.
+- **Birim limiti:** slot-tabanlı (kaç birim, node'larla açılır); konum serbest ama sayı sınırlı — soul sonsuz birim basmayı önler, dizilim planlamasını (K9) anlamlı tutar.
+- **Yerleşme animasyonu:** birim çıpaya ışınlanmaz, yürüyerek gider (oyuncunun "kendiliğinden pozisyon alma" isteği).
+- **K9 revizesi:** "dizilim savaşta tamamen sabit" → "çıpa sabit + daire-içi otonom". Planlama oyunu kimliği korunur (oyuncu çıpa konumlar), savaş-içi mikro-hareket otonomiye bırakılır.
+- **Faz sırası:** Faz E'de önce çıpa-sabit (hareketsiz) dur-dövüş; ankerli otonomi cila katmanı olarak üstüne eklenir (çekirdek bağımlılığı değil).
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)
