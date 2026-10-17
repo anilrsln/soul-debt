@@ -288,6 +288,10 @@ export default class Enemy {
     const soul = this.soulReward * soulMult;
     const meta = this.metaReward * metaMult;
     this._grantRewards(soul, meta, 'defender');
+    // TANRI yenildi → ZAFER akışı (K26, gönüllü prestige)
+    if (this.isGod) {
+      this.scene.events.emit('god-defeated', { wave: this._wave });
+    }
     // Splitter: savunucu ile ölünce küçük çocuklara bölünür (hat ihlalinde bölünmez)
     if (this.splitConfig && !this.noSplit) {
       const sc = this.splitConfig;

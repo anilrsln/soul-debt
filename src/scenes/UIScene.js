@@ -424,13 +424,7 @@ export default class UIScene extends Phaser.Scene {
   }
 
   doPrestige() {
-    if (PrestigeManager.doPrestige()) {
-      this.game.events.emit('sfx', 'prestige');
-      // GameScene'i yeniden başlat
-      this.scene.stop('UIScene');
-      this.scene.stop('GameScene');
-      this.scene.start('GameScene');
-    }
+    // No-op: manuel prestige K26 ile kaldırıldı (zafer/ölüm ile gelir). Eski UI çağrısı için stub.
   }
 
   // ═══════ CONQUEST MAP ═══════
@@ -485,7 +479,8 @@ export default class UIScene extends Phaser.Scene {
     this.boneText.setText(`🦴 ${formatNumber(GameState.resources.bone)}`);
     this.essenceText.setText(`🔮 ${formatNumber(GameState.resources.essence)}`);
     this.crystalText.setText(`💎 ${formatNumber(GameState.resources.crystal)}`);
-    this.waveText.setText(t('ui.wave', { n: GameState.wave.current }));
+    const floor = PrestigeManager.getCurrentFloor();
+    this.waveText.setText(t('ui.waveFloor', { wave: GameState.wave.current, floor, god: CONFIG.PRESTIGE.godFloor }));
     this.enemyText.setText(t('ui.enemies', { killed: GameState.wave.enemiesKilled, total: GameState.wave.enemiesInWave }));
 
     // Wave progress bar
@@ -522,10 +517,10 @@ export default class UIScene extends Phaser.Scene {
       this.soulText.setColor(this.soulFlashTimer > 0.15 ? '#ffffff' : '#c9b3ff');
     }
 
-    // Prestige butonu görünürlüğü
-    const canPrestige = PrestigeManager.canPrestige();
-    this.prestigeBtn.setVisible(canPrestige);
-    this.prestigeBtnLabel.setVisible(canPrestige);
+    // Manuel prestige butonu KALDIRILDI (K26/Faz F): prestige artık keyfi değil —
+    // yalnız tanrıyı yenince (zafer) veya necromancer ölünce (zorlanmış) gelir.
+    this.prestigeBtn.setVisible(false);
+    this.prestigeBtnLabel.setVisible(false);
 
     // Upgrade paneli — dirty flag ile güncelle
     if (this.panelDirty) {

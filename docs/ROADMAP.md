@@ -16,7 +16,7 @@
 | C | Necromancer varlığı + canı + hat ihlali (breachLine) | ✅ |
 | D | Soul-debt sistemi + otomatik diriltme (üç ceza) | ✅ (birim-ölümü tetiği Faz E'de bağlandı) |
 | E | Dur-dövüş + oyuncu dizilimi + kat-arası kurulum fazı | 🟡 çekirdek kuruldu (kat-arası tam-duraklama fazı + harita engel-çarpışması cila) |
-| F | Prestige: iki yol (gönüllü/zorlanmış), Model Y çarpan | ⬜ |
+| F | Prestige: iki yol (gönüllü/zorlanmış), Model Y çarpan | ✅ |
 | G | Ritim (kat döngüsü) + kadro (MVP 5 birim, ~12 arketip) + lore | ⬜ |
 | H | Save version bump + denge + playtest cila | ⬜ |
 
@@ -81,11 +81,18 @@
       otonomisi (K24 daire) henüz yok — cila katmanı, çekirdek bağımlılığı değil (DESIGN 6.2).
 - Not: config.LANE_COUNT artık ÖLÜ sabit (kullanılmıyor) — K23 temizliğiyle Faz G'de silinebilir.
 
-### Faz F — Prestige
-- [ ] Gönüllü (tanrıyı yen → tam) + zorlanmış (necromancer öl → yarı, Diş 1)
-- [ ] Model Y: çarpan derinliğe bağlı
-- [ ] Kalıcı: çarpan + açılmış birim tipleri; gerisi sıfırlanır
-- [ ] Tanrı Kat N'de + zafer ekranı + tekrar/endless seçeneği (K26)
+### Faz F — Prestige ✅
+- [x] İki yol: voluntaryPrestige (tanrıyı yen → tam) + forcedPrestige (necromancer öl → yarı, Diş-1 K14)
+- [x] Model Y çarpan: kalıcı kazanç = base + ulaşılan_kat × perFloor (derinliğe bağlı — K15). Test edildi.
+- [x] Kalıcı: çarpan BİRİKİR + açılmış birim TİPLERİ korunur; soul/meta/upgrade/adet/kat/soul-debt sıfırlanır
+- [x] Kat kavramı: waveToFloor (10 wave = 1 kat, K7); config.PRESTIGE.godFloor = Kat N (placeholder 4)
+- [x] Tanrı Kat N'in son dalgasında spawn (WaveManager.isGodWave); normal boss'tan godHpMultiplier kat güçlü
+- [x] Tanrı yenilince god-defeated → ZAFER ekranı (K26); necromancer ölünce → ölüm ekranı; ikisi de
+      _showRunEndScreen (kazanılan çarpan + "Yeniden İn"/"Yeniden Başla")
+- [x] UI: kat göstergesi (D{wave} · Kat {floor}/{god}); manuel prestige butonu KALDIRILDI (K26 — keyfi değil)
+- Not: Endless/New Game+ döngüsü park'ta (K26/DESIGN 10) — MVP yalnız zafer + yeniden-in.
+      config.prestigeUnlock node'u + prestige.unlocked artık ÖLÜ (otomatik tetik) — Faz G'de temizlenir.
+      Tanrı için özel 'god' asset/stat yok; geçici boss_armored kullanılıyor — Faz G.
 
 ### Faz G — Ritim + Kadro + Lore
 - [ ] 10 wave = kat döngüsü, kat geçiş kartları

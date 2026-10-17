@@ -276,8 +276,17 @@ export const CONFIG = {
     typeUnlocks: { skeleton: 1, armored: 5, fast: 8, foodCarrier: 3, elite: 15, shield: 10, splitter: 12, healer: 14 },
   },
 
-  // Prestige
-  PRESTIGE: { multiplierPerPrestige: 0.5 },
+  // Prestige (K14/K15/K26 — Model Y derinlik çarpanı + iki yol)
+  PRESTIGE: {
+    wavesPerFloor: 10,       // 10 wave = 1 kat (K7)
+    godFloor: 4,             // tanrı bu katta (DESIGN 7.1 placeholder; playtest'te artabilir — K26 "ör. Kat 10")
+    // Model Y: kalıcı çarpan = base + ulaşılan_kat × perFloor  (derinliğe bağlı — K15)
+    baseMultiplierGain: 0.3, // en sığ prestige bile bu kadar verir
+    perFloorGain: 0.25,      // her ulaşılan kat ek çarpan
+    forcedRatio: 0.5,        // zorlanmış (ölüm) prestige = gönüllünün yarısı (Diş-1, K14)
+    godBossType: 'boss_armored', // tanrı için kullanılacak boss asset/stat (geçici; Faz G'de özel 'god')
+    godHpMultiplier: 3,      // tanrı normal boss'tan bu kat güçlü (kat bekçisi değil, final)
+  },
 
   // Ses sistemi — prosedürel (Web Audio) SFX reçeteleri.
   // Asset dosyası yok; her efekt runtime'da sentezlenir. İleride sample

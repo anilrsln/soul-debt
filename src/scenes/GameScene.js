@@ -1,10 +1,11 @@
 import { CONFIG } from '../config.js';
-import GameState, { resetForPrestige } from '../state/GameState.js';
+import GameState from '../state/GameState.js';
 import WaveManager from '../systems/WaveManager.js';
 import IdleManager from '../systems/IdleManager.js';
 import SaveManager from '../systems/SaveManager.js';
 import AchievementManager from '../systems/AchievementManager.js';
 import SoulDebtManager from '../systems/SoulDebtManager.js';
+import PrestigeManager from '../systems/PrestigeManager.js';
 import Necromancer from '../entities/Necromancer.js';
 import Archer from '../entities/Archer.js';
 import Cannon from '../entities/Cannon.js';
@@ -106,6 +107,8 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('enemy-killed', this.onEnemyKilled, this);
     this.events.on('wave-complete', this.onWaveComplete, this);
     this.events.on('boss-wave', this.onBossWave, this);
+    this.events.on('god-wave', this.onGodWave, this);
+    this.events.on('god-defeated', this._onGodDefeated, this);
 
     // Kritik vuruş bildirimi
     this.game.events.off('crit-hit', this.onCritHit, this);
@@ -371,6 +374,13 @@ export default class GameScene extends Phaser.Scene {
     this.showFloatingText(i18n('game.crit'), data.x, data.y - 16, 0xff8800, 16, 700);
   }
 
+  /** Tanrı dalgası girişinde duyuru (K26 final). */
+  onGodWave(data) {
+    this.showFloatingText(i18n('game.godWave'), CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 - 50, 0xffd700, 26, 2800);
+    this.game.events.emit('sfx', 'prestige');
+    if (CONFIG.FX?.screenShake) this.cameras.main.shake(400, 0.012);
+  }
+
   /** Boss dalgası girişinde duyuru. */
   onBossWave(data) {
     const bossName = data.bossType ? i18n(`enemy.${data.bossType}`) : i18n('game.boss');
@@ -455,34 +465,58 @@ export default class GameScene extends Phaser.Scene {
   }
 
   /** Necromancer öldü — koşu biter (K26). Faz F'de zorlanmış prestige (yarı çarpan) bağlanacak. */
+  /** Necromancer öldü → ZORLANMIŞ prestige (yarı çarpan, Diş-1 — K14/K26). */
   _onNecromancerDeath() {
     if (this.isGameOver) return;
+    const result = PrestigeManager.forcedPrestige();
+    this._showRunEndScreen(false, result);
+  }
+
+  /** Tanrı yenildi → GÖNÜLLÜ prestige (tam çarpan, zafer — K26). */
+  _onGodDefeated() {
+    if (this.isGameOver) return;
+    const result = PrestigeManager.voluntaryPrestige();
+    this._showRunEndScreen(true, result);
+  }
+
+  /**
+   * Koşu-sonu ekranı (ölüm veya zafer). Prestige zaten uygulandı (result taşır).
+   * @param {boolean} isVictory
+   * @param {{gain:number,newMultiplier:number,depth:number}} result
+   */
+  _showRunEndScreen(isVictory, result) {
     this.isGameOver = true;
+    GameState.necromancer.hp = GameState.necromancer.maxHp;
     SaveManager.save();
-    this.game.events.emit('sfx', 'deathDefender');
-    if (CONFIG.FX?.screenShake) this.cameras.main.shake(500, 0.02);
+    this.game.events.emit('sfx', isVictory ? 'prestige' : 'deathDefender');
+    if (CONFIG.FX?.screenShake) this.cameras.main.shake(500, isVictory ? 0.01 : 0.02);
 
     const cx = CONFIG.CANVAS_WIDTH / 2, cy = CONFIG.CANVAS_HEIGHT / 2;
-    const overlay = this.add.rectangle(cx, cy, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT, 0x000000, 0).setDepth(400);
-    this.tweens.add({ targets: overlay, fillAlpha: 0.78, duration: 500 });
-    const title = this.add.text(cx, cy - 40, i18n('game.gameOverTitle'), {
-      fontSize: '32px', fontFamily: 'monospace', color: '#ff4444', stroke: '#000', strokeThickness: 4,
+    const accent = isVictory ? 0xffd700 : 0xff4444;
+    const accentHex = isVictory ? '#ffd700' : '#ff4444';
+    const overlay = this.add.rectangle(cx, cy, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT, isVictory ? 0x0a0a2a : 0x000000, 0).setDepth(400);
+    this.tweens.add({ targets: overlay, fillAlpha: 0.82, duration: 500 });
+
+    const title = this.add.text(cx, cy - 56, i18n(isVictory ? 'game.victoryTitle' : 'game.gameOverTitle'), {
+      fontSize: '30px', fontFamily: 'monospace', color: accentHex, stroke: '#000', strokeThickness: 4,
     }).setOrigin(0.5).setDepth(401).setAlpha(0);
-    const sub = this.add.text(cx, cy + 4, i18n('game.gameOverSub', { wave: GameState.wave.current }), {
-      fontSize: '14px', fontFamily: 'monospace', color: '#cccccc', stroke: '#000', strokeThickness: 2,
+    const sub = this.add.text(cx, cy - 20, i18n(isVictory ? 'game.victorySub' : 'game.gameOverSub', { wave: GameState.wave.current, floor: result.depth }), {
+      fontSize: '13px', fontFamily: 'monospace', color: '#cccccc', stroke: '#000', strokeThickness: 2,
     }).setOrigin(0.5).setDepth(401).setAlpha(0);
-    // Placeholder: yeniden başla butonu (Faz F'de prestige/çarpan ekranına dönüşecek)
-    const btn = this.add.rectangle(cx, cy + 56, 160, 36, 0x3a1a1a).setDepth(401).setStrokeStyle(2, 0xff4444).setAlpha(0).setInteractive({ useHandCursor: true });
-    const btnLabel = this.add.text(cx, cy + 56, i18n('game.restart'), {
+    // Kazanılan çarpan (Model Y — her iki yolda da, zorlanmışta yarı)
+    const mult = this.add.text(cx, cy + 10, i18n('game.prestigeGain', { gain: result.gain.toFixed(2), total: result.newMultiplier.toFixed(2) }), {
+      fontSize: '15px', fontFamily: 'monospace', color: '#c9b3ff', stroke: '#000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(401).setAlpha(0);
+
+    const btn = this.add.rectangle(cx, cy + 54, 180, 36, isVictory ? 0x1a3a1a : 0x3a1a1a).setDepth(401).setStrokeStyle(2, accent).setAlpha(0).setInteractive({ useHandCursor: true });
+    const btnLabel = this.add.text(cx, cy + 54, i18n(isVictory ? 'game.descendAgain' : 'game.restart'), {
       fontSize: '14px', fontFamily: 'monospace', color: '#ffffff', stroke: '#000', strokeThickness: 2,
     }).setOrigin(0.5).setDepth(402).setAlpha(0);
-    this.tweens.add({ targets: [title, sub, btn, btnLabel], alpha: 1, duration: 500, delay: 300 });
-    btn.on('pointerover', () => btn.setFillStyle(0x5a2a2a));
-    btn.on('pointerout', () => btn.setFillStyle(0x3a1a1a));
+    this.tweens.add({ targets: [title, sub, mult, btn, btnLabel], alpha: 1, duration: 500, delay: 300 });
+    btn.on('pointerover', () => btn.setFillStyle(isVictory ? 0x2a5a2a : 0x5a2a2a));
+    btn.on('pointerout', () => btn.setFillStyle(isVictory ? 0x1a3a1a : 0x3a1a1a));
     btn.on('pointerdown', () => {
-      // Placeholder reset: koşu-içi sıfırla (prestige çarpanı Faz F'de uygulanacak)
-      resetForPrestige(GameState);
-      GameState.necromancer.hp = GameState.necromancer.maxHp;
+      // Prestige zaten uygulandı; yeni koşu Kat 1'den başlar (çarpan kalıcı)
       SaveManager.save();
       this.scene.stop('UIScene');
       this.scene.restart();

@@ -62,11 +62,29 @@ export default class WaveManager {
     return rotation[idx % rotation.length];
   }
 
+  /** Bu wave tanrı wave'i mi? (godFloor'un son dalgası — oyunun finali, K26) */
+  isGodWave() {
+    const P = CONFIG.PRESTIGE;
+    return GameState.wave.current === P.godFloor * P.wavesPerFloor;
+  }
+
   spawnEnemy() {
-    // Boss dalgası: orta şeritte tek büyük boss, girişinde duyuru
+    const bossY = (this._spawnBandTop + this._spawnBandBottom) / 2;
+    // TANRI dalgası (Kat N finali): tek, çok güçlü boss — yenince ZAFER (K26)
+    if (this.isGodWave()) {
+      const god = this.scene.enemyPool.acquire(this.scene, CONFIG.PRESTIGE.godBossType, GameState.wave.current, bossY, { boss: true, god: true });
+      // tanrıyı normal boss'tan güçlendir
+      god.maxHP = Math.floor(god.maxHP * CONFIG.PRESTIGE.godHpMultiplier);
+      god.currentHP = god.maxHP;
+      god.isGod = true;
+      this.enemies.push(god);
+      GameState.wave.enemiesSpawned++;
+      this.scene.events.emit('god-wave', { wave: GameState.wave.current });
+      return;
+    }
+    // Normal boss dalgası
     if (this.isBossWave()) {
       const bossType = this.getBossType(GameState.wave.current);
-      const bossY = (this._spawnBandTop + this._spawnBandBottom) / 2;
       const boss = this.scene.enemyPool.acquire(this.scene, bossType, GameState.wave.current, bossY, { boss: true });
       this.enemies.push(boss);
       GameState.wave.enemiesSpawned++;
