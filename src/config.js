@@ -241,14 +241,14 @@ export const CONFIG = {
   // ─────────────────────────────────────────────────────────────
   ASSETS: {
     // Enemies — Red Units + Black Units for bosses
-    'enemy-skeleton':    { sprite: 'assets/units/red-pawn-idle.png',       frames: { frameWidth: 192, frameHeight: 192 } },
-    'enemy-armored':     { sprite: 'assets/units/red-warrior-idle.png',    frames: { frameWidth: 192, frameHeight: 192 } },
-    'enemy-fast':        { sprite: 'assets/units/red-archer-idle.png',     frames: { frameWidth: 192, frameHeight: 192 } },
-    'enemy-foodCarrier': { sprite: 'assets/units/red-pawn-meat.png',       frames: { frameWidth: 192, frameHeight: 192 } },
-    'enemy-elite':       { sprite: 'assets/units/red-lancer-idle.png',     frames: { frameWidth: 320, frameHeight: 320 } },
-    'enemy-shield':      { sprite: 'assets/units/red-warrior-guard.png',   frames: { frameWidth: 192, frameHeight: 192 } },
-    'enemy-splitter':    { sprite: 'assets/units/red-monk-idle.png',       frames: { frameWidth: 192, frameHeight: 192 } },
-    'enemy-healer':      { sprite: 'assets/units/yellow-monk-idle.png',    frames: { frameWidth: 192, frameHeight: 192 } },
+    'enemy-ghoul':        { sprite: 'assets/units/red-pawn-idle.png',       frames: { frameWidth: 192, frameHeight: 192 } },
+    'enemy-gargoyle':     { sprite: 'assets/units/red-warrior-idle.png',    frames: { frameWidth: 192, frameHeight: 192 } },
+    'enemy-imp':          { sprite: 'assets/units/red-archer-idle.png',     frames: { frameWidth: 192, frameHeight: 192 } },
+    'enemy-soulVessel':   { sprite: 'assets/units/red-pawn-meat.png',       frames: { frameWidth: 192, frameHeight: 192 } },
+    'enemy-cursedKnight': { sprite: 'assets/units/red-lancer-idle.png',     frames: { frameWidth: 320, frameHeight: 320 } },
+    'enemy-warden':       { sprite: 'assets/units/red-warrior-guard.png',   frames: { frameWidth: 192, frameHeight: 192 } },
+    'enemy-ooze':         { sprite: 'assets/units/red-monk-idle.png',       frames: { frameWidth: 192, frameHeight: 192 } },
+    'enemy-cultist':      { sprite: 'assets/units/yellow-monk-idle.png',    frames: { frameWidth: 192, frameHeight: 192 } },
     'enemy-boss_tank':      { sprite: 'assets/units/black-warrior-idle.png',  frames: { frameWidth: 192, frameHeight: 192 } },
     'enemy-boss_berserker': { sprite: 'assets/units/black-lancer-idle.png',   frames: { frameWidth: 320, frameHeight: 320 } },
     'enemy-boss_shaman':    { sprite: 'assets/units/black-monk-idle.png',     frames: { frameWidth: 192, frameHeight: 192 } },
@@ -268,18 +268,22 @@ export const CONFIG = {
 
   // Düşman değerleri
   ENEMIES: {
-    skeleton:    { name: 'Skeleton',         hp: 10,  speed: 30, soul: 2,  meta: 0, metaType: 'bone', color: 0xcccccc },
-    armored:     { name: 'Armored Skeleton', hp: 25,  speed: 20, soul: 5,  meta: 1, metaType: 'bone', color: 0x888888 },
-    fast:        { name: 'Fast Runner',      hp: 8,   speed: 50, soul: 3,  meta: 0, metaType: 'bone', color: 0xff6666 },
-    foodCarrier: { name: 'Food Carrier',     hp: 20,  speed: 30, soul: 2,  meta: 3, metaType: 'bone', color: 0x66ff66 },
-    elite:       { name: 'Elite',            hp: 100, speed: 25, soul: 15, meta: 5, metaType: 'essence', color: 0xffaa00 },
-    // Kalkanlı: orta HP ama kalkan ilk darbeleri emer (shield, HP eğrisinde ölçeklenir)
-    shield:      { name: 'Shield Bearer',    hp: 30,  speed: 22, soul: 6,  meta: 1, metaType: 'essence', color: 0x6688cc, shield: 40 },
-    // Splitter: savunucu ile ölünce 'split.count' küçük çocuğa bölünür (çocuklar bölünmez)
-    splitter:    { name: 'Splitter',         hp: 24,  speed: 26, soul: 5,  meta: 0, metaType: 'essence', color: 0xcc66ff,
+    // Düşman kimliği Soul Debt evreni (K23): skeleton→ghoul, armored→gargoyle, fast→imp,
+    // foodCarrier→soulVessel, elite→cursedKnight, shield→warden, splitter→ooze, healer→cultist.
+    // NOT: 'shield'/'heal'/'split' STAT alanları (girdi içindeki) değişmez — yalnız anahtar+isim temalandı.
+    ghoul:       { name: 'Ghoul',            hp: 10,  speed: 30, soul: 2,  meta: 0, metaType: 'bone', color: 0xcccccc },
+    gargoyle:    { name: 'Gargoyle',         hp: 25,  speed: 20, soul: 5,  meta: 1, metaType: 'bone', color: 0x888888 },
+    imp:         { name: 'Imp',              hp: 8,   speed: 50, soul: 3,  meta: 0, metaType: 'bone', color: 0xff6666 },
+    soulVessel:  { name: 'Soul Vessel',      hp: 20,  speed: 30, soul: 2,  meta: 3, metaType: 'bone', color: 0x66ff66 },
+    cursedKnight:{ name: 'Cursed Knight',    hp: 100, speed: 25, soul: 15, meta: 5, metaType: 'essence', color: 0xffaa00 },
+    // Warden: orta HP ama kalkan ilk darbeleri emer (shield STAT'ı, HP eğrisinde ölçeklenir)
+    warden:      { name: 'Warden',           hp: 30,  speed: 22, soul: 6,  meta: 1, metaType: 'essence', color: 0x6688cc, shield: 40 },
+    // Ooze: savunucu ile ölünce 'split.count' küçük çocuğa bölünür (çocuklar bölünmez)
+    ooze:        { name: 'Ooze',             hp: 24,  speed: 26, soul: 5,  meta: 0, metaType: 'essence', color: 0xcc66ff,
                    split: { count: 2, hpFactor: 0.4, rewardFactor: 0.35, scale: 0.6 } },
-    // Healer: her 'interval' sn'de menzildeki (kendisi hariç) düşmanları maxHP'nin fraction'ı kadar iyileştirir
-    healer:      { name: 'Healer',           hp: 28,  speed: 24, soul: 7,  meta: 1, metaType: 'essence', color: 0x33cc99,
+    // Cultist: her 'interval' sn'de menzildeki (kendisi hariç) düşmanları maxHP'nin fraction'ı kadar iyileştirir
+    // (düşman healer — oyuncu 'cleric' birimiyle çakışmasın diye cultist, K23)
+    cultist:     { name: 'Cultist',          hp: 28,  speed: 24, soul: 7,  meta: 1, metaType: 'essence', color: 0x33cc99,
                    heal: { fraction: 0.12, radius: 90, interval: 1.2 } },
     // ── Boss tipleri ── her bossEvery wave'de tek spawn; rotasyon WaveManager'da
     // boss_tank: zırhlı, çok yüksek HP + kalkan — yavaş ama dayanıklı
@@ -311,7 +315,7 @@ export const CONFIG = {
     hpScaling: 1.08,
     soulScaling: 1.05,
     bossEvery: 10, // her 10 wave'de boss dalgası
-    typeUnlocks: { skeleton: 1, armored: 5, fast: 8, foodCarrier: 3, elite: 15, shield: 10, splitter: 12, healer: 14 },
+    typeUnlocks: { ghoul: 1, gargoyle: 5, imp: 8, soulVessel: 3, cursedKnight: 15, warden: 10, ooze: 12, cultist: 14 },
   },
 
   // Prestige (K14/K15/K26 — Model Y derinlik çarpanı + iki yol)

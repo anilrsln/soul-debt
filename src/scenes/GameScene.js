@@ -387,7 +387,7 @@ export default class GameScene extends Phaser.Scene {
     // Ölüm parçacık efekti
     this.spawnDeathParticles(data.x, data.y, data.killedBy);
     // Elite / boss ölümünde kamera sarsıntısı (boss daha güçlü)
-    if (CONFIG.FX?.screenShake && (data.type === 'elite' || data.type === 'boss')) {
+    if (CONFIG.FX?.screenShake && (data.type === 'cursedKnight' || data.type === 'boss')) {
       const big = data.type === 'boss';
       this.cameras.main.shake(big ? 350 : 180, big ? 0.016 : 0.008);
     }

@@ -7,14 +7,14 @@ import { CONFIG } from '../config.js';
 /** Oyun mantığında kullanılacak ekran boyutları (px) */
 const DISPLAY_SIZES = {
   // enemies
-  'enemy-skeleton':       { w: 48, h: 48 },
-  'enemy-armored':        { w: 54, h: 54 },
-  'enemy-fast':           { w: 42, h: 42 },
-  'enemy-foodCarrier':    { w: 50, h: 50 },
-  'enemy-elite':          { w: 64, h: 64 },
-  'enemy-shield':         { w: 54, h: 54 },
-  'enemy-splitter':       { w: 50, h: 50 },
-  'enemy-healer':         { w: 48, h: 48 },
+  'enemy-ghoul':       { w: 48, h: 48 },
+  'enemy-gargoyle':        { w: 54, h: 54 },
+  'enemy-imp':           { w: 42, h: 42 },
+  'enemy-soulVessel':    { w: 50, h: 50 },
+  'enemy-cursedKnight':          { w: 64, h: 64 },
+  'enemy-warden':         { w: 54, h: 54 },
+  'enemy-ooze':       { w: 50, h: 50 },
+  'enemy-cultist':         { w: 48, h: 48 },
   'enemy-boss_tank':      { w: 88, h: 88 },
   'enemy-boss_berserker': { w: 100, h: 100 },
   'enemy-boss_shaman':    { w: 92, h: 92 },
@@ -36,14 +36,14 @@ const DISPLAY_SIZES = {
  * Phaser anims.create ile kaydedilir, sprite.play(key) ile oynatılır.
  */
 const ANIM_DEFS = {
-  'enemy-skeleton':       { frameCount: 6, frameRate: 8,  flipX: true },
-  'enemy-armored':        { frameCount: 6, frameRate: 7,  flipX: true },
-  'enemy-fast':           { frameCount: 6, frameRate: 12, flipX: true },
-  'enemy-foodCarrier':    { frameCount: 6, frameRate: 8,  flipX: true },
-  'enemy-elite':          { frameCount: 6, frameRate: 7,  flipX: true },
-  'enemy-shield':         { frameCount: 6, frameRate: 7,  flipX: true },
-  'enemy-splitter':       { frameCount: 6, frameRate: 9,  flipX: true },
-  'enemy-healer':         { frameCount: 6, frameRate: 8,  flipX: true },
+  'enemy-ghoul':       { frameCount: 6, frameRate: 8,  flipX: true },
+  'enemy-gargoyle':        { frameCount: 6, frameRate: 7,  flipX: true },
+  'enemy-imp':           { frameCount: 6, frameRate: 12, flipX: true },
+  'enemy-soulVessel':    { frameCount: 6, frameRate: 8,  flipX: true },
+  'enemy-cursedKnight':          { frameCount: 6, frameRate: 7,  flipX: true },
+  'enemy-warden':         { frameCount: 6, frameRate: 7,  flipX: true },
+  'enemy-ooze':       { frameCount: 6, frameRate: 9,  flipX: true },
+  'enemy-cultist':         { frameCount: 6, frameRate: 8,  flipX: true },
   'enemy-boss_tank':      { frameCount: 6, frameRate: 6,  flipX: true },
   'enemy-boss_berserker': { frameCount: 6, frameRate: 7,  flipX: true },
   'enemy-boss_shaman':    { frameCount: 6, frameRate: 7,  flipX: true },
@@ -84,7 +84,7 @@ const AssetProvider = {
 
   /**
    * Sprite'a doğru frame/boyut uygular.
-   * @param {number} [childScale] — splitter child için 0..1 arası ek scale
+   * @param {number} [childScale] — ooze child için 0..1 arası ek scale
    */
   applySprite(imageObj, key, childScale = 1) {
     const spec = CONFIG.ASSETS[key];

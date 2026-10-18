@@ -41,7 +41,7 @@ export default class WaveManager {
 
   selectEnemyType() {
     const available = this.getAvailableEnemyTypes();
-    const weights = { skeleton: 40, armored: 20, fast: 20, foodCarrier: 15, elite: 5, shield: 10, splitter: 10, healer: 8 };
+    const weights = { ghoul: 40, gargoyle: 20, imp: 20, soulVessel: 15, cursedKnight: 5, warden: 10, ooze: 10, cultist: 8 };
     let total = 0;
     const list = available.map(type => {
       const w = weights[type] || 10;
@@ -106,7 +106,7 @@ export default class WaveManager {
     for (let i = 0; i < n; i++) {
       const spread = i - (n - 1) / 2;
       const childY = Math.max(corridorTop, Math.min(corridorBottom, data.y + spread * 18));
-      const child = this.scene.enemyPool.acquire(this.scene, 'splitter', data.wave, childY, {
+      const child = this.scene.enemyPool.acquire(this.scene, 'ooze', data.wave, childY, {
         hpFactor: data.hpFactor, rewardFactor: data.rewardFactor, scale: data.scale,
         noSplit: true, child: true, spawnX: data.x + spread * 6,
       });

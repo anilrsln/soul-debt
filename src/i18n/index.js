@@ -3,7 +3,7 @@ import en from './locales/en.js';
 
 /**
  * Basit, bağımlılıksız i18n katmanı.
- * - Anahtar tabanlı: t('ui.tab.laser'), t('enemy.skeleton')
+ * - Anahtar tabanlı: t('ui.tab.necromancer'), t('enemy.ghoul')
  * - İç içe anahtarlar nokta ile çözülür.
  * - {param} yer tutucuları ikinci argümandaki değerlerle değiştirilir.
  * - Dil localStorage'da saklanır; değişince 'localechange' event'i yayılır.
