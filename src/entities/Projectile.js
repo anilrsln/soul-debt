@@ -14,7 +14,7 @@ export default class Projectile {
   reset(scene, x, y, target, type, damage, blastRadius = 0, isCrit = false, onHit = null) {
     this.scene = scene;
     this.target = target;
-    this.type = type; // 'arrow' | 'cannonball' | 'frostbolt' | 'boulder'
+    this.type = type; // 'arrow' | 'mageBolt' (golem/bruiser melee oldu — cannonball/boulder kaldırıldı)
     this.damage = damage;
     this.blastRadius = blastRadius;
     this.isCrit = isCrit;
@@ -95,7 +95,7 @@ export default class Projectile {
       this.aoeHit(enemies);
       this.explosionEffect();
     } else {
-      // Tekli hasar — ok / frostbolt
+      // Tekli hasar — ok / mageBolt
       if (this.target && this.target.alive && !this.target.dying) {
         this.target.takeDamage(this.damage, true, this.isCrit);
         if (this.onHit) this.onHit(this.target);
@@ -119,10 +119,10 @@ export default class Projectile {
   }
 
   hitEffect() {
-    const color = this.type === 'frostbolt' ? 0x88ccff : 0xffffff;
+    const color = this.type === 'mageBolt' ? 0x88ccff : 0xffffff;
     const spark = this.scene.add.circle(this.sprite.x, this.sprite.y, 4, color).setDepth(20).setAlpha(0.8);
     this.scene.tweens.add({
-      targets: spark, alpha: 0, scaleX: 2, scaleY: 2, duration: this.type === 'frostbolt' ? 250 : 150,
+      targets: spark, alpha: 0, scaleX: 2, scaleY: 2, duration: this.type === 'mageBolt' ? 250 : 150,
       onComplete: () => spark.destroy(),
     });
   }

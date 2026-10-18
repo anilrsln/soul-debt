@@ -163,9 +163,8 @@ export const CONFIG = {
       craftCost: { soul: 200, essence: 8 }, craftCostMultiplier: 2.0,
       hireCost: 200,
       hireCostMultiplier: 2.0,
+      // Melee: yalnız damage upgrade edilebilir (blastRadius/reloadSpeed mermiye aitti — kaldırıldı).
       damage:      { base: 15, multiplier: 1.25, baseCost: 30 },
-      blastRadius: { base: 40, multiplier: 1.1,  baseCost: 35 },
-      reloadSpeed: { base: 0.3, multiplier: 1.1, baseCost: 25 },
     },
     mage: {
       name: 'Damage Mage',
@@ -188,27 +187,24 @@ export const CONFIG = {
     },
     bruiser: {
       name: 'Skeleton Bruiser',
-      combatType: 'ranged', hp: 50, // AŞAMA 3'te melee ön-safa çevrilecek (K22 bruiser)
+      combatType: 'melee', hp: 70, // melee TIKAÇ ön-saf (K22): golem'den dayanıksız ama hızlı+vurucu
+      // Melee: mermi yok. Golem'den rol farkı: orta HP, yüksek hasar, HIZLI vuruş.
       spriteKey: 'defender-bruiser', spriteType: 'image',
-      projectileType: 'boulder', fireSfx: 'boulderFire', fireFx: 'heavy',
-      soulCapacity: 16, // orta-yüksek (K12)
-      // K30 placeholder: soul + bone + essence (çok-metalı ağır)
-      craftCost: { soul: 500, bone: 20, essence: 10 }, craftCostMultiplier: 2.5,
-      hireCost: 500,
-      hireCostMultiplier: 2.5,
-      damage:      { base: 35, multiplier: 1.3,  baseCost: 50 },
-      blastRadius: { base: 70, multiplier: 1.12, baseCost: 45 },
-      reloadSpeed: { base: 0.18, multiplier: 1.1, baseCost: 35 }, // çok yavaş ateş
-      range:       { base: 999, multiplier: 1.0,  baseCost: 0  }, // tam saha menzili
+      fireFx: 'blast',
+      meleeAttackRate: 1.8, // golem'in global 1.0'ından hızlı — bruiser'ın kimliği (ön-saf vurucu)
+      soulCapacity: 14, // golem'den (20) ucuz dirilt; orta borç (K12)
+      // K30 placeholder: soul + bone (ön-saf iskelet — golem'in essence'ından ayrışır)
+      craftCost: { soul: 350, bone: 25 }, craftCostMultiplier: 2.2,
+      hireCost: 350,
+      hireCostMultiplier: 2.2,
+      damage:      { base: 22, multiplier: 1.28, baseCost: 40 }, // golem (15) üstü vuruş gücü
     },
   },
 
   // Mermi hızları
   PROJECTILES: {
     arrow:      { speed: 350, size: 3 },
-    cannonball: { speed: 200, size: 5 },
-    frostbolt:  { speed: 280, size: 4 },
-    boulder:    { speed: 150, size: 7 },
+    mageBolt:   { speed: 280, size: 4 },
   },
 
   // ─────────────────────────────────────────────────────────────
@@ -241,9 +237,7 @@ export const CONFIG = {
     'defender-bruiser':     { sprite: 'assets/buildings/blue-castle.png' },
     // Projectiles — keep geometric for now (tiny, fast-moving objects)
     'projectile-arrow':      { sprite: 'assets/units/arrow.png' },
-    'projectile-cannonball': { shape: 'circle', size: 5, color: 0xff8c00 },
-    'projectile-frostbolt':  { shape: 'circle', size: 4, color: 0x88ccff },
-    'projectile-boulder':    { shape: 'circle', size: 7, color: 0x886655 },
+    'projectile-mageBolt':   { shape: 'circle', size: 4, color: 0x88ccff },
   },
 
   // Düşman değerleri
@@ -317,7 +311,6 @@ export const CONFIG = {
     //         'sequence' (arka arkaya notalar — fanfar/çoklu ton)
     sfx: {
       archerFire:    { engine: 'tone',  type: 'triangle', freq: 880, freqEnd: 480, duration: 0.07, gain: 0.12, throttleMs: 45 },
-      cannonFire:    { engine: 'noise', freq: 400, freqEnd: 60,  duration: 0.30, gain: 0.40, throttleMs: 60 },
       deathDefender: { engine: 'tone',  type: 'square',   freq: 420, freqEnd: 180, duration: 0.09, gain: 0.16, throttleMs: 25 },
       upgrade:       { engine: 'tone',  type: 'sine',     freq: 660, freqEnd: 990, duration: 0.12, gain: 0.25 },
       hire:          { engine: 'sequence', type: 'sine', gain: 0.28, notes: [{ freq: 523, duration: 0.09 }, { freq: 784, duration: 0.12 }] },
@@ -325,8 +318,7 @@ export const CONFIG = {
       prestige:      { engine: 'sequence', type: 'sawtooth', gain: 0.30, notes: [{ freq: 392, duration: 0.12 }, { freq: 523, duration: 0.12 }, { freq: 659, duration: 0.12 }, { freq: 1047, duration: 0.22 }] },
       uiDenied:      { engine: 'tone',  type: 'square',   freq: 220, freqEnd: 160, duration: 0.10, gain: 0.14, throttleMs: 80 },
       mapOpen:       { engine: 'tone',  type: 'sine',     freq: 440, freqEnd: 660, duration: 0.10, gain: 0.18 },
-      frostFire:     { engine: 'tone',  type: 'sine',     freq: 880, freqEnd: 1200, duration: 0.08, gain: 0.14, throttleMs: 50 },
-      boulderFire:   { engine: 'noise', freq: 200, freqEnd: 40,  duration: 0.45, gain: 0.35, throttleMs: 80 },
+      mageFire:      { engine: 'tone',  type: 'sine',     freq: 880, freqEnd: 1200, duration: 0.08, gain: 0.14, throttleMs: 50 },
     },
   },
 

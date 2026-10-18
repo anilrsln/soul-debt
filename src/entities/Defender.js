@@ -142,6 +142,10 @@ export default class Defender {
   /** SoulDebtManager cooldown + soul ödedikten sonra çağırır: birim çıpasında yeniden kalkar. */
   revive() {
     this.alive = true;
+    // Diriltme YATIRIMI KORUR (K11/K22): birim güncel tip-level statlarıyla döner, yeni spawn gibi
+    // sıfırlanmaz. Damage zaten getDamage()'te canlı okunur; maxHp'yi burada tazeliyoruz ki ileride
+    // hp upgrade'i gelirse diriltilen birim de görsün (şu an melee'de hp upgrade yok — ileri-güvence).
+    this.maxHp = this.config.hp || 30;
     this.hp = this.maxHp;
     this.x = this.anchorX;
     this.y = this.anchorY;
@@ -193,7 +197,10 @@ export default class Defender {
         this._lungeState = 'engaged';
         this._attackTimer -= delta;
         if (this._attackTimer <= 0) {
-          this._attackTimer = 1 / C.meleeAttackRate;
+          // Birim-başına meleeAttackRate override (config) — yoksa global sabit (K34).
+          // Bruiser bununla golem'den hızlı vurur (ön-saf vurucu kimliği).
+          const rate = this.config.meleeAttackRate || C.meleeAttackRate;
+          this._attackTimer = 1 / rate;
           const isBoss = this._engaged.type?.startsWith('boss_');
           this._engaged.takeDamage(Math.max(1, Math.floor(this.getDamage(isBoss))), true);
         }

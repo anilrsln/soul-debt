@@ -22,7 +22,7 @@ const GameState = {
     },
     golem: {
       unlocked: false, canBeHired: false, count: 0, maxCount: 3,
-      damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 },
+      damage: { level: 1 }, // melee: yalnız damage upgrade
     },
     mage: {
       unlocked: false, canBeHired: false, count: 0, maxCount: 3,
@@ -30,7 +30,7 @@ const GameState = {
     },
     bruiser: {
       unlocked: false, canBeHired: false, count: 0, maxCount: 2,
-      damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 },
+      damage: { level: 1 }, // melee: yalnız damage upgrade
     },
   },
   conquestMap: {
@@ -66,9 +66,9 @@ export function resetAll(state) {
   state.defenders = {
     necromancer: { damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
     archer: { unlocked: false, count: 0, maxCount: 5, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
-    golem: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } },
+    golem: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 } },
     mage: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
-    bruiser: { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } },
+    bruiser: { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 } },
   };
   state.conquestMap = { unlockedNodes: [], bonuses: {} };
   state.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };
