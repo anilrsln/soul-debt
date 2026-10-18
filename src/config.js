@@ -74,10 +74,14 @@ export const CONFIG = {
     firstBoss:     { name: "Dev Avcısı",     desc: "İlk boss'u yen",           check: (g) => g.stats.bossesKilled >= 1 },
     firstPrestige: { name: "Yeniden Doğuş",  desc: "İlk prestige'i yap",       check: (g) => g.prestige.count >= 1 },
     prestige5:     { name: "Ölümsüz",        desc: "5 kez prestige yap",       check: (g) => g.prestige.count >= 5 },
-    golemUnlock:   { name: "Topçu",          desc: "Golem'i aç",               check: (g) => g.defenders.golem.canBeHired === true },
+    golemUnlock:   { name: "Golemci",        desc: "Golem'i aç",               check: (g) => g.defenders.golem.canBeHired === true },
     archerFull:    { name: "Okçu Ordusu",    desc: "Maksimum okçuya ulaş",     check: (g) => g.defenders.archer.count >= g.defenders.archer.maxCount },
     allNodes:      { name: "Fetih",          desc: "Tüm Conquest node'larını aç", check: (g) => g.conquestMap.unlockedNodes.length >= Object.keys(CONFIG.CONQUEST_NODES).length },
     richExp:       { name: "Zengin",         desc: "1M toplam Soul kazan",     check: (g) => g.stats.totalSoulEarned >= 1e6 },
+    // Faz G — veteran/diriltme/kat temalı (K37/K28)
+    veteran5:      { name: "Gazi",           desc: "Bir birimi Kıdem 5'e ulaştır", check: (g) => (g.stats.maxVeteranLevel || 0) >= 5 },
+    firstCancel:   { name: "Merhametsiz",    desc: "Bir dirilişi iptal et",    check: (g) => (g.stats.unitsCancelled || 0) >= 1 },
+    floor3:        { name: "Derine İniş",    desc: "3. kata ulaş",             check: (g) => Math.ceil(g.wave.current / (CONFIG.PRESTIGE?.wavesPerFloor || 10)) >= 3 },
   },
 
   // Renk paleti

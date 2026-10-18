@@ -51,6 +51,7 @@ const GameState = {
   stats: {
     totalEnemiesKilled: 0, totalSoulEarned: 0,
     totalMetaEarned: 0, totalWavesCompleted: 0, bossesKilled: 0,
+    maxVeteranLevel: 0, unitsCancelled: 0, // Faz G achievement sayaçları (K37/K28)
   },
   achievements: { unlocked: [] },
   // soulRate/metaRate: oynarken ölçülen gerçek kazanım hızı (idle için kullanılır)
@@ -78,7 +79,7 @@ export function resetAll(state) {
   state.conquestMap = { unlockedNodes: [], bonuses: {} };
   state.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };
   state.prestige = { count: 0, multiplier: 1.0 };
-  state.stats = { totalEnemiesKilled: 0, totalSoulEarned: 0, totalMetaEarned: 0, totalWavesCompleted: 0, bossesKilled: 0 };
+  state.stats = { totalEnemiesKilled: 0, totalSoulEarned: 0, totalMetaEarned: 0, totalWavesCompleted: 0, bossesKilled: 0, maxVeteranLevel: 0, unitsCancelled: 0 };
   state.achievements = { unlocked: [] };
   state.meta = { ...state.meta, lastSaveTime: Date.now(), totalPlayTime: 0, soulRate: 0, metaRate: 0, onboardingSeen: false };
   // settings (ses) korunur; başarımlar Yeni Oyun'da sıfırlanır, prestige'de korunur

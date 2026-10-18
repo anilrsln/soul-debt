@@ -539,6 +539,7 @@ export default class GameScene extends Phaser.Scene {
    */
   permanentlyRemoveUnit(unit) {
     if (!unit) return;
+    GameState.stats.unitsCancelled = (GameState.stats.unitsCancelled || 0) + 1; // achievement (K28 firstCancel)
     VeteranManager.resetVeteran(unit); // kıdem kaybı — diriltmemenin bedeli
     const list = this.defenders[unit.type];
     if (list) {
@@ -553,7 +554,12 @@ export default class GameScene extends Phaser.Scene {
 
   /** Kıdem atlayan birime altın pulse + parıltı + "Kıdem N" metni (K37 geri bildirim). */
   onVeteranLevelUp(unit) {
-    if (!unit || !unit.sprite) return;
+    if (!unit) return;
+    // Achievement sayacı: ulaşılan en yüksek kıdem (K37 veteran5)
+    if ((unit.veteranLevel || 0) > (GameState.stats.maxVeteranLevel || 0)) {
+      GameState.stats.maxVeteranLevel = unit.veteranLevel;
+    }
+    if (!unit.sprite) return;
     this.tweens.add({
       targets: unit.sprite, scaleX: 1.4, scaleY: 1.4,
       duration: 130, yoyo: true, ease: 'Back.easeOut',

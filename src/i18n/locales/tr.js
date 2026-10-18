@@ -155,10 +155,13 @@ export default {
     firstBoss:     { name: 'Dev Avcısı',    desc: 'İlk boss\'u yen' },
     firstPrestige: { name: 'Yeniden Doğuş', desc: 'İlk prestige\'i yap' },
     prestige5:     { name: 'Ölümsüz',       desc: '5 kez prestige yap' },
-    cannonUnlock:  { name: 'Golemci',       desc: 'Golem\'i aç' },
+    golemUnlock:   { name: 'Golemci',       desc: 'Golem\'i aç' },
     archerFull:    { name: 'Okçu Ordusu',   desc: 'Maksimum okçuya ulaş' },
     allNodes:      { name: 'Fetih',         desc: 'Tüm Fetih düğümlerini aç' },
     richExp:       { name: 'Zengin',        desc: '1M toplam Soul kazan' },
+    veteran5:      { name: 'Gazi',          desc: 'Bir birimi Kıdem 5\'e ulaştır' },
+    firstCancel:   { name: 'Merhametsiz',   desc: 'Bir birimin dirilişini iptal et (kalıcı ölüm)' },
+    floor3:        { name: 'Derine İniş',   desc: '3. kata ulaş' },
   },
   // Fetih düğümleri (CONQUEST_NODES) — name + description
   conquest: {
