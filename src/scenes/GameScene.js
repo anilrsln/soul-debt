@@ -139,6 +139,8 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('unit-revived', this._onUnitRevivedUi, this);
     // Kat-arası tam-duraklama (K28): kat sonu → kurulum fazı banner + "İn" butonu
     this.events.on('floor-break', this._onFloorBreak, this);
+    // Kat geçiş kartı (placeholder): "İN" sonrası yeni kata inerken kısa perde
+    this.events.on('floor-resumed', this._onFloorResumed, this);
 
     // Kritik vuruş bildirimi
     this.game.events.off('crit-hit', this.onCritHit, this);
@@ -507,6 +509,36 @@ export default class GameScene extends Phaser.Scene {
       this._floorBreakEls = null;
     });
     this._floorBreakEls = els;
+  }
+
+  /**
+   * Kat geçiş kartı — PLACEHOLDER (Faz G). "İN" sonrası yeni kata inerken kısa perde:
+   * koyu arka plan + "KAT N" + descent oku; fade in → hold → fade out (~1.3 sn), sonra savaş.
+   * Asset/lore gelince zenginleşir; şimdilik sade metin kartı.
+   */
+  _onFloorResumed(data) {
+    const floor = PrestigeManager.getCurrentFloor();
+    const cx = CONFIG.CANVAS_WIDTH / 2, cy = CONFIG.CANVAS_HEIGHT / 2;
+    const overlay = this.add.rectangle(cx, cy, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT, 0x05010f, 0).setDepth(350);
+    const title = this.add.text(cx, cy - 6, i18n('game.descendingTo', { n: floor }), {
+      fontSize: '34px', fontFamily: 'monospace', color: '#c9b3ff', stroke: '#000', strokeThickness: 5,
+    }).setOrigin(0.5).setDepth(351).setAlpha(0);
+    const arrow = this.add.text(cx, cy + 34, '⬇', {
+      fontSize: '28px', fontFamily: 'monospace', color: '#8a6fd0',
+    }).setOrigin(0.5).setDepth(351).setAlpha(0);
+    const els = [overlay, title, arrow];
+    // fade in → hold → fade out
+    this.tweens.add({ targets: overlay, fillAlpha: 0.9, duration: 300 });
+    this.tweens.add({ targets: [title, arrow], alpha: 1, duration: 300,
+      onComplete: () => {
+        this.tweens.add({ targets: arrow, y: cy + 46, duration: 500, yoyo: true, repeat: 0, ease: 'Sine.easeInOut' });
+        this.time.delayedCall(650, () => {
+          this.tweens.add({ targets: els, alpha: 0, duration: 350,
+            onComplete: () => els.forEach(e => e.destroy()) });
+          this.tweens.add({ targets: overlay, fillAlpha: 0, duration: 350 });
+        });
+      },
+    });
   }
 
   /** Birim öldü — konumunda tıklanabilir "✕" iptal göstergesi (K37, anlık karar). */

@@ -100,6 +100,7 @@ export default {
     floorCleared: 'KAT {n} TEMİZLENDİ',
     floorSetupHint: 'Diz · ör · absorbe et — hazır olunca in',
     descendNext: '⬇ İN',
+    descendingTo: 'KAT {n}',
     unitSelected: '✋ Seçildi — boş yere tıkla',
     placementHint: '📍 Yerleştirmek için sahaya tıkla (ESC iptal)',
     godWave: '☠ TANRI UYANDI ☠',

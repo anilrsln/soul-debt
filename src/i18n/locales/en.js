@@ -94,6 +94,7 @@ export default {
     floorCleared: 'FLOOR {n} CLEARED',
     floorSetupHint: 'Arrange · craft · absorb — descend when ready',
     descendNext: '⬇ DESCEND',
+    descendingTo: 'FLOOR {n}',
     unitSelected: '✋ Selected — click empty ground',
     placementHint: '📍 Click field to place (ESC cancels)',
     godWave: '☠ THE GOD AWAKENS ☠',
