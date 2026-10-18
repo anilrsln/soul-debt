@@ -17,7 +17,7 @@
 | D | Soul-debt sistemi + otomatik diriltme (üç ceza) | ✅ (birim-ölümü tetiği Faz E'de bağlandı) |
 | E | Dur-dövüş + oyuncu dizilimi + kat-arası kurulum fazı | 🟡 çekirdek kuruldu (kat-arası tam-duraklama fazı + harita engel-çarpışması cila) |
 | F | Prestige: iki yol (gönüllü/zorlanmış), Model Y çarpan | ✅ |
-| G | Ritim (kat döngüsü) + kadro (MVP 5 birim, ~12 arketip) + lore | ⬜ |
+| G | Ritim (kat döngüsü) + kadro (6 birim + veteran) + düşman kimliği + lore | 🟡 kadro+düşman TAMAM; kat döngüsü/lore/achievements kaldı |
 | H | Save version bump + denge + playtest cila | ⬜ |
 
 ## Faz Detayları
@@ -79,7 +79,7 @@
       + düşman steering (engelden kaç) sonraki iterasyon (K27). A* park'ta kalır.
 - [ ] **Ankerli otonomi cilası (ranged):** ranged birimler çıpada tam sabit; menzile hizalanma
       otonomisi (K24 daire) henüz yok — cila katmanı, çekirdek bağımlılığı değil (DESIGN 6.2).
-- Not: config.LANE_COUNT artık ÖLÜ sabit (kullanılmıyor) — K23 temizliğiyle Faz G'de silinebilir.
+- Not: config.LANE_COUNT ÖLÜ sabitti — Faz G Aşama 5'te SİLİNDİ.
 
 ### Faz F — Prestige ✅
 - [x] İki yol: voluntaryPrestige (tanrıyı yen → tam) + forcedPrestige (necromancer öl → yarı, Diş-1 K14)
@@ -91,26 +91,30 @@
       _showRunEndScreen (kazanılan çarpan + "Yeniden İn"/"Yeniden Başla")
 - [x] UI: kat göstergesi (D{wave} · Kat {floor}/{god}); manuel prestige butonu KALDIRILDI (K26 — keyfi değil)
 - Not: Endless/New Game+ döngüsü park'ta (K26/DESIGN 10) — MVP yalnız zafer + yeniden-in.
-      config.prestigeUnlock node'u + prestige.unlocked artık ÖLÜ (otomatik tetik) — Faz G'de temizlenir.
+      config.prestigeUnlock node'u + prestige.unlocked ÖLÜYDÜ (otomatik tetik) — Faz G Aşama 5'te SİLİNDİ.
       Tanrı için özel 'god' asset/stat yok; geçici boss_armored kullanılıyor — Faz G.
 
-### Faz G — Ritim + Kadro + Lore
-Kadro refactoru TAMAM (commit'ler Anıl'ın lokalinde push bekliyor):
+### Faz G — Ritim + Kadro + Lore 🟡
+Kadro + düşman refactoru TAMAM + push edildi (2026-10-18):
 - [x] Veri-odaklı defender mimarisi: tek Defender sınıfı + registry (Aşama 1)
 - [x] Rename: necromancer/golem/mage/bruiser/archer + i18n + mermi/ses (Aşama 2, K22/K23)
 - [x] bruiser gerçek melee ön-saf + melee temizliği + diriltme statı korur (Aşama 3)
+- [x] **Veteran (kıdem) sistemi (K37):** VeteranManager — soul-bazlı eşit dağıtım, üstel eşik,
+      veteranBonus{damage,hp,special}; diriltme korur / iptal sıfırlar + "✕ bırak" göstergesi.
+- [x] **Cleric (healer birim, Aşama 4):** combatType 'support' — menzildeki en yaralı dostu
+      iyileştirir; clericUnlock conquest node; heal gücü kıdem special çarpanına bağlı.
+- [x] **SaveManager v9 + ölü kod temizliği (Aşama 5):** v8→v9 eski defender anahtarlarını map+sil
+      (tip kilidi taşınır, adet/level temiz-başlar); PerkManager/LANE_COUNT/prestigeUnlock node/
+      prestige.unlocked kaldırıldı.
+- [x] **Düşman kimliği (K23):** ghoul/gargoyle/imp/soulVessel/cursedKnight/warden/ooze/cultist
+      (healer→cultist, oyuncu cleric çakışması çözüldü); config/asset/weights/typeUnlocks/i18n.
 
-Sıradaki — SIRALAMA (Anıl onayı): veteran → cleric → save/temizlik:
-- [ ] **Veteran (kıdem) sistemi — SIRADAKİ (K37):** soul-bazlı birim ilerlemesi, eşit dağıtım,
-      üstel eşik, veteranBonus{damage,hp,special}, diriltme korur / iptal sıfırlar. Diriltme/borç
-      çekirdeğini değiştirdiği için cleric+save'den ÖNCE. Değerler playtest placeholder.
-- [ ] **Cleric (healer birim — Aşama 4):** config'e obje + onHitEffect:'heal' (menzildeki
-      birimleri iyileştirir); registry sayesinde yeni dosya yok. GameState + i18n + conquest node.
-- [ ] **SaveManager v9 + ölü kod temizliği (Aşama 5):** temiz-başlat migration; v4→v5 ölü anahtar
-      enjeksiyonu düzelt; LANE_COUNT / PerkManager / prestigeUnlock node / prestige.unlocked temizle.
-- [ ] 10 wave = kat döngüsü, kat geçiş kartları
-- [ ] ~10-12 düşman arketipi + kat varyantları, 5 boss rotasyonu
+Kalan içerik (kadro bitti; sıra içerik + cila):
+- [ ] 10 wave = kat döngüsü, kat geçiş kartları (kat sonu ara-perde)
+- [ ] Yeni düşman arketipleri + kat varyantları (mevcut 8 + boss temalandırma)
 - [ ] Lore: boss banner, bestiary, idle popup necromancer sesi
+- [ ] Achievements yeniden yazımı (K32'de ertelendi; mevcut achievement'lar eski kadro şemasında —
+      cannonUnlock/archerFull id'leri tarihsel kaldı, metinler güncel kadroya göre gözden geçirilmeli)
 - [ ] i18n: TR + EN parite (lore ayrı yazılır, birebir çeviri değil)
 
 ### Faz H — Cila
