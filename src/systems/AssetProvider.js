@@ -26,6 +26,7 @@ const DISPLAY_SIZES = {
   'defender-golem':      { w: 32, h: 42 },
   'defender-mage':       { w: 28, h: 48 },
   'defender-bruiser':    { w: 36, h: 30 },
+  'defender-cleric':     { w: 28, h: 48 },
   // projectiles
   'projectile-arrow':     { w: 1, h: 1 },
 };

@@ -210,6 +210,21 @@ export const CONFIG = {
       hireCostMultiplier: 2.2,
       damage:      { base: 22, multiplier: 1.28, baseCost: 40 }, // golem (15) üstü vuruş gücü
     },
+    cleric: {
+      name: 'Cleric',
+      combatType: 'support', hp: 35, // destek: savaşmaz, menzildeki dost birimleri iyileştirir (K22 healer)
+      spriteKey: 'defender-cleric', spriteType: 'image',
+      fireFx: 'heal', // yeşil pulse (fire değil, heal tetiğinde)
+      soulCapacity: 12, // orta (K12)
+      // K30 placeholder: soul + essence (büyücü ailesi — mage ile benzer)
+      craftCost: { soul: 400, essence: 6 }, craftCostMultiplier: 2.0,
+      hireCost: 400,
+      hireCostMultiplier: 2.0,
+      // Support statları: heal gücü (damage yerine), fireRate = heal sıklığı, range = menzil
+      heal:     { base: 8,   multiplier: 1.25, baseCost: 35 }, // iyileştirme/pulse (upgrade stat)
+      fireRate: { base: 0.5, multiplier: 1.1,  baseCost: 25 }, // saniyede heal pulse sayısı
+      range:    { base: 140, multiplier: 1.08, baseCost: 30 },
+    },
   },
 
   // Mermi hızları
@@ -246,6 +261,7 @@ export const CONFIG = {
     'defender-golem':       { sprite: 'assets/buildings/blue-barracks.png' },
     'defender-mage':        { sprite: 'assets/buildings/blue-monastery.png' },
     'defender-bruiser':     { sprite: 'assets/buildings/blue-castle.png' },
+    'defender-cleric':      { sprite: 'assets/buildings/blue-monastery.png' }, // placeholder (mage ile paylaşır; Anıl gerçek sprite koyar)
     // Projectiles — keep geometric for now (tiny, fast-moving objects)
     'projectile-arrow':      { sprite: 'assets/units/arrow.png' },
     'projectile-mageBolt':   { shape: 'circle', size: 4, color: 0x88ccff },
@@ -456,6 +472,13 @@ export const CONFIG = {
       cost: { soul: 1200 },
       effect: { type: 'unlock', target: 'bruiser' },
       requires: ['frostUnlock', 'bossPenetration'], x: 660, y: 560,
+    },
+    clericUnlock: {
+      id: 'clericUnlock', name: 'Cleric Unlock',
+      description: 'Cleric açılır — menzildeki dost birimleri iyileştirir',
+      cost: { soul: 1500 },
+      effect: { type: 'unlock', target: 'cleric' },
+      requires: ['frostUnlock'], x: 480, y: 560,
     },
   },
 };

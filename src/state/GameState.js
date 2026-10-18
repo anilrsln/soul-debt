@@ -32,6 +32,10 @@ const GameState = {
       unlocked: false, canBeHired: false, count: 0, maxCount: 2,
       damage: { level: 1 }, // melee: yalnız damage upgrade
     },
+    cleric: {
+      unlocked: false, canBeHired: false, count: 0, maxCount: 2,
+      heal: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 }, // support: heal/fireRate/range
+    },
   },
   conquestMap: {
     unlockedNodes: [],
@@ -69,6 +73,7 @@ export function resetAll(state) {
     golem: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 } },
     mage: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
     bruiser: { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 } },
+    cleric: { unlocked: false, canBeHired: false, count: 0, maxCount: 2, heal: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
   };
   state.conquestMap = { unlockedNodes: [], bonuses: {} };
   state.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };

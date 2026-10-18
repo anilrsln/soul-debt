@@ -82,8 +82,8 @@ const EconomyManager = {
     const state = GameState.defenders[defenderType];
     if (!state) return false;
 
-    // Conquest kilidi kontrolü (cannon / frost / catapult)
-    if (['golem', 'mage', 'bruiser'].includes(defenderType) && state.canBeHired === false) return false;
+    // Conquest kilidi kontrolü (golem / mage / bruiser / cleric — conquest ile açılanlar)
+    if (['golem', 'mage', 'bruiser', 'cleric'].includes(defenderType) && state.canBeHired === false) return false;
 
     const cost = this.getHireCost(defenderType);
     if (!cost || cost === 0) return false;
@@ -121,7 +121,7 @@ const EconomyManager = {
   canAffordHire(defenderType) {
     const state = GameState.defenders[defenderType];
     if (!state) return false;
-    if (['golem', 'mage', 'bruiser'].includes(defenderType) && state.canBeHired === false) return false;
+    if (['golem', 'mage', 'bruiser', 'cleric'].includes(defenderType) && state.canBeHired === false) return false;
     if (state.unlocked && state.count >= state.maxCount) return false;
     const cost = this.getHireCost(defenderType);
     return this._canAfford(cost);

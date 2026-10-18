@@ -16,7 +16,7 @@ export default {
     prestigeBtn: '✦ PRESTIGE',
     tab: {
       necromancer: 'Necromancer', archer: 'Archer', golem: 'Golem',
-      mage: 'Mage', bruiser: 'Bruiser', economy: 'Economy',
+      mage: 'Mage', bruiser: 'Bruiser', cleric: 'Cleric', economy: 'Economy',
     },
     level: 'Lv.{n}',
     costSoul: '{n} Soul',
@@ -34,7 +34,7 @@ export default {
     prestigePermanent: 'Multiplier is permanent.',
     confirm: 'PRESTIGE',
     cancel: 'CANCEL',
-    nodeHint: { golem: 'Golem Unlock', mage: 'Mage Unlock', bruiser: 'Bruiser Unlock', default: 'Unlock' },
+    nodeHint: { golem: 'Golem Unlock', mage: 'Mage Unlock', bruiser: 'Bruiser Unlock', cleric: 'Cleric Unlock', default: 'Unlock' },
     langBtn: 'EN',
   },
   conquestMap: {
@@ -108,6 +108,7 @@ export default {
     golem: 'Stone Golem',
     mage: 'Damage Mage',
     bruiser: 'Skeleton Bruiser',
+    cleric: 'Cleric Mage',
   },
   enemy: {
     skeleton: 'Skeleton',
@@ -165,5 +166,6 @@ export default {
     kingsDecree2:    { name: "King's Decree II",         description: '+60% all Soul and Meta gain' },
     frostUnlock:     { name: 'Mage Unlock',             description: 'Unlocks Damage Mage — slows enemies' },
     catapultUnlock:  { name: 'Bruiser Unlock',          description: 'Unlocks Skeleton Bruiser — front-line melee' },
+    clericUnlock:    { name: 'Cleric Unlock',           description: 'Unlocks Cleric — heals friendly units in range' },
   },
 };

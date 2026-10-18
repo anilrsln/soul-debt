@@ -74,6 +74,7 @@ export default class Defender {
       range: d.range?.level || 1,
       blastRadius: d.blastRadius?.level || 1,
       reloadSpeed: d.reloadSpeed?.level || 1,
+      heal: d.heal?.level || 1,
     };
   }
 
@@ -258,6 +259,10 @@ export default class Defender {
       this.updateMelee(delta, enemies);
       return;
     }
+    if (this.combatType === 'support') {
+      this.updateSupport(delta);
+      return;
+    }
     // ranged: çıpada sabit, menzilden config.projectileType mermisiyle vur
     if (this.cooldownTimer > 0) this.cooldownTimer -= delta;
     this.target = this.findTarget(enemies);
@@ -283,6 +288,51 @@ export default class Defender {
    * Melee birimler mermi atmaz (combatType guard update'te), bu yüzden burada projectileType
    * yoksa sessizce çıkılır.
    */
+  // ─────────── Support (cleric heal — K22/K37) ───────────
+
+  /** Cleric iyileştirme güncellemesi: çıpada sabit, periyodik olarak menzildeki en yaralı dostu iyileştirir. */
+  updateSupport(delta) {
+    if (this.cooldownTimer > 0) this.cooldownTimer -= delta;
+    if (this.cooldownTimer <= 0) {
+      const healed = this._healPulse();
+      // Hedef bulunsa da bulunmasa da cooldown dönsün (boşa pulse spam'ini önler)
+      this.cooldownTimer = 1 / this.getFireRate();
+      if (healed && this.sprite) {
+        this.scene.tweens.add({ targets: this.sprite, y: this.y - 3, duration: 80, yoyo: true, ease: 'Power1' });
+      }
+    }
+  }
+
+  /** Cleric heal gücü (upgrade + kıdem special çarpanı). */
+  getHealAmount() {
+    const l = this.getStateLevels();
+    const base = calculateValue(this.config.heal.base, this.config.heal.multiplier, l.heal);
+    return base * this.getSpecialMultiplier(); // kıdem special → heal gücü (K37)
+  }
+
+  /** Menzildeki EN YARALI (eksik HP oranı en yüksek) dost birimi bul ve iyileştir. */
+  _healPulse() {
+    const units = this.scene.getAllUnits?.() || [];
+    const range = this.getRange();
+    const r2 = range * range;
+    let best = null, worstRatio = 1;
+    for (const u of units) {
+      if (u === this || !u.alive) continue;
+      if (u.maxHp == null || u.hp >= u.maxHp) continue; // tam canlıyı atla
+      const dx = u.x - this.x, dy = u.y - this.y;
+      if (dx * dx + dy * dy > r2) continue;
+      const ratio = u.hp / u.maxHp;
+      if (ratio < worstRatio) { worstRatio = ratio; best = u; }
+    }
+    if (!best) return false;
+    const amt = this.getHealAmount();
+    best.hp = Math.min(best.maxHp, best.hp + amt);
+    // Yeşil iyileştirme parıltısı hedefte
+    const spark = this.scene.add.circle(best.x, best.y, 10, 0x66ff88, 0.5).setDepth(14);
+    this.scene.tweens.add({ targets: spark, scaleX: 2, scaleY: 2, alpha: 0, duration: 300, onComplete: () => spark.destroy() });
+    return true;
+  }
+
   fire(target) {
     const ptype = this.config.projectileType;
     if (!ptype) return; // melee veya mermisiz birim

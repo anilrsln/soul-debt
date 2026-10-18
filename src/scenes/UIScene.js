@@ -101,7 +101,7 @@ export default class UIScene extends Phaser.Scene {
     this.add.rectangle(CONFIG.CANVAS_WIDTH / 2, this.panelY, CONFIG.CANVAS_WIDTH, 2, CONFIG.COLORS.UI_ACCENT, 0.5).setDepth(101);
 
     // Sekmeler
-    this.tabs = ['necromancer', 'archer', 'golem', 'mage', 'bruiser', 'economy'];
+    this.tabs = ['necromancer', 'archer', 'golem', 'mage', 'bruiser', 'cleric', 'economy'];
     this.activeTab = 'necromancer';
     this.tabButtons = [];
     this.createTabs();

@@ -18,7 +18,7 @@ export default {
     // Sekmeler
     tab: {
       necromancer: 'Necromancer', archer: 'Okçu', golem: 'Golem',
-      mage: 'Büyücü', bruiser: 'Bruiser', economy: 'Ekonomi',
+      mage: 'Büyücü', bruiser: 'Bruiser', cleric: 'Şifacı', economy: 'Ekonomi',
     },
     // Yükseltme / kiralama
     level: 'Lv.{n}',
@@ -39,7 +39,7 @@ export default {
     confirm: 'ONAYLA',
     cancel: 'VAZGEÇ',
     // Nodehint (kilitli sekme ipucu)
-    nodeHint: { golem: 'Golem Açılışı', mage: 'Büyücü Açılışı', bruiser: 'Bruiser Açılışı', default: 'Açılış' },
+    nodeHint: { golem: 'Golem Açılışı', mage: 'Büyücü Açılışı', bruiser: 'Bruiser Açılışı', cleric: 'Şifacı Açılışı', default: 'Açılış' },
     langBtn: 'TR',
   },
   conquestMap: {
@@ -114,6 +114,7 @@ export default {
     golem: 'Taş Golem',
     mage: 'Hasar Büyücüsü',
     bruiser: 'İskelet Bruiser',
+    cleric: 'Şifacı Büyücü',
   },
   // Düşmanlar (ENEMIES + BOSSES)
   enemy: {
@@ -175,5 +176,6 @@ export default {
     kingsDecree2:    { name: 'Kral Fermanı II',       description: '+%60 tüm Soul ve Meta kazanımı' },
     frostUnlock:     { name: 'Büyücü Açılışı',        description: 'Hasar Büyücüsü açılır — düşmanları yavaşlatır' },
     catapultUnlock:  { name: 'Bruiser Açılışı',       description: 'İskelet Bruiser açılır — ön-saf melee' },
+    clericUnlock:    { name: 'Şifacı Açılışı',        description: 'Şifacı açılır — menzildeki dost birimleri iyileştirir' },
   },
 };
