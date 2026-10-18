@@ -111,7 +111,7 @@ export default class GameScene extends Phaser.Scene {
     });
     // Defender registry (Faz G mimari): anahtar → canlı birim dizisi.
     // necromancer(laser) hariç tüm DEFENDERS anahtarları; yeni karakter = config'e obje, burası otomatik.
-    this.defenderKeys = Object.keys(CONFIG.DEFENDERS).filter(k => k !== 'laser');
+    this.defenderKeys = Object.keys(CONFIG.DEFENDERS).filter(k => k !== 'necromancer');
     this.defenders = {};
     for (const k of this.defenderKeys) this.defenders[k] = [];
 
@@ -454,7 +454,7 @@ export default class GameScene extends Phaser.Scene {
   /** Upgrade geri bildirimi: ilgili savunucu sprite'larını kısa pulse ile büyüt. */
   onDefenderUpgraded(data) {
     const type = data && data.type;
-    const list = type === 'laser' ? [this.necromancer] : (this.defenders[type] || []);
+    const list = type === 'necromancer' ? [this.necromancer] : (this.defenders[type] || []);
     for (const d of list) {
       if (!d || !d.sprite) continue;
       this.tweens.add({

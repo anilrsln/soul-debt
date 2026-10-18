@@ -10,7 +10,7 @@ import { CONFIG } from '../config.js';
 const EconomyManager = {
   /**
    * Upgrade maliyetini hesaplar.
-   * @param {string} defenderType — 'laser' | 'archer' | 'cannon'
+   * @param {string} defenderType — 'necromancer' | 'archer' | 'golem'
    * @param {string} statName — 'damage' | 'fireRate' | 'range' | 'blastRadius' | 'reloadSpeed'
    * @returns {number} Maliyet (soul)
    */
@@ -30,7 +30,7 @@ const EconomyManager = {
     const cost = this.getUpgradeCost(defenderType, statName);
     if (GameState.resources.soul < cost) return false;
     // Defender kilidi açık mı? (laser her zaman açık)
-    if (defenderType !== 'laser' && !GameState.defenders[defenderType].unlocked) return false;
+    if (defenderType !== 'necromancer' && !GameState.defenders[defenderType].unlocked) return false;
 
     GameState.resources.soul -= cost;
     GameState.defenders[defenderType][statName].level += 1;
@@ -83,7 +83,7 @@ const EconomyManager = {
     if (!state) return false;
 
     // Conquest kilidi kontrolü (cannon / frost / catapult)
-    if (['cannon', 'frost', 'catapult'].includes(defenderType) && state.canBeHired === false) return false;
+    if (['golem', 'mage', 'bruiser'].includes(defenderType) && state.canBeHired === false) return false;
 
     const cost = this.getHireCost(defenderType);
     if (!cost || cost === 0) return false;
@@ -111,7 +111,7 @@ const EconomyManager = {
    */
   canAffordUpgrade(defenderType, statName) {
     const cost = this.getUpgradeCost(defenderType, statName);
-    if (defenderType !== 'laser' && !GameState.defenders[defenderType].unlocked) return false;
+    if (defenderType !== 'necromancer' && !GameState.defenders[defenderType].unlocked) return false;
     return GameState.resources.soul >= cost;
   },
 
@@ -121,7 +121,7 @@ const EconomyManager = {
   canAffordHire(defenderType) {
     const state = GameState.defenders[defenderType];
     if (!state) return false;
-    if (['cannon', 'frost', 'catapult'].includes(defenderType) && state.canBeHired === false) return false;
+    if (['golem', 'mage', 'bruiser'].includes(defenderType) && state.canBeHired === false) return false;
     if (state.unlocked && state.count >= state.maxCount) return false;
     const cost = this.getHireCost(defenderType);
     return this._canAfford(cost);

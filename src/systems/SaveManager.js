@@ -145,9 +145,11 @@ const SaveManager = {
     if (gs.soulDebt) Object.assign(GameState.soulDebt, gs.soulDebt);
     // Wave
     Object.assign(GameState.wave, gs.wave || {});
-    // Defenders
+    // Defenders — yeni anahtar şeması (necromancer/archer/golem/mage/bruiser; K22/K23).
+    // Not: v9 migration eski anahtarlı (cannon/frost/catapult) state'i zaten temizler (Aşama 5),
+    // bu yüzden burada yalnız GameState'in gerçek anahtarları yüklenir — eşleşmeyen atılır.
     if (gs.defenders) {
-      for (const type of ['laser', 'archer', 'cannon', 'frost', 'catapult']) {
+      for (const type of Object.keys(GameState.defenders)) {
         if (gs.defenders[type]) {
           Object.assign(GameState.defenders[type], gs.defenders[type]);
         }

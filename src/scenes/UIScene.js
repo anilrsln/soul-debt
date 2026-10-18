@@ -101,8 +101,8 @@ export default class UIScene extends Phaser.Scene {
     this.add.rectangle(CONFIG.CANVAS_WIDTH / 2, this.panelY, CONFIG.CANVAS_WIDTH, 2, CONFIG.COLORS.UI_ACCENT, 0.5).setDepth(101);
 
     // Sekmeler
-    this.tabs = ['laser', 'archer', 'cannon', 'frost', 'catapult', 'economy'];
-    this.activeTab = 'laser';
+    this.tabs = ['necromancer', 'archer', 'golem', 'mage', 'bruiser', 'economy'];
+    this.activeTab = 'necromancer';
     this.tabButtons = [];
     this.createTabs();
 
@@ -166,7 +166,7 @@ export default class UIScene extends Phaser.Scene {
 
   // ═══════ SEKMELER ═══════
   createTabs() {
-    const tabNames = { laser: t('ui.tab.laser'), archer: t('ui.tab.archer'), cannon: t('ui.tab.cannon'), frost: t('ui.tab.frost'), catapult: t('ui.tab.catapult'), economy: t('ui.tab.economy') };
+    const tabNames = { necromancer: t('ui.tab.necromancer'), archer: t('ui.tab.archer'), golem: t('ui.tab.golem'), mage: t('ui.tab.mage'), bruiser: t('ui.tab.bruiser'), economy: t('ui.tab.economy') };
     const tabWidth = 78, tabHeight = 22, startX = 10, tabY = this.panelY + 5;
 
     this.tabs.forEach((type, i) => {
@@ -268,7 +268,7 @@ export default class UIScene extends Phaser.Scene {
     });
 
     // Hire butonu (archer/cannon için) — necromancer (laser) hire edilmez; onun yerine maxHp upgrade
-    if (this.activeTab !== 'laser') {
+    if (this.activeTab !== 'necromancer') {
       const hireX = CONFIG.CANVAS_WIDTH - 90;
       const hireY = startY + 20;
       this.createHireButton(hireX, hireY, info);

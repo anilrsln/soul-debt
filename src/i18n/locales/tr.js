@@ -17,8 +17,8 @@ export default {
     prestigeBtn: '✦ PRESTIGE',
     // Sekmeler
     tab: {
-      laser: 'Necromancer', archer: 'Okçu', cannon: 'Top',
-      frost: 'Ayaz', catapult: 'Mancınık', economy: 'Ekonomi',
+      necromancer: 'Necromancer', archer: 'Okçu', golem: 'Golem',
+      mage: 'Büyücü', bruiser: 'Bruiser', economy: 'Ekonomi',
     },
     // Yükseltme / kiralama
     level: 'Lv.{n}',
@@ -39,7 +39,7 @@ export default {
     confirm: 'ONAYLA',
     cancel: 'VAZGEÇ',
     // Nodehint (kilitli sekme ipucu)
-    nodeHint: { cannon: 'Top Açılışı', frost: 'Ayaz Kulesi Açılışı', catapult: 'Mancınık Açılışı', default: 'Açılış' },
+    nodeHint: { golem: 'Golem Açılışı', mage: 'Büyücü Açılışı', bruiser: 'Bruiser Açılışı', default: 'Açılış' },
     langBtn: 'TR',
   },
   conquestMap: {
@@ -106,11 +106,11 @@ export default {
     restart: '↻ Yeniden Başla',
   },
   defender: {
-    laser: 'Necromancer',
-    archer: 'Okçu',
-    cannon: 'Top',
-    frost: 'Frost Tower',
-    catapult: 'Mancınık',
+    necromancer: 'Necromancer',
+    archer: 'İskelet Okçu',
+    golem: 'Taş Golem',
+    mage: 'Hasar Büyücüsü',
+    bruiser: 'İskelet Bruiser',
   },
   // Düşmanlar (ENEMIES + BOSSES)
   enemy: {
@@ -148,29 +148,29 @@ export default {
     firstBoss:     { name: 'Dev Avcısı',    desc: 'İlk boss\'u yen' },
     firstPrestige: { name: 'Yeniden Doğuş', desc: 'İlk prestige\'i yap' },
     prestige5:     { name: 'Ölümsüz',       desc: '5 kez prestige yap' },
-    cannonUnlock:  { name: 'Topçu',         desc: 'Top\'u aç' },
+    cannonUnlock:  { name: 'Golemci',       desc: 'Golem\'i aç' },
     archerFull:    { name: 'Okçu Ordusu',   desc: 'Maksimum okçuya ulaş' },
     allNodes:      { name: 'Fetih',         desc: 'Tüm Fetih düğümlerini aç' },
     richExp:       { name: 'Zengin',        desc: '1M toplam Soul kazan' },
   },
   // Fetih düğümleri (CONQUEST_NODES) — name + description
   conquest: {
-    laserBoost1:     { name: 'Lazer Takviyesi I',     description: '+%25 Lazer Hasarı' },
-    laserBoost2:     { name: 'Lazer Takviyesi II',    description: '+%25 Lazer Atış Hızı' },
+    laserBoost1:     { name: 'Necromancer Takviyesi I',  description: '+%25 Necromancer Hasarı' },
+    laserBoost2:     { name: 'Necromancer Takviyesi II', description: '+%25 Necromancer Atış Hızı' },
     defenderAura:    { name: 'Savunucu Hasar Aurası', description: '+%15 Tüm Savunucu Hasarı' },
     soulGain:        { name: 'Soul Kazanımı',         description: '+%20 Soul Kazanımı' },
     archerMastery:   { name: 'Okçu Ustalığı',         description: '+%30 Okçu Hasarı' },
     metaGain:        { name: 'Meta Takviyesi',        description: '+%30 Meta Kazanımı' },
-    cannonUnlock:    { name: 'Top Açılışı',           description: 'Top savunucusunu açar' },
-    cannonPower1:    { name: 'Top Gücü I',            description: '+%30 Top Hasarı' },
+    cannonUnlock:    { name: 'Golem Açılışı',         description: 'Golem savunucusunu açar' },
+    cannonPower1:    { name: 'Golem Gücü I',          description: '+%30 Golem Hasarı' },
     prestigeUnlock:  { name: 'Prestige Açılışı',      description: 'Prestige sistemini açar' },
     archerSplash:    { name: 'Okçu Ustalığı',         description: 'Her 5. ok menzildeki düşmanlara %40 alan hasarı verir' },
-    laserChain:      { name: 'Lazer Geliştirme II',   description: 'Lazer her vuruşta ikinci bir hedefe %50 hasar iletir' },
-    bossPenetration: { name: 'Topçu Uzmanı',          description: '+%50 Boss hasarı — tüm savunucular' },
+    laserChain:      { name: 'Necromancer Geliştirme II', description: 'Necromancer her vuruşta ikinci bir hedefe %50 hasar iletir' },
+    bossPenetration: { name: 'Kuşatma Uzmanı',        description: '+%50 Boss hasarı — tüm savunucular' },
     metaGain2:       { name: 'Meta Üretimi II',       description: '+%30 Meta Kazanımı' },
     kingsDecree1:    { name: 'Kral Fermanı I',        description: '+%40 tüm Soul ve Meta kazanımı' },
     kingsDecree2:    { name: 'Kral Fermanı II',       description: '+%60 tüm Soul ve Meta kazanımı' },
-    frostUnlock:     { name: 'Frost Tower Açılışı',   description: 'Frost Tower açılır — düşmanları yavaşlatır' },
-    catapultUnlock:  { name: 'Mancınık Açılışı',      description: 'Mancınık açılır — uzun menzilli büyük AoE' },
+    frostUnlock:     { name: 'Büyücü Açılışı',        description: 'Hasar Büyücüsü açılır — düşmanları yavaşlatır' },
+    catapultUnlock:  { name: 'Bruiser Açılışı',       description: 'İskelet Bruiser açılır — ön-saf melee' },
   },
 };

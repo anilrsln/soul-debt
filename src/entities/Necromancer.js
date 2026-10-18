@@ -12,14 +12,14 @@ import AssetProvider from '../systems/AssetProvider.js';
  * Hedefleme (K25): varsayılan en yakın düşman; oyuncu bir düşmanı tıklarsa YAPIŞKAN hedef
  * (o ölene/menzilden çıkana kadar), sonra otomatiğe döner. Yalnız necromancer yönlendirilir.
  *
- * NOT: config/state anahtarı tarihsel olarak 'laser' (dönüşüm seçeneği A); anahtar yeniden
- * adlandırma Faz G (K23 ile). Sprite anahtarı 'defender-laser' asset olarak korunur.
+ * Anahtar: DEFENDERS.necromancer (eski 'laser' K23 ile temizlendi). Sprite 'defender-necromancer'.
+ * Registry'ye dahil DEĞİL (GameScene.defenderKeys necromancer'ı dışlar) — kendi yaşam döngüsü var.
  */
 export default class Necromancer extends Defender {
   constructor(scene, x, y) {
-    super(scene, 'laser', x, y);
-    this.sprite = scene.add.image(x, y, 'defender-laser').setDepth(5);
-    AssetProvider.applySprite(this.sprite, 'defender-laser');
+    super(scene, 'necromancer', x, y);
+    this.sprite = scene.add.image(x, y, 'defender-necromancer').setDepth(5);
+    AssetProvider.applySprite(this.sprite, 'defender-necromancer');
     this.beamGraphics = scene.add.graphics().setDepth(6);
     this.glowPhase = 0;
     this.damageAccumulator = 0;

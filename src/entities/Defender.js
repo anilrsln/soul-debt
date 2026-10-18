@@ -19,7 +19,7 @@ import AssetProvider from '../systems/AssetProvider.js';
  *    lungeRadius içindeki düşmanı yakalamaya kısa mesafe gider, sonra çıpasına döner. Mermi YOK.
  *
  * onHitEffect (config): 'slow' (mage) | 'heal' (cleric) | undefined. fire() mermiye onHit geçer.
- * fireFx (config): 'recoil' | 'blast' | 'heavy' | 'frost' — görsel ateş efekti seçimi.
+ * fireFx (config): 'recoil' | 'blast' | 'heavy' | 'chill' — görsel ateş efekti seçimi.
  *
  * Birimin HP'si vardır (necromancer hariç — onun canı GameState.necromancer'da ayrı, kendi entity'si).
  * Ölünce SoulDebtManager otomatik diriltir (K11/K29): soul harcar + borç yükler + cooldown.
@@ -114,7 +114,7 @@ export default class Defender {
 
   /** Düşmandan hasar al (dur-dövüşte). necromancer birimi hasar almaz (canı ayrı). */
   takeDamage(amount) {
-    if (!this.alive || this.type === 'laser') return;
+    if (!this.alive || this.type === 'necromancer') return;
     this.hp -= amount;
     if (this.sprite) {
       this.sprite.setTintFill(0xff5555);
@@ -305,7 +305,7 @@ export default class Defender {
       this.scene.tweens.add({ targets: this.sprite, x: this.x - 8, duration: 80, yoyo: true, ease: 'Power2' });
       const smoke = this.scene.add.circle(this.x + 12, this.y, 6, 0x887766, 0.7).setDepth(15);
       this.scene.tweens.add({ targets: smoke, scaleX: 3, scaleY: 3, alpha: 0, duration: 350, onComplete: () => smoke.destroy() });
-    } else if (fx === 'frost') {
+    } else if (fx === 'chill') {
       this.scene.tweens.add({ targets: this.sprite, y: this.y - 3, duration: 60, yoyo: true, ease: 'Power1' });
     }
   }

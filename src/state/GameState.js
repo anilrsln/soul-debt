@@ -13,22 +13,22 @@ const GameState = {
     enemiesSpawned: 0, enemiesKilled: 0, inProgress: true,
   },
   defenders: {
-    laser: {
+    necromancer: {
       damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 },
     },
     archer: {
       unlocked: false, count: 0, maxCount: 5,
       damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 },
     },
-    cannon: {
+    golem: {
       unlocked: false, canBeHired: false, count: 0, maxCount: 3,
       damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 },
     },
-    frost: {
+    mage: {
       unlocked: false, canBeHired: false, count: 0, maxCount: 3,
       damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 },
     },
-    catapult: {
+    bruiser: {
       unlocked: false, canBeHired: false, count: 0, maxCount: 2,
       damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 },
     },
@@ -36,7 +36,7 @@ const GameState = {
   conquestMap: {
     unlockedNodes: [],
     bonuses: {
-      // defenderBoost: { laser: { damage: 0 }, archer: { damage: 0 }, cannon: { damage: 0 } }
+      // defenderBoost: { necromancer: { damage: 0 }, archer: { damage: 0 }, golem: { damage: 0 } }
       // globalBonus: { damage: 0 }
       // economy: { soulMultiplier: 0, metaMultiplier: 0 }
     },
@@ -64,11 +64,11 @@ export function resetAll(state) {
   state.soulDebt = { current: 0 };
   state.wave = { current: 1, enemiesInWave: 5, enemiesSpawned: 0, enemiesKilled: 0, inProgress: true };
   state.defenders = {
-    laser: { damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
+    necromancer: { damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
     archer: { unlocked: false, count: 0, maxCount: 5, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
-    cannon: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } },
-    frost: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
-    catapult: { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } },
+    golem: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } },
+    mage: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
+    bruiser: { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } },
   };
   state.conquestMap = { unlockedNodes: [], bonuses: {} };
   state.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };
@@ -86,11 +86,11 @@ export function resetForPrestige(state) {
   state.necromancer = { hp: 100, maxHp: 100, maxHpLevel: 0 };
   state.soulDebt = { current: 0 }; // borç koşu-içi: prestige'de sıfırlanır (K33 model A)
   state.wave = { current: 1, enemiesInWave: 5, enemiesSpawned: 0, enemiesKilled: 0, inProgress: true };
-  state.defenders.laser = { damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
+  state.defenders.necromancer = { damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
   state.defenders.archer = { unlocked: false, count: 0, maxCount: 5, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
-  state.defenders.cannon = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } };
-  state.defenders.frost = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
-  state.defenders.catapult = { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } };
+  state.defenders.golem = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } };
+  state.defenders.mage = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
+  state.defenders.bruiser = { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } };
   state.conquestMap.unlockedNodes = [];
   state.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };
   state.meta.soulRate = 0; // prestige sonrası düşük DPS'e göre yeniden ölçülür

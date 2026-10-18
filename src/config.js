@@ -75,7 +75,7 @@ export const CONFIG = {
     firstBoss:     { name: "Dev Avcısı",     desc: "İlk boss'u yen",           check: (g) => g.stats.bossesKilled >= 1 },
     firstPrestige: { name: "Yeniden Doğuş",  desc: "İlk prestige'i yap",       check: (g) => g.prestige.count >= 1 },
     prestige5:     { name: "Ölümsüz",        desc: "5 kez prestige yap",       check: (g) => g.prestige.count >= 5 },
-    cannonUnlock:  { name: "Topçu",          desc: "Cannon'u aç",              check: (g) => g.defenders.cannon.canBeHired === true },
+    golemUnlock:   { name: "Topçu",          desc: "Golem'i aç",               check: (g) => g.defenders.golem.canBeHired === true },
     archerFull:    { name: "Okçu Ordusu",    desc: "Maksimum okçuya ulaş",     check: (g) => g.defenders.archer.count >= g.defenders.archer.maxCount },
     allNodes:      { name: "Fetih",          desc: "Tüm Conquest node'larını aç", check: (g) => g.conquestMap.unlockedNodes.length >= Object.keys(CONFIG.CONQUEST_NODES).length },
     richExp:       { name: "Zengin",         desc: "1M toplam Soul kazan",     check: (g) => g.stats.totalSoulEarned >= 1e6 },
@@ -97,8 +97,8 @@ export const CONFIG = {
 
   // Necromancer — oyunun başlangıç birimi (K25). Sabit konumlu, menzilli, hep sahnede.
   // Can havuzu (K10/K13): hat ihlalinde (breachLine) canından kesilir; 0'da koşu biter.
-  // NOT: config/state anahtarı tarihsel olarak 'laser' (K25 dönüşümü, seçenek A); görünen
-  //   kimlik necromancer. Anahtar yeniden adlandırma Faz G (K23 ile birlikte).
+  // NOT: Bu NECROMANCER bloğu necromancer'ın CAN havuzu/upgrade statlarıdır; menzilli saldırı
+  //   statları DEFENDERS.necromancer altında (eski 'laser' anahtarı K23 ile temizlendi).
   NECROMANCER: {
     maxHp:        { base: 100, perLevel: 50, baseCost: 80, costMultiplier: 1.25 }, // soul ile maxHp upgrade kolu (K10)
     breachDamage: 10,   // hat ihlali başına necromancer canından sabit kesinti (placeholder; K13)
@@ -121,9 +121,9 @@ export const CONFIG = {
 
   // Savunucu başlangıç değerleri
   DEFENDERS: {
-    // 'laser' anahtarı = NECROMANCER (K25 seçenek A). Damage/range/fireRate necromancer'ın
-    // menzilli saldırı statları; can ayrı (CONFIG.NECROMANCER + GameState.necromancer).
-    laser: {
+    // 'necromancer' anahtarı (K25/K23: eski 'laser' temizlendi). Damage/range/fireRate
+    // necromancer'ın menzilli saldırı statları; can ayrı (CONFIG.NECROMANCER + GameState.necromancer).
+    necromancer: {
       name: 'Necromancer',
       combatType: 'ranged', hp: 9999, // necromancer canı ayrı yönetilir (GameState.necromancer)
       // NOT: necromancer kendi entity'si (Necromancer.js) ile çizilir; registry'ye dahil DEĞİL.
@@ -152,11 +152,11 @@ export const CONFIG = {
       fireRate: { base: 0.8, multiplier: 1.1, baseCost: 18 },
       range:    { base: 120, multiplier: 1.08, baseCost: 25 },
     },
-    cannon: {
-      name: 'Cannon',
-      combatType: 'melee', hp: 120, // melee TIKAÇ: yolu tutar, dur-dövüş (K34 Golem benzeri blokçu)
+    golem: {
+      name: 'Stone Golem',
+      combatType: 'melee', hp: 120, // melee TIKAÇ: yolu tutar, dur-dövüş (K34 asıl tank)
       // Melee: mermi yok. Davranış alanları:
-      spriteKey: 'defender-cannon', spriteType: 'image',
+      spriteKey: 'defender-golem', spriteType: 'image',
       fireFx: 'blast', // (melee olduğu için ateş efekti şu an çağrılmıyor; ileride ranged varyant için korunur)
       soulCapacity: 20, // yüksek — pahalı dirilt, çok borç (K12/K22 Taş Golem benzeri)
       // K30 placeholder: soul + essence (Golem benzeri ağır birim)
@@ -167,13 +167,13 @@ export const CONFIG = {
       blastRadius: { base: 40, multiplier: 1.1,  baseCost: 35 },
       reloadSpeed: { base: 0.3, multiplier: 1.1, baseCost: 25 },
     },
-    frost: {
-      name: 'Frost Tower',
-      combatType: 'ranged', hp: 40, // ranged yavaşlatıcı (K34)
-      spriteKey: 'defender-frost', spriteType: 'image',
-      projectileType: 'frostbolt', fireSfx: 'frostFire', fireFx: 'frost',
-      onHitEffect: 'slow', // Defender.js slowFraction/slowDuration uygular
-      soulCapacity: 12, // orta (K12/K22 Büyücü benzeri)
+    mage: {
+      name: 'Damage Mage',
+      combatType: 'ranged', hp: 40, // ranged AoE hasar büyücüsü (K22; yavaşlatma→AoE'ye evrilecek)
+      spriteKey: 'defender-mage', spriteType: 'image',
+      projectileType: 'mageBolt', fireSfx: 'mageFire', fireFx: 'chill',
+      onHitEffect: 'slow', // şimdilik yavaşlatma; K22 gereği ileride AoE hasara evrilecek
+      soulCapacity: 12, // orta (K12/K22 Büyücü)
       // K30 placeholder: soul + bone + essence (çok-metalı — Büyücü benzeri)
       craftCost: { soul: 300, bone: 15, essence: 5 }, craftCostMultiplier: 1.8,
       hireCost: 300,
@@ -186,10 +186,10 @@ export const CONFIG = {
       slowFraction: 0.45, // hedef hızının %45'ine iner
       slowDuration: 2.5,  // saniye
     },
-    catapult: {
-      name: 'Catapult',
-      combatType: 'ranged', hp: 50, // ranged uzun menzil AoE (K34)
-      spriteKey: 'defender-catapult', spriteType: 'image',
+    bruiser: {
+      name: 'Skeleton Bruiser',
+      combatType: 'ranged', hp: 50, // AŞAMA 3'te melee ön-safa çevrilecek (K22 bruiser)
+      spriteKey: 'defender-bruiser', spriteType: 'image',
       projectileType: 'boulder', fireSfx: 'boulderFire', fireFx: 'heavy',
       soulCapacity: 16, // orta-yüksek (K12)
       // K30 placeholder: soul + bone + essence (çok-metalı ağır)
@@ -234,11 +234,11 @@ export const CONFIG = {
     'enemy-boss_splitter':  { sprite: 'assets/units/purple-monk-idle.png',    frames: { frameWidth: 192, frameHeight: 192 } },
     'enemy-boss_armored':   { sprite: 'assets/units/black-pawn-idle.png',     frames: { frameWidth: 192, frameHeight: 192 } },
     // Defenders — Bina asset'leri (statik PNG, frames yok)
-    'defender-laser':    { sprite: 'assets/buildings/blue-tower.png' },
-    'defender-archer':   { sprite: 'assets/units/blue-archer-idle.png', frames: { frameWidth: 192, frameHeight: 192 } },
-    'defender-cannon':   { sprite: 'assets/buildings/blue-barracks.png' },
-    'defender-frost':    { sprite: 'assets/buildings/blue-monastery.png' },
-    'defender-catapult': { sprite: 'assets/buildings/blue-castle.png' },
+    'defender-necromancer': { sprite: 'assets/buildings/blue-tower.png' },
+    'defender-archer':      { sprite: 'assets/units/blue-archer-idle.png', frames: { frameWidth: 192, frameHeight: 192 } },
+    'defender-golem':       { sprite: 'assets/buildings/blue-barracks.png' },
+    'defender-mage':        { sprite: 'assets/buildings/blue-monastery.png' },
+    'defender-bruiser':     { sprite: 'assets/buildings/blue-castle.png' },
     // Projectiles — keep geometric for now (tiny, fast-moving objects)
     'projectile-arrow':      { sprite: 'assets/units/arrow.png' },
     'projectile-cannonball': { shape: 'circle', size: 5, color: 0xff8c00 },
@@ -336,14 +336,14 @@ export const CONFIG = {
       id: 'laserBoost1', name: 'Laser Boost I',
       description: '+25% Laser Damage',
       cost: { soul: 50 },
-      effect: { type: 'defenderBoost', target: 'laser', stat: 'damage', value: 0.25 },
+      effect: { type: 'defenderBoost', target: 'necromancer', stat: 'damage', value: 0.25 },
       requires: [], x: 100, y: 80,
     },
     laserBoost2: {
       id: 'laserBoost2', name: 'Laser Boost II',
       description: '+25% Laser Fire Rate',
       cost: { soul: 150 },
-      effect: { type: 'defenderBoost', target: 'laser', stat: 'fireRate', value: 0.25 },
+      effect: { type: 'defenderBoost', target: 'necromancer', stat: 'fireRate', value: 0.25 },
       requires: ['laserBoost1'], x: 280, y: 80,
     },
     defenderAura: {
@@ -378,14 +378,14 @@ export const CONFIG = {
       id: 'cannonUnlock', name: 'Cannon Unlock',
       description: 'Unlocks Cannon defender',
       cost: { soul: 400 },
-      effect: { type: 'unlock', target: 'cannon' },
+      effect: { type: 'unlock', target: 'golem' },
       requires: ['archerMastery'], x: 480, y: 320,
     },
     cannonPower1: {
       id: 'cannonPower1', name: 'Cannon Power I',
       description: '+30% Cannon Damage',
       cost: { soul: 600 },
-      effect: { type: 'defenderBoost', target: 'cannon', stat: 'damage', value: 0.3 },
+      effect: { type: 'defenderBoost', target: 'golem', stat: 'damage', value: 0.3 },
       requires: ['cannonUnlock'], x: 660, y: 320,
     },
     prestigeUnlock: {
@@ -444,14 +444,14 @@ export const CONFIG = {
       id: 'frostUnlock', name: 'Frost Tower Unlock',
       description: 'Frost Tower açılır — düşmanları yavaşlatır',
       cost: { soul: 700 },
-      effect: { type: 'unlock', target: 'frost' },
+      effect: { type: 'unlock', target: 'mage' },
       requires: ['defenderAura'], x: 480, y: 560,
     },
     catapultUnlock: {
       id: 'catapultUnlock', name: 'Catapult Unlock',
       description: 'Catapult açılır — uzun menzilli büyük AoE',
       cost: { soul: 1200 },
-      effect: { type: 'unlock', target: 'catapult' },
+      effect: { type: 'unlock', target: 'bruiser' },
       requires: ['frostUnlock', 'bossPenetration'], x: 660, y: 560,
     },
   },

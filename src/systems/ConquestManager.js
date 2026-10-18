@@ -74,17 +74,11 @@ const ConquestManager = {
         break;
       }
       case 'unlock': {
-        if (effect.target === 'cannon') {
-          GameState.defenders.cannon.canBeHired = true;
-        }
         if (effect.target === 'prestige') {
           GameState.prestige.unlocked = true;
-        }
-        if (effect.target === 'frost') {
-          GameState.defenders.frost.canBeHired = true;
-        }
-        if (effect.target === 'catapult') {
-          GameState.defenders.catapult.canBeHired = true;
+        } else if (GameState.defenders[effect.target]) {
+          // Generik: hangi defender olursa olsun canBeHired aç (golem/mage/bruiser...)
+          GameState.defenders[effect.target].canBeHired = true;
         }
         break;
       }
