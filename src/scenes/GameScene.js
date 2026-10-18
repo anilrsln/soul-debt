@@ -35,6 +35,7 @@ export default class GameScene extends Phaser.Scene {
     this.events.once('shutdown', () => {
       this.enemyPool?.drain();
       this.projectilePool?.drain();
+      if (this._floorBreakEls) { this._floorBreakEls.forEach(el => el.destroy()); this._floorBreakEls = null; }
     });
 
     AssetProvider.createAnims(this);
@@ -136,6 +137,8 @@ export default class GameScene extends Phaser.Scene {
     // Kıdem/diriltme (K37): ölüm → iptal göstergesi; dirilme/iptal → göstergeyi kaldır
     this.events.on('unit-died', this._onUnitDied, this);
     this.events.on('unit-revived', this._onUnitRevivedUi, this);
+    // Kat-arası tam-duraklama (K28): kat sonu → kurulum fazı banner + "İn" butonu
+    this.events.on('floor-break', this._onFloorBreak, this);
 
     // Kritik vuruş bildirimi
     this.game.events.off('crit-hit', this.onCritHit, this);
@@ -467,6 +470,43 @@ export default class GameScene extends Phaser.Scene {
         duration: 110, yoyo: true, ease: 'Quad.easeOut',
       });
     }
+  }
+
+  /**
+   * Kat sonu — tam-duraklama kurulum fazı (K28). Savaş durdu (WaveManager.isFloorBreak); oyuncu
+   * sakin kafayla dizer/örer/absorbe eder/ölüleri gözden geçirir. Hafif banner + "İN" butonu;
+   * savaş alanını KAPATMAZ (oyuncu arkada birim yerleştirebilsin).
+   */
+  _onFloorBreak(data) {
+    const floor = data?.completedFloor ?? '';
+    const cx = CONFIG.CANVAS_WIDTH / 2;
+    const els = [];
+    // Üst banner (hafif şerit — savaş alanını örtmez)
+    const band = this.add.rectangle(cx, CONFIG.CORRIDOR_TOP + 44, CONFIG.CANVAS_WIDTH, 52, 0x0a0a2a, 0)
+      .setDepth(300);
+    this.tweens.add({ targets: band, fillAlpha: 0.7, duration: 300 });
+    const title = this.add.text(cx, CONFIG.CORRIDOR_TOP + 34, i18n('game.floorCleared', { n: floor }), {
+      fontSize: '18px', fontFamily: 'monospace', color: '#c9b3ff', stroke: '#000', strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(301);
+    const hint = this.add.text(cx, CONFIG.CORRIDOR_TOP + 56, i18n('game.floorSetupHint'), {
+      fontSize: '11px', fontFamily: 'monospace', color: '#aaaaaa', stroke: '#000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(301);
+    // "İN" butonu (alt-orta, savaş alanının altında)
+    const by = CONFIG.CORRIDOR_BOTTOM - 10;
+    const btn = this.add.rectangle(cx, by, 160, 34, 0x2a1a3a).setDepth(301).setStrokeStyle(2, 0xc9b3ff).setInteractive({ useHandCursor: true });
+    const btnLabel = this.add.text(cx, by, i18n('game.descendNext'), {
+      fontSize: '15px', fontFamily: 'monospace', color: '#ffffff', stroke: '#000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(302);
+    els.push(band, title, hint, btn, btnLabel);
+    btn.on('pointerover', () => btn.setFillStyle(0x3a2a5a));
+    btn.on('pointerout', () => btn.setFillStyle(0x2a1a3a));
+    btn.on('pointerdown', (p, x, y, e) => {
+      e?.stopPropagation?.();
+      this.waveManager?.resumeFromFloorBreak();
+      for (const el of els) el.destroy();
+      this._floorBreakEls = null;
+    });
+    this._floorBreakEls = els;
   }
 
   /** Birim öldü — konumunda tıklanabilir "✕" iptal göstergesi (K37, anlık karar). */

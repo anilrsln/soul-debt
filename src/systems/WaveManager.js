@@ -10,6 +10,7 @@ export default class WaveManager {
     this.spawnTimer = 0;
     this.waveBreakTimer = 0;
     this.isWaveBreak = false;
+    this.isFloorBreak = false; // kat-arası tam-duraklama (K28)
 
     // K27: lane YOK — düşmanlar savaş alanının rastgele Y'sinde doğar (serbest akış).
     this._spawnBandTop = CONFIG.CORRIDOR_TOP + 20;
@@ -114,6 +115,12 @@ export default class WaveManager {
     }
   }
 
+  /** Tamamlanan wave bir KAT sonu mu? (wavesPerFloor'un katı). Kat sonunda tam-duraklama fazı. */
+  isFloorEnd(completedWave) {
+    const per = CONFIG.PRESTIGE?.wavesPerFloor || 10;
+    return completedWave > 0 && completedWave % per === 0;
+  }
+
   completeWave() {
     const completedWave = GameState.wave.current;
     GameState.stats.totalWavesCompleted++;
@@ -123,13 +130,37 @@ export default class WaveManager {
       nextWave: GameState.wave.current,
     });
     this.scene.game.events.emit('sfx', 'waveComplete');
-    this.isWaveBreak = true;
-    this.waveBreakTimer = CONFIG.WAVES.timeBetweenWaves;
     this.calculateWaveEnemies();
+
+    // Kat sonu (boss sonrası) → TAM-DURAKLAMA kurulum fazı (K28 revize): savaş durur, oyuncu
+    // sakin kafayla dizer/örer/absorbe eder/ölüleri gözden geçirir, hazır olunca "İn" der.
+    // god wave'in sonu hariç (orada zafer/prestige akışı devreye girer — K26).
+    if (this.isFloorEnd(completedWave) && !this.isGodWave()) {
+      this.isFloorBreak = true;
+      this.scene.events.emit('floor-break', { completedFloor: completedWave / (CONFIG.PRESTIGE?.wavesPerFloor || 10) });
+    } else {
+      // Normal wave arası: kısa otomatik ara (eskisi gibi)
+      this.isWaveBreak = true;
+      this.waveBreakTimer = CONFIG.WAVES.timeBetweenWaves;
+    }
+  }
+
+  /** Oyuncu "İn" dedi — kat-arası duraklamayı bitir, sonraki kata geç. */
+  resumeFromFloorBreak() {
+    if (!this.isFloorBreak) return;
+    this.isFloorBreak = false;
+    this.spawnTimer = 0;
+    this.scene.events.emit('floor-resumed', { wave: GameState.wave.current });
   }
 
   update(delta) {
     const deltaMs = delta * 1000;
+    // Kat-arası tam-duraklama: spawn YOK, oyuncu "İn" deyene kadar bekler (K28). Kalan düşman
+    // normalde olmaz (kat boss ölünce biter) ama güvenlik için kalanları güncelle.
+    if (this.isFloorBreak) {
+      this.updateEnemies(delta);
+      return;
+    }
     if (this.isWaveBreak) {
       this.waveBreakTimer -= deltaMs;
       if (this.waveBreakTimer <= 0) { this.isWaveBreak = false; this.spawnTimer = 0; }
@@ -161,5 +192,6 @@ export default class WaveManager {
     this.spawnTimer = 0;
     this.waveBreakTimer = 0;
     this.isWaveBreak = false;
+    this.isFloorBreak = false;
   }
 }
