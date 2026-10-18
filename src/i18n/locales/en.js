@@ -157,7 +157,6 @@ export default {
     metaGain:        { name: 'Meta Boost',              description: '+30% Meta Gain' },
     cannonUnlock:    { name: 'Golem Unlock',            description: 'Unlocks Golem defender' },
     cannonPower1:    { name: 'Golem Power I',           description: '+30% Golem Damage' },
-    prestigeUnlock:  { name: 'Prestige Unlock',         description: 'Unlocks Prestige system' },
     archerSplash:    { name: 'Archer Mastery',          description: 'Every 5th arrow deals 40% splash damage to nearby enemies' },
     laserChain:      { name: 'Necromancer Enhancement II', description: 'Necromancer chains 50% damage to a second target on each hit' },
     bossPenetration: { name: 'Siege Specialist',        description: '+50% Boss damage — all defenders' },

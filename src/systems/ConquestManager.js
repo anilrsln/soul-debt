@@ -74,10 +74,9 @@ const ConquestManager = {
         break;
       }
       case 'unlock': {
-        if (effect.target === 'prestige') {
-          GameState.prestige.unlocked = true;
-        } else if (GameState.defenders[effect.target]) {
-          // Generik: hangi defender olursa olsun canBeHired aç (golem/mage/bruiser...)
+        // Jenerik: hangi defender olursa olsun canBeHired aç (golem/mage/bruiser/cleric...).
+        // prestige target'ı KALDIRILDI (prestigeUnlock node ölüydü — prestige otomatik tetikli, K26).
+        if (GameState.defenders[effect.target]) {
           GameState.defenders[effect.target].canBeHired = true;
         }
         break;

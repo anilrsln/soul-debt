@@ -38,11 +38,10 @@ const MIGRATIONS = {
     if (!gs.economy) gs.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };
     return gs;
   },
-  // v4 → v5: frost + catapult defender state alanları
+  // v4 → v5: (tarihsel) frost + catapult defender alanları eklenirdi. v9 (K22/K23) bu anahtarları
+  // zaten yeni şemaya map edip siliyor, bu yüzden burada enjeksiyon GEREKSİZ — no-op bırakıldı.
   4: (gs) => {
     if (!gs.defenders) gs.defenders = {};
-    if (!gs.defenders.frost)    gs.defenders.frost    = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
-    if (!gs.defenders.catapult) gs.defenders.catapult = { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } };
     return gs;
   },
   // v5 → v6: EXP/Food ekonomisi → Soul + 3 meta (Soul Debt). Eski ekonomi şeması
@@ -66,6 +65,26 @@ const MIGRATIONS = {
   // v7 → v8: soul-debt sayacı (Faz D). Koşu-içi; eski save'lerde yoktu.
   7: (gs) => {
     if (!gs.soulDebt) gs.soulDebt = { current: 0 };
+    return gs;
+  },
+  // v8 → v9: kadro rename (K22/K23). Eski defender anahtarları → yeni kimlik.
+  // KARAR (Anıl): temiz-başlat — adet/level sıfırlanır (koşu-içi veri). Ama açılmış TİP kilidi
+  // (unlocked/canBeHired) prestige kalıcısıdır (DESIGN 7.1), bu yüzden eski anahtardan yeni
+  // anahtara TAŞINIR. Taşıma sonrası eski anahtarlar silinir (ölü anahtar bırakılmaz).
+  8: (gs) => {
+    if (!gs.defenders) { gs.defenders = {}; return gs; }
+    const RENAME = { cannon: 'golem', frost: 'mage', catapult: 'bruiser', laser: 'necromancer' };
+    for (const [oldKey, newKey] of Object.entries(RENAME)) {
+      const old = gs.defenders[oldKey];
+      if (!old) continue;
+      // Yalnız tip kilidini taşı (adet/level temiz-başlar — GameState varsayılanı kullanılır)
+      if (old.unlocked || old.canBeHired) {
+        gs.defenders[newKey] = gs.defenders[newKey] || {};
+        if (old.unlocked)   gs.defenders[newKey].unlocked   = true;
+        if (old.canBeHired) gs.defenders[newKey].canBeHired = true;
+      }
+      delete gs.defenders[oldKey]; // ölü anahtarı sil
+    }
     return gs;
   },
 };

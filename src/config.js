@@ -10,7 +10,6 @@ export const CONFIG = {
   WALL_X: 168,         // sur x'i (2x sur genisligi = 72px sola kaydi)
   CORRIDOR_TOP: 35,    // topbar (30px) hemen alti
   CORRIDOR_BOTTOM: 375,// alt UI panelinin (panelY=380) 5px ustunde biter
-  LANE_COUNT: 5,       // toplam lane sayisi (tam oyun alani)
   SPAWN_X: 780,
   LANE_Y: 250,
   LANE_HEIGHT: 200,
@@ -19,7 +18,7 @@ export const CONFIG = {
   // Kaydetme
   SAVE_KEY: 'idle-kingdom-defense-save',
   SAVE_INTERVAL: 30000,
-  SAVE_VERSION: 8, // save şema sürümü — v8: soulDebt sayacı — Faz D
+  SAVE_VERSION: 9, // save şema sürümü — v9: kadro rename (K22/K23) eski defender anahtarlarını map+temizle
 
   // Idle sistemi
   IDLE_EFFICIENCY: 0.5,
@@ -407,13 +406,8 @@ export const CONFIG = {
       effect: { type: 'defenderBoost', target: 'golem', stat: 'damage', value: 0.3 },
       requires: ['cannonUnlock'], x: 660, y: 320,
     },
-    prestigeUnlock: {
-      id: 'prestigeUnlock', name: 'Prestige Unlock',
-      description: 'Unlocks Prestige system',
-      cost: { soul: 1000 },
-      effect: { type: 'unlock', target: 'prestige' },
-      requires: ['metaGain'], x: 100, y: 440,
-    },
+    // NOT: prestigeUnlock node KALDIRILDI (K26/Faz G temizlik) — prestige artık tanrıyı yenince
+    // (gönüllü) veya necromancer ölünce (zorlanmış) OTOMATİK tetiklenir; manuel açılış node'u ölüydü.
 
     // --- Tier 2 genişleme (yeni node'lar) ---
 

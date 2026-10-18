@@ -167,7 +167,6 @@ export default {
     metaGain:        { name: 'Meta Takviyesi',        description: '+%30 Meta Kazanımı' },
     cannonUnlock:    { name: 'Golem Açılışı',         description: 'Golem savunucusunu açar' },
     cannonPower1:    { name: 'Golem Gücü I',          description: '+%30 Golem Hasarı' },
-    prestigeUnlock:  { name: 'Prestige Açılışı',      description: 'Prestige sistemini açar' },
     archerSplash:    { name: 'Okçu Ustalığı',         description: 'Her 5. ok menzildeki düşmanlara %40 alan hasarı verir' },
     laserChain:      { name: 'Necromancer Geliştirme II', description: 'Necromancer her vuruşta ikinci bir hedefe %50 hasar iletir' },
     bossPenetration: { name: 'Kuşatma Uzmanı',        description: '+%50 Boss hasarı — tüm savunucular' },

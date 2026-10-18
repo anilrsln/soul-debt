@@ -46,7 +46,7 @@ const GameState = {
     },
   },
   economy: { soulBoost: { level: 0 }, metaBoost: { level: 0 } }, // run içi ekonomi upgrade'leri
-  prestige: { unlocked: false, count: 0, multiplier: 1.0 },
+  prestige: { count: 0, multiplier: 1.0 }, // unlocked alanı kaldırıldı (K26 — otomatik tetik, okunmuyordu)
   settings: { soundEnabled: true, masterVolume: 0.5 },
   stats: {
     totalEnemiesKilled: 0, totalSoulEarned: 0,
@@ -77,7 +77,7 @@ export function resetAll(state) {
   };
   state.conquestMap = { unlockedNodes: [], bonuses: {} };
   state.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };
-  state.prestige = { unlocked: false, count: 0, multiplier: 1.0 };
+  state.prestige = { count: 0, multiplier: 1.0 };
   state.stats = { totalEnemiesKilled: 0, totalSoulEarned: 0, totalMetaEarned: 0, totalWavesCompleted: 0, bossesKilled: 0 };
   state.achievements = { unlocked: [] };
   state.meta = { ...state.meta, lastSaveTime: Date.now(), totalPlayTime: 0, soulRate: 0, metaRate: 0, onboardingSeen: false };
