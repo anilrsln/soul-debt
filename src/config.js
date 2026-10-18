@@ -119,6 +119,17 @@ export const CONFIG = {
     debtDecayPerKill: 2,        // her düşman öldürmede borç bu kadar azalır ("ruh hasat et, borç öde")
   },
 
+  // Veteran (kıdem) sistemi — K37. Birim-başına ilerleme: tip-level'ının ÜSTÜNE çarpan.
+  // Soul-bazlı: kazanılan soul sahadaki canlı birimlere EŞİT pay edilir (gerçek ekonomiden DÜŞMEZ,
+  // paralel sayaç). Diriltme kıdemi KORUR, iptal/kalıcı ölüm SIFIRLAR → diriltmenin anlamı budur.
+  VETERAN: {
+    soulToXpRate: 1.0,     // kazanılan soul'un ne kadarı kıdem-tecrübesine sayılır (1.0 = birebir paylaşılır)
+    baseThreshold: 100,    // seviye 1→2 için gereken veteranSoul
+    thresholdGrowth: 1.6,  // her seviye eşiği bir öncekinin bu katı (üstel — kendiliğinden frenler, sert tavan yok)
+    // Seviye başına bonus oranları birim config'inden gelir (veteranBonus). Buradaki yoksa-varsayılan:
+    defaultBonus: { damage: 0.08, hp: 0.06, special: 0.05 }, // kıdem başına +%; birim override edebilir
+  },
+
   // Savunucu başlangıç değerleri
   DEFENDERS: {
     // 'necromancer' anahtarı (K25/K23: eski 'laser' temizlendi). Damage/range/fireRate

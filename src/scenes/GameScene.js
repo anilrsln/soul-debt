@@ -5,6 +5,7 @@ import IdleManager from '../systems/IdleManager.js';
 import SaveManager from '../systems/SaveManager.js';
 import AchievementManager from '../systems/AchievementManager.js';
 import SoulDebtManager from '../systems/SoulDebtManager.js';
+import VeteranManager from '../systems/VeteranManager.js';
 import PrestigeManager from '../systems/PrestigeManager.js';
 import Necromancer from '../entities/Necromancer.js';
 import Defender from '../entities/Defender.js';
@@ -121,6 +122,7 @@ export default class GameScene extends Phaser.Scene {
     // Soul-debt / otomatik diriltme yöneticisi (K11/K33) — Faz D.
     // Birim ölümü→diriltme tetiği Faz E'de (dur-dövüş) bağlanır; sistem hazır bekler.
     SoulDebtManager.init(this);
+    VeteranManager.init(this); // kıdem sistemi (K37)
 
     // Floating text listesi
     this.floatingTexts = [];
@@ -131,6 +133,9 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('boss-wave', this.onBossWave, this);
     this.events.on('god-wave', this.onGodWave, this);
     this.events.on('god-defeated', this._onGodDefeated, this);
+    // Kıdem/diriltme (K37): ölüm → iptal göstergesi; dirilme/iptal → göstergeyi kaldır
+    this.events.on('unit-died', this._onUnitDied, this);
+    this.events.on('unit-revived', this._onUnitRevivedUi, this);
 
     // Kritik vuruş bildirimi
     this.game.events.off('crit-hit', this.onCritHit, this);
@@ -462,6 +467,63 @@ export default class GameScene extends Phaser.Scene {
         duration: 110, yoyo: true, ease: 'Quad.easeOut',
       });
     }
+  }
+
+  /** Birim öldü — konumunda tıklanabilir "✕" iptal göstergesi (K37, anlık karar). */
+  _onUnitDied(data) {
+    const unit = data?.unit;
+    if (!unit) return;
+    if (unit._cancelBtn) { unit._cancelBtn.destroy(); unit._cancelBtn = null; }
+    const vet = unit.veteranLevel > 0 ? i18n('game.cancelReviveVet', { n: unit.veteranLevel }) : i18n('game.cancelRevive');
+    const btn = this.add.text(unit.x, unit.y, vet, {
+      fontSize: '13px', fontFamily: 'monospace',
+      color: unit.veteranLevel > 0 ? '#ffd24a' : '#ff6666',
+      backgroundColor: '#000000aa', padding: { x: 4, y: 2 },
+    }).setOrigin(0.5).setDepth(60).setInteractive({ useHandCursor: true });
+    btn.on('pointerdown', (p, x, y, e) => {
+      e?.stopPropagation?.(); // zemin tık'ına düşmesin (birim taşıma/necromancer hedefi)
+      SoulDebtManager.cancelRevive(unit);
+    });
+    unit._cancelBtn = btn;
+  }
+
+  /** Birim diriltildi — iptal göstergesini kaldır (artık sahada canlı). */
+  _onUnitRevivedUi(data) {
+    const unit = data?.unit;
+    if (unit?._cancelBtn) { unit._cancelBtn.destroy(); unit._cancelBtn = null; }
+  }
+
+  /**
+   * Diriltme iptal edildi — birimi KALICI kaldır (K37). count--, listeden çıkar, kıdem sıfırla,
+   * destroy. syncDefenders count'u state'ten okur, bu yüzden count azaltılmazsa birim geri yaratılır.
+   */
+  permanentlyRemoveUnit(unit) {
+    if (!unit) return;
+    VeteranManager.resetVeteran(unit); // kıdem kaybı — diriltmemenin bedeli
+    const list = this.defenders[unit.type];
+    if (list) {
+      const i = list.indexOf(unit);
+      if (i !== -1) list.splice(i, 1);
+    }
+    const st = GameState.defenders[unit.type];
+    if (st && st.count > 0) st.count -= 1; // kalıcı kayıp — syncDefenders geri yaratmasın
+    if (unit._cancelBtn) { unit._cancelBtn.destroy(); unit._cancelBtn = null; }
+    unit.destroy?.();
+  }
+
+  /** Kıdem atlayan birime altın pulse + parıltı + "Kıdem N" metni (K37 geri bildirim). */
+  onVeteranLevelUp(unit) {
+    if (!unit || !unit.sprite) return;
+    this.tweens.add({
+      targets: unit.sprite, scaleX: 1.4, scaleY: 1.4,
+      duration: 130, yoyo: true, ease: 'Back.easeOut',
+    });
+    const ring = this.add.circle(unit.x, unit.y, 18, 0xffd24a, 0.5).setDepth(14);
+    this.tweens.add({
+      targets: ring, scaleX: 2.2, scaleY: 2.2, alpha: 0, duration: 400, ease: 'Power2',
+      onComplete: () => ring.destroy(),
+    });
+    this.showFloatingText?.(i18n('game.veteranUp', { n: unit.veteranLevel }), unit.x, unit.y - 24, 0xffd24a, 13, 1100);
   }
 
   /** Splitter öldü — WaveManager çocukları spawn etsin. */

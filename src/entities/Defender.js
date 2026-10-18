@@ -3,6 +3,7 @@ import GameState from '../state/GameState.js';
 import { calculateValue } from '../utils/MathUtils.js';
 import ConquestManager from '../systems/ConquestManager.js';
 import SoulDebtManager from '../systems/SoulDebtManager.js';
+import VeteranManager from '../systems/VeteranManager.js';
 import AssetProvider from '../systems/AssetProvider.js';
 
 /**
@@ -40,9 +41,14 @@ export default class Defender {
     this.projectiles = [];      // ranged birimlerin uçuşan mermileri (melee'de boş kalır)
     this._shotCount = 0;        // archerSplash sayacı
 
-    // Savaş tipi + HP (K34).
+    // Veteran (kıdem — K37). Birim-başına, koşu-içi (save'de tutulmaz, prestige sıfırlar).
+    this.veteranSoul = 0;
+    this.veteranLevel = 0;
+
+    // Savaş tipi + HP (K34). maxHp kıdem çarpanıyla ölçeklenir (veteranLevel=0'da nötr).
     this.combatType = this.config.combatType || 'ranged';
-    this.maxHp = this.config.hp || 30;
+    this.baseHp = this.config.hp || 30;
+    this.maxHp = this._scaledMaxHp();
     this.hp = this.maxHp;
     this._attackTimer = 0;      // melee dur-dövüş vuruş sayacı
     this._engaged = null;       // melee: şu an dövüştüğü düşman
@@ -76,7 +82,26 @@ export default class Defender {
     const base = calculateValue(this.config.damage.base, this.config.damage.multiplier, l.damage);
     const bonus = ConquestManager.getDefenderBonus(this.type, 'damage');
     const bossMult = isBossTarget ? ConquestManager.getBossBonus() : 1;
-    return base * (1 + bonus) * bossMult;
+    const vet = VeteranManager.getMultiplier(this, 'damage'); // kıdem çarpanı (K37)
+    return base * (1 + bonus) * bossMult * vet;
+  }
+
+  /** Kıdemle ölçeklenmiş maksimum HP (K37). veteranLevel=0'da baseHp. */
+  _scaledMaxHp() {
+    return Math.round(this.baseHp * VeteranManager.getMultiplier(this, 'hp'));
+  }
+
+  /** Özel skil gücü kıdem çarpanı (archer splash / mage slow / cleric heal — K37). */
+  getSpecialMultiplier() {
+    return VeteranManager.getMultiplier(this, 'special');
+  }
+
+  /** Kıdem atladığında çağrılır (VeteranManager): maxHp tazelenir, mevcut hp oransal korunur. */
+  applyVeteranLevel() {
+    const prevMax = this.maxHp || this.baseHp;
+    const ratio = prevMax > 0 ? this.hp / prevMax : 1;
+    this.maxHp = this._scaledMaxHp();
+    this.hp = Math.max(1, Math.round(this.maxHp * ratio)); // oranı koru (full doldurmaz)
   }
 
   rollDamage(isBossTarget = false) {
@@ -137,15 +162,17 @@ export default class Defender {
     this.scene.game.events.emit('sfx', 'deathDefender');
     // Otomatik diriltme kuyruğuna al (soul + borç + cooldown — Faz D bağlantısı)
     SoulDebtManager.onUnitDeath(this);
+    // Oyuncuya anlık "diriltmeyi iptal et" fırsatı (K37) — kıdemli birimi bırakmak isteyebilir.
+    this.scene.events?.emit('unit-died', { unit: this });
   }
 
   /** SoulDebtManager cooldown + soul ödedikten sonra çağırır: birim çıpasında yeniden kalkar. */
   revive() {
     this.alive = true;
-    // Diriltme YATIRIMI KORUR (K11/K22): birim güncel tip-level statlarıyla döner, yeni spawn gibi
-    // sıfırlanmaz. Damage zaten getDamage()'te canlı okunur; maxHp'yi burada tazeliyoruz ki ileride
-    // hp upgrade'i gelirse diriltilen birim de görsün (şu an melee'de hp upgrade yok — ileri-güvence).
-    this.maxHp = this.config.hp || 30;
+    // Diriltme YATIRIMI KORUR (K11/K22/K37): birim güncel tip-level + KIDEM statlarıyla döner, yeni
+    // spawn gibi sıfırlanmaz. Damage zaten getDamage()'te canlı okunur; maxHp kıdem çarpanıyla tazelenir.
+    // veteranSoul/veteranLevel'e DOKUNULMAZ — diriltmenin anlamı birikmiş kıdemi korumaktır (K37).
+    this.maxHp = this._scaledMaxHp();
     this.hp = this.maxHp;
     this.x = this.anchorX;
     this.y = this.anchorY;
@@ -277,7 +304,9 @@ export default class Defender {
     if (this.config.archerSplash) {
       const splash = ConquestManager.getArcherSplash();
       if (splash && this._shotCount % splash.splashEvery === 0 && target.sprite) {
-        this._applySplashDamage(target, damage * splash.splashFraction, splash.splashRadius);
+        // Kıdem (special) splash hasar oranını büyütür (K37).
+        const splashDmg = damage * splash.splashFraction * this.getSpecialMultiplier();
+        this._applySplashDamage(target, splashDmg, splash.splashRadius);
       }
     }
 
@@ -322,8 +351,9 @@ export default class Defender {
   /** Yavaşlatma debuff (mage). config.slowFraction/slowDuration. */
   _applySlow(enemy) {
     if (!enemy || !enemy.alive) return;
+    // Kıdem (special) yavaşlatma SÜRESİNİ uzatır (K37). Güç/oran değil süre — okunur ve dengeli.
     const slowFrac = this.config.slowFraction ?? 0.45;
-    const dur = this.config.slowDuration ?? 2.5;
+    const dur = (this.config.slowDuration ?? 2.5) * this.getSpecialMultiplier();
     if (!enemy._baseSpeed) enemy._baseSpeed = enemy.speed;
     enemy.speed = enemy._baseSpeed * slowFrac;
     enemy._slowTimer = dur;
@@ -350,6 +380,7 @@ export default class Defender {
     this.target = null;
     this.projectiles.forEach(p => this.scene.projectilePool?.release(p));
     this.projectiles = [];
+    if (this._cancelBtn) { this._cancelBtn.destroy(); this._cancelBtn = null; } // iptal göstergesi sızmasın
     this.sprite?.destroy();
     this.sprite = null;
   }

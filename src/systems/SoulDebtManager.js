@@ -114,12 +114,31 @@ const SoulDebtManager = {
     this._addDebt(this._capacityOf(unit) * CONFIG.SOUL_DEBT.debtPerCapacity);
     // Birimi fiilen ayağa kaldırmak Faz E'nin işi (unit.revive()/respawn); şimdilik olay yay.
     if (typeof unit.revive === 'function') unit.revive();
-    this._scene?.events?.emit('unit-revived', { type: unit.type, cost });
+    this._scene?.events?.emit('unit-revived', { unit, type: unit.type, cost });
   },
 
   /** Diriltme kuyruğunda kaç iş var (UI/debug). */
   getQueueLength() {
     return this._queue.length;
+  },
+
+  /** Birim diriltme kuyruğunda bekliyor mu? (UI: iptal göstergesi yalnız bunlar için). */
+  isPending(unit) {
+    return this._queue.some(job => job.unit === unit);
+  },
+
+  /**
+   * Diriltmeyi İPTAL et (K37): birimi kuyruktan çıkar, KALICI öldür. Kıdem (veteranSoul/Level)
+   * SIFIRLANIR — diriltmeme = yatırımı kaybetme. Borç/soul ÖDENMEZ (diriltme hiç olmadı).
+   * Kalıcı ölüm = count-- + birimi sahneden kaldır; syncDefenders onu geri yaratmasın.
+   */
+  cancelRevive(unit) {
+    const idx = this._queue.findIndex(job => job.unit === unit);
+    if (idx === -1) return false;
+    this._queue.splice(idx, 1);
+    this._scene?.permanentlyRemoveUnit?.(unit);
+    this._scene?.events?.emit('unit-cancelled', { type: unit.type });
+    return true;
   },
 };
 
