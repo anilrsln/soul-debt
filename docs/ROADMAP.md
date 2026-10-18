@@ -95,8 +95,20 @@
       Tanrı için özel 'god' asset/stat yok; geçici boss_armored kullanılıyor — Faz G.
 
 ### Faz G — Ritim + Kadro + Lore
+Kadro refactoru TAMAM (commit'ler Anıl'ın lokalinde push bekliyor):
+- [x] Veri-odaklı defender mimarisi: tek Defender sınıfı + registry (Aşama 1)
+- [x] Rename: necromancer/golem/mage/bruiser/archer + i18n + mermi/ses (Aşama 2, K22/K23)
+- [x] bruiser gerçek melee ön-saf + melee temizliği + diriltme statı korur (Aşama 3)
+
+Sıradaki — SIRALAMA (Anıl onayı): veteran → cleric → save/temizlik:
+- [ ] **Veteran (kıdem) sistemi — SIRADAKİ (K37):** soul-bazlı birim ilerlemesi, eşit dağıtım,
+      üstel eşik, veteranBonus{damage,hp,special}, diriltme korur / iptal sıfırlar. Diriltme/borç
+      çekirdeğini değiştirdiği için cleric+save'den ÖNCE. Değerler playtest placeholder.
+- [ ] **Cleric (healer birim — Aşama 4):** config'e obje + onHitEffect:'heal' (menzildeki
+      birimleri iyileştirir); registry sayesinde yeni dosya yok. GameState + i18n + conquest node.
+- [ ] **SaveManager v9 + ölü kod temizliği (Aşama 5):** temiz-başlat migration; v4→v5 ölü anahtar
+      enjeksiyonu düzelt; LANE_COUNT / PerkManager / prestigeUnlock node / prestige.unlocked temizle.
 - [ ] 10 wave = kat döngüsü, kat geçiş kartları
-- [ ] MVP 5 birim (Taş Golem tank; DECISIONS K22), soulCapacity alanları
 - [ ] ~10-12 düşman arketipi + kat varyantları, 5 boss rotasyonu
 - [ ] Lore: boss banner, bestiary, idle popup necromancer sesi
 - [ ] i18n: TR + EN parite (lore ayrı yazılır, birebir çeviri değil)
@@ -109,7 +121,7 @@
 ## Park Listesi (v2)
 
 Çekirdek çalışır olunca, playtest ile değerlendirilir:
-- Unit kıdem/veteran sistemi (hayatta kalarak güçlenme — Yol B)
+- Veteran sistemi katkı-oranlı dağıtım varyantı (K37 eşit dağıtımı seçti; kill/hasar-oranlı park)
 - Aktif soul-gücü (tıkla-harca yetenek)
 - Necromancer oto-tamir node'u
 - Ara seviye / checkpoint

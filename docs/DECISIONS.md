@@ -242,6 +242,51 @@ sorulmuyordu (K24'ün "oyuncu çıpayı seçer" özüne aykırı; "oyun benim ye
 İki buton birlikte: oto-dizilim (R10) DEĞİL — default yine oyuncunun bir tıkla seçimi, sistem
 kendiliğinden dizmiyor. Detay/denge (önizleme görseli, iade oranı) sonra; MVP'de akış çalışır.
 
+
+### K37 — Veteran (kıdem) sistemi: soul-bazlı birim ilerlemesi + diriltmenin anlamı
+**Sorun (Anıl'ın tespiti, 2026-10-18):** Statlar TİP-bazında artıyor (tüm archer'lar ortak
+`defenders.archer.damage.level`). Birim-başına ilerleme YOK. Sonuç: diriltilen bir birim ile
+sıfırdan basılan birim BİREBİR aynı — diriltmenin hiçbir avantajı kalmıyor, borç/ceza mekaniği
+(K11/K33) anlamsızlaşıyor. "Neden diriltip borç yükleyeyim, temiz yeni basarım" sorusu doğuyor.
+
+**Karar:** Tip-level'ının ÜSTÜNE, birim-başına bir **veteran (kıdem)** ekseni eklenir. R4'ü
+AKTİFLEŞTİRİR (R4: "güç hayatta kalmaya bağlanır — kıdem/Yol B, park'ta"). R4 ile çelişmez:
+R4 *ölümle* güçlenmeyi reddetti; bu *hayatta kalmayla* güçlenme — ters yön, ceza sistemiyle uyumlu.
+
+- **Kaynak = SOUL (K23 "her şey soul" ile tek para biriminde birleşir).** Oyun soul kazandıkça
+  (kill/hasat), o an SAHADA CANLI olan her birime bu soul'dan bir pay "kıdem tecrübesi" olarak
+  yazılır. Bu PARALEL bir sayaçtır — gerçek soul ekonomisinden DÜŞMEZ (K33'teki "ayrı sayaç"
+  felsefesiyle aynı mantık). Birimde `veteranSoul` birikteci.
+- **Dağıtım = EŞİT** (sahadaki canlı birimler arasında). Katkı-oranlı (kill/hasar oranı) DEĞİL:
+  katkı-oranlı kill-farming'i teşvik eder + healer/cleric (hiç kill yapmaz) ve destek birimlerini
+  dışlar. Eşit dağıtım "orduda hayatta kalmak kıdem kazandırır" anlatısıyla tutarlı ve C kararıyla
+  (healer de güçlensin) uyumlu. Katkı-oranlı varyant PARK.
+- **"Son dalga daha çok verir" BEDAVA gelir:** Derin dalgalarda düşmanlar daha çok soul düşürür
+  (ekonomi böyle kurulu), dolayısıyla soul-bazlı kıdem derinlikle kendiliğinden ölçeklenir. Ayrı
+  "wave/kat bonus katsayısı" GEREKMEZ — düz wave-sayma'nın "1. ve 50. dalga eşit level" sorununu
+  çözer.
+- **Kıdem neyi artırır (C):** `veteranBonus: { damage, hp, special }` — config-driven, birim-başına
+  oran. `special` = o birimin özel skil gücü (archer splash, mage slow, cleric heal) de kıdemle
+  artar. Kod dallanması yok; yeni birim = config'e oran.
+- **Üstel eşik, SERT TAVAN YOK (Anıl):** Her veteran seviyesi bir öncekinden pahalı (artan
+  `veteranSoul` eşiği). Üst seviyeler pratikte ulaşılmaz yavaşlıkta → sistem kendini frenler;
+  teorik sınır yok. Üstel diriliş/büyüme temasına uyar. Değerler playtest'te ayarlanır (placeholder).
+- **Diriltme KORUR, iptal/kalıcı ölüm SIFIRLAR (d — diriltmenin anlamı):** Birim ölünce
+  `veteranSoul`/`veteranLevel` korunur ve otomatik diriltme kuyruğuna girer (K29). Diriltilen birim
+  kıdemiyle döner — İŞTE diriltmenin yeni-spawn'a karşı somut avantajı: biriken kıdemi kurtarmak.
+  Yeni spawn = kıdem 0. Oyuncunun karar anı: "N-kıdemli birimi dirilt (borç yükle, kıdemi kurtar)
+  vs bırak-öl (borç yok ama kıdem sıfır, temiz yeni bas)". Diriltme/borç/ekonomi üçgeni burada
+  gerilim kazanır.
+- **İptal = anlık + kat başı gözden geçirme (ii):** Default DİRİLT (K29 AFK-güvenli korunur).
+  Birim ölünce üstünde kısa "İptal" göstergesi — basılmazsa dirilir (anlık panik kararı). Ayrıca
+  kat başı kurulum fazında (planlı) sakin gözden geçirme ikinci şans. İptal → kalıcı ölüm → kıdem
+  sıfır, borç/soul ödenmez.
+
+**Kapsam notu:** Bu, handoff Faz G kadrosunun ÖTESİNDE, park "veteran (Yol B)"nin aktifleşmesi.
+Diriltme/borç/ekonomi çekirdeğini değiştirdiği için cleric'ten (Aşama 4) ve save temizliğinden
+(Aşama 5) ÖNCE yapılır — cleric'in heal mantığı bu eksene oturur. Açık denge parametreleri:
+soul→kıdem dönüşüm oranı, üstel eşik eğrisi, veteranBonus oranları (hepsi config, playtest).
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)
@@ -256,7 +301,7 @@ Oyun sonlu ama uzundur (Kat N'e kadar çok kat; K26); yine de her kata elle yeni
 AFK'yi cezalandırır, idle mirasını yok eder. Yerine otomatik diriltme + üç ceza (K11). Kullanıcı da "%100 idle istemiyorum ama bu kadar da aktif değil" çizgisinde durdu.
 
 ### R4 — "Birim ölünce güçlensin"
-Ceza sistemini (K11, K14) tersine çevirir: ölüm ödül olur, oyuncu birimlerini bilerek öldürür, soul-debt/cooldown/Diş-1 anlamsızlaşır. Aynı eylem hem cezalandırılıp hem ödüllendirilemez. Yerine: güç **hayatta kalmaya** bağlanır (kıdem/veteran — Yol B, park'ta).
+Ceza sistemini (K11, K14) tersine çevirir: ölüm ödül olur, oyuncu birimlerini bilerek öldürür, soul-debt/cooldown/Diş-1 anlamsızlaşır. Aynı eylem hem cezalandırılıp hem ödüllendirilemez. Yerine: güç **hayatta kalmaya** bağlanır (kıdem/veteran — Yol B, artık K37'de AKTİF).
 
 ### R5 — Birime prestige mantığı uygulamak
 İç içe iki prestige = incremental tasarımında kafa karışıklığının zirvesi. Tek prestige ekseni (necromancer → tanrı → yeniden iniş) net kalsın.
