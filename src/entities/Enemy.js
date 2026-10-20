@@ -71,8 +71,11 @@ export default class Enemy {
     } else {
       this.sprite = scene.add.sprite(spawnX, laneY, `enemy-${type}`).setDepth(10).setAlpha(0);
     }
-    AssetProvider.applySprite(this.sprite, `enemy-${type}`, childScale);
-    AssetProvider.playAnim(this.sprite, `enemy-${type}`);
+    this._animKey = `enemy-${type}`;
+    this._animState = 'walk';       // düşmanlar varsayılan yürür (sheet'te walk yoksa idle'a düşer)
+    this._animOverride = null;      // tek-sefer anim (attack/hurt/death)
+    AssetProvider.applySprite(this.sprite, this._animKey, childScale);
+    AssetProvider.playAnim(this.sprite, this._animKey, 'walk');
     scene.tweens.add({ targets: this.sprite, alpha: 1, duration: 200 });
 
     // Boss: daha geniş ve sürekli görünen HP bar
@@ -102,6 +105,24 @@ export default class Enemy {
     this.hpBar?.destroy();  this.hpBar = null;
   }
 
+  /** Tek-sefer animasyon tetikle (attack/hurt). death ayrı (dieToDefender). */
+  _triggerAnim(state, durationSec) {
+    this._animOverride = { state, timer: durationSec };
+  }
+
+  /** Her frame: override varsa onu, yoksa logicState'i oynat. Sheet'te state yoksa idle/ilk'e düşer. */
+  _tickAnim(delta, logicState) {
+    if (!this.sprite) return;
+    let state = logicState;
+    if (this._animOverride) {
+      this._animOverride.timer -= delta;
+      if (this._animOverride.timer > 0) state = this._animOverride.state;
+      else this._animOverride = null;
+    }
+    this._animState = state;
+    AssetProvider.playAnim(this.sprite, this._animKey, state);
+  }
+
   update(delta, enemies) {
     if (!this.alive || this.dying) return;
     // Yavaşlatma debuff süresi bitti mi?
@@ -122,9 +143,11 @@ export default class Enemy {
         this._attackTimer = 1 / CONFIG.COMBAT.enemyAttackRate;
         const dmg = Math.max(1, Math.floor(this._attackPower()));
         blocker.takeDamage(dmg);
+        this._triggerAnim('attack', 0.3); // tıkaça vuruş → attack animasyonu
       }
       this.updateHPBar();
       if (this.healConfig && enemies) this._updateHeal(delta, enemies);
+      this._tickAnim(delta, 'idle'); // dövüşürken yerinde (attack override vuruşta biner)
       return; // dövüşürken ilerlemez
     }
     this._engagedBy = null;
@@ -133,6 +156,7 @@ export default class Enemy {
     this.sprite.x -= this.speed * delta;
     this.updateHPBar();
     if (this.healConfig && enemies) this._updateHeal(delta, enemies);
+    this._tickAnim(delta, 'walk'); // ilerliyor → walk
     // Hat ihlali: hiçbir birime takılmadan sur hattını geçerse necromancer'a ulaşır (K13)
     if (this.sprite.x <= CONFIG.WALL_X - 14) { this.breachLine(); return; }
   }
@@ -252,6 +276,7 @@ export default class Enemy {
     }
     if (this.currentHP <= 0) { this.currentHP = 0; this.dieToDefender(); return true; }
     if (flash && !isCrit) this._flash();
+    this._triggerAnim('hurt', 0.15); // kısa sarsılma (sheet'te hurt yoksa mevcut state'e düşer)
     return false;
   }
 
@@ -302,10 +327,22 @@ export default class Enemy {
       });
     }
     this.sprite.setTint(0xffffff);
-    this.scene.tweens.add({
-      targets: this.sprite, scaleX: 1.5, scaleY: 1.5, alpha: 0, duration: 300, ease: 'Power2',
-      onComplete: () => { this.dying = false; }, // release: WaveManager havuza döndürür
-    });
+    this._animOverride = null;
+    // Death animasyonu varsa onu oynat, bitince sön; yoksa eski scale+fade.
+    const hasDeath = AssetProvider.hasState(this._animKey, 'death');
+    if (hasDeath) {
+      this.sprite.clearTint();
+      AssetProvider.playAnim(this.sprite, this._animKey, 'death');
+      this.scene.tweens.add({
+        targets: this.sprite, alpha: 0, duration: 450, delay: 200, ease: 'Power1',
+        onComplete: () => { this.dying = false; },
+      });
+    } else {
+      this.scene.tweens.add({
+        targets: this.sprite, scaleX: 1.5, scaleY: 1.5, alpha: 0, duration: 300, ease: 'Power2',
+        onComplete: () => { this.dying = false; }, // release: WaveManager havuza döndürür
+      });
+    }
     this.hpBar.clear();
   }
 

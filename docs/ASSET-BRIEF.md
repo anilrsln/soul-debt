@@ -89,11 +89,24 @@ Oyunun arka plan/UI paleti (bu tonlarla uyumlu üret):
 - **Yön:** Oyuncu birimleri **sağa** bakar (düşmana doğru); düşmanlar **sola** bakar (necromancer'a).
   Tek yön üret; kod gerekirse çevirir. (Üretimde tutarlı tek yön ver.)
 - **Zemin çizgisi:** Figürler "ayakta duruyor" gibi; taban ortada-altta, boşlukta yüzmesin.
-- **Boyut (frame):** Normal birimler/düşmanlar **192×192 px** kare. Büyük/elit figürler (ör. elit
-  düşman, bazı boss'lar) **320×320 px**. Tek figür frame'i ortalanmış olsun.
-- **Animasyon (idle):** Mümkünse yatay **sprite sheet** (eşit frame'ler, ör. 4-6 kare idle döngüsü,
-  her kare 192×192). Tek statik kare de kabul (animasyon sonra eklenir). Sheet verirsen frame
-  sayısı + frame boyutunu belirt.
+- **Boyut (frame):** Önerilen **96×96 px** kare (normal birim/düşman). Büyük/elit figürler (Lanetli
+  Şövalye, boss'lar) **128×128** veya **192×192**. — Neden 96: oyunda birimler ~30-60 px görünür;
+  96 keskinlik/dosya dengesi için ideal. Üretim aracı 96'da bulanık üretirse 192'ye çık (kod her
+  boyutu config'den okur; kesin boyut bir test sprite'ıyla belirlenir). Boyut KODU etkilemez —
+  sadece `config.js` ASSETS `frames.frameWidth/frameHeight` değeridir.
+- **Animasyon — çok durumlu (yeni, kod HAZIR):** Her karakter için şu durumlar, **tek yatay sprite
+  sheet'te ARDIŞIK frame blokları** olarak (idle önce, sonra walk, sonra attack...):
+  | Durum | Önerilen frame | Loop | Ne zaman oynar |
+  |---|---|---|---|
+  | **idle** | 4-6 | evet | hareketsiz beklerken |
+  | **walk** | 6-8 | evet | yürürken (düşman) / lunge+dönüş (melee birim) |
+  | **attack** | 4-6 | hayır (tek sefer) | atış/vuruş anında, sonra idle'a döner |
+  | **hurt** | 2-3 | hayır | hasar alınca kısa sarsılma (opsiyonel) |
+  | **death** | 5-8 | hayır | ölünce, sonra sönerek kaybolur |
+  Frame sayıları **esnek** — ne üretirsen config'e o start/count yazılır. **Minimum: idle.** walk/
+  attack/hurt/death opsiyonel; eksik olanı kod otomatik idle'a düşürür (kırılmaz). Her state'in frame
+  **başlangıç indeksi + sayısı + hızı + loop'u** üretimde belirtilmeli (örn. "idle 0-3, walk 4-11,
+  attack 12-16, death 17-23").
 - **Siluet testi:** Her varlık, tek renk siluete indirgendiğinde bile tanınmalı.
 
 ## 7. Üretilecek Varlıklar (Tam Liste)
@@ -101,23 +114,29 @@ Oyunun arka plan/UI paleti (bu tonlarla uyumlu üret):
 ### 7.1 Necromancer (oyuncu — sabit başlangıç birimi)
 Bıkkın, yorgun bir büyücü; necromancer. Sabit durur, arkadan menzilli saldırır. Kaybedersen ölen o.
 Kuru-mizah tonu: epik kötü büyücü değil, "yine mi bu iş" diyen yorgun bir figür. Soğuk-mor/cyan enerji.
-- `defender-necromancer` — 192×192 (idle). *(Not: mevcut kod geçici olarak `defender-laser` asset
-  anahtarını kullanıyor; dosyayı `defender-necromancer` üret, kod anahtarı Faz G'de güncellenecek —
-  ya da şimdilik `blue-tower.png` yerine koyulacak; dosya adını ekip belirler.)*
+- **Asset anahtarı: `defender-necromancer`** (kodda hazır). Animasyon durumları: idle (zorunlu),
+  walk, attack (menzilli soul atışı — asa kaldırıp mavi ışın/soul fırlatma), hurt, death.
+  ChatGPT'nin verdiği necromancer sheet'i bu anahtara uyar.
 
-### 7.2 Oyuncu Birimleri — İSKELET ORDUSU (5 MVP birimi)
+### 7.2 Oyuncu Birimleri — İSKELET ORDUSU (6 birim)
 Hepsi kemik/dirilmiş estetiği; soğuk palet. Rolleri siluetten okunmalı.
+**Asset anahtarları KODDAKİ gerçek anahtarlardır — dosya adı bunlarla eşleşmeli.**
 
-| Asset anahtarı | Birim | Görsel yön |
-|---|---|---|
-| `defender-skeleton-bruiser` | İskelet Bruiser | Ön-saf dövüşçü iskelet; orta-iri, kaba silah (balta/topuz), omuzları geniş |
-| `defender-skeleton-archer` | İskelet Okçu | İnce iskelet, yay; küçük/çevik siluet |
-| `defender-mage-damage` | Hasar Büyücüsü | İskelet/kukuletalı büyücü, alan-hasarı enerjisi (mor/cyan), asa |
-| `defender-mage-healer` | Healer Büyücü | İskelet/kukuletalı destek büyücü; yeşilimsi-beyaz şifa enerjisi (ama iskelet kalır) |
-| `defender-golem` | Taş Golem | EN iri, tank; taştan+kemikten devasa siluet, ağır. 320×320 olabilir |
+| Asset anahtarı | Birim | combatType | Animasyon notu | Görsel yön |
+|---|---|---|---|---|
+| `defender-archer` | İskelet Okçu | ranged | attack = yay çekip ok atma | İnce iskelet, yay; küçük/çevik siluet |
+| `defender-golem` | Taş Golem | melee | walk = ağır yürüyüş, attack = yumruk/çarpma | EN iri tank; taş+kemik devasa, ağır |
+| `defender-bruiser` | İskelet Bruiser | melee | walk+attack hızlı (ön-saf vurucu) | Orta-iri dövüşçü iskelet, kaba silah (balta/topuz) |
+| `defender-mage` | Hasar Büyücüsü | ranged | attack = asa kaldırıp mor/cyan AoE enerji | İskelet/kukuletalı büyücü, asa |
+| `defender-cleric` | Şifacı Büyücü | support | attack = şifa yayma (yeşilimsi-beyaz pulse), savaşmaz | İskelet/kukuletalı destek büyücü, iskelet kalır |
+
+*(Necromancer bunlardan ayrı — §7.1. Bu 5 + necromancer = 6 oyuncu birimi.)*
 
 ### 7.3 Düşmanlar — YERALTI YARATIKLARI (8 arketip)
 Hepsi etli/çürük/taş/ruhsal/lanetli; sıcak-hastalıklı palet. ASLA iskelet değil.
+**Animasyon durumları:** idle (zorunlu), **walk** (soldan necromancer'a yürür — en çok görünen),
+attack (bir iskelet birime çarpınca dur-dövüş vuruşu), hurt, death. walk önceliklidir.
+Asset anahtarları kodda hazır.
 
 | Asset anahtarı | Düşman | Görsel yön |
 |---|---|---|
@@ -142,10 +161,13 @@ büyütülmüş hali. 320×320 (veya daha büyük). İsimler şu an jenerik (lor
 | `enemy-boss_splitter` | Splitter Boss | Ölünce mini-boss'lara bölünür; akışkan/çoğalan siluet |
 | `enemy-boss_armored` | Armored Boss | En yavaş, en kalın zırh; taş-dev |
 
-### 7.5 Mermiler / Efektler (küçük — şimdilik geometrik kalabilir)
-İstersen üret, yoksa geometrik placeholder yeterli (küçük, hızlı hareket eden nesneler):
-- `projectile-arrow` (ok), `projectile-cannonball`, `projectile-frostbolt` (buz), `projectile-boulder`
-- Soul toplama parçacığı (mor ışıltı), ölüm patlaması
+### 7.5 Mermiler / Efektler (sprite — cilalı efekt rotası, A seçeneği)
+Oyunun kadrosu melee'ye kaydı, yalnız iki mermi kaldı:
+- `projectile-arrow` (İskelet Okçu oku) · `projectile-mageBolt` (Hasar Büyücüsü soul boltu, mavi/cyan)
+- **Spell efektleri (ChatGPT sheet'inde var, kullanılacak):** staff cast, soul orb, soul projectile,
+  summon effect, soul absorb, summon circle. Bunlar sprite olarak bağlanacak (A seçeneği — cilalı).
+  Efekt sprite bağlama kodu asset'ler gelince yazılır; şimdilik geometrik placeholder oynuyor.
+- Her efekt: küçük yatay sheet (birkaç frame, tek sefer oynar), 64×64 veya 96×96.
 
 ### 7.6 Zemin / Arka Plan (MVP: tek yıkıntı-dungeon)
 Yatay savaş alanı zemini: **yıkıntı bir yeraltı dungeon'u**. İçinde kayalar/taşlar (engel),
@@ -158,10 +180,13 @@ renk varyantı (daha kızıl/daha karanlık) üretilebilir — ama MVP tek zemin
 - **Önce 1 varlık, stili sabitle:** "Necromancer'ı üret" → beğen → "aynı stil/palet/çözünürlükle
   şimdi İskelet Bruiser" diye devam et. Her istekte önceki görseli referans ekle.
 - **Tutarlılık cümlesi:** Her prompt'a ekle: *"2D pixel art, şeffaf arka plan, yandan görünüm,
-  [aynı palet], okunur siluet, 192×192 (veya 320×320), tek figür ortalanmış."*
+  [aynı palet], okunur siluet, 96×96 frame (boss 128-192), tek figür ortalanmış."*
 - **İki-taraf kuralını tekrarla:** oyuncu birimleri için "iskelet, kemik beyazı, soğuk ton";
   düşmanlar için "etli/çürük/taş yeraltı yaratığı, iskelet DEĞİL, sıcak-hastalıklı ton".
-- **Sprite sheet:** Gemini düzgün sheet üretemezse tek idle karesi iste; animasyonu ekip sonra ekler.
+- **Çok-durum sheet isterken:** "tek yatay sprite sheet, şu durumlar ardışık: idle (4-6), walk (6-8),
+  attack (4-6, tek sefer), death (5-8). Her frame 96×96, eşit aralıklı." Üretince frame aralıklarını
+  (idle 0-5, walk 6-13...) not et — config'e bu girilir. Minimum idle; gerisi eksikse kod idle'a düşer.
+- **Boyut belirsizse:** önce 1 karakteri 96'da üret, oyunda test et; bulanıksa 192'ye çık.
 - Üretilen dosyaları `public/assets/units/` ve `public/assets/buildings/` altına, yukarıdaki
   asset anahtarlarıyla eşleşen adlarla koy (config `ASSETS` manifesti anahtarları buraya işaret eder).
 
@@ -170,5 +195,12 @@ renk varyantı (daha kızıl/daha karanlık) üretilebilir — ama MVP tek zemin
 ## 9. Not: Kod Tarafı Durumu
 Oyunun mevcut asset manifesti `src/config.js` içindeki `ASSETS` bloğundadır; şu an bazı anahtarlar
 eski klon placeholder'larına (`red-pawn-idle.png` vb.) işaret eder. Pixel art hazır olunca manifest
-yeni dosya adlarıyla güncellenir — bu kod işi (Faz G / asset entegrasyonu), görsel üretimi bekler.
+yeni dosya adlarıyla güncellenir — bu kod işi (asset entegrasyonu), görsel üretimi bekler.
+
+**Çok-durumlu animasyon altyapısı HAZIR (Faz G):** `AssetProvider` artık key başına birden çok
+durum (idle/walk/attack/hurt/death) destekler. Her durum tek sheet'te ardışık frame bloğudur;
+`ANIM_DEFS[key].states = { idle:{start,count,frameRate,loop}, walk:{...}, ... }` ile tanımlanır.
+Defender ve Enemy durum geçişlerini otomatik yapar (yürü→walk, vuruş→attack tek sefer, ölüm→death).
+Sheet'te bir durum yoksa idle'a düşer (kırılmaz). Yani: sprite sheet'i üret → dosyayı koy → config
+ASSETS'e `frames` + ANIM_DEFS'e `states` gir. Entegrasyon adımları bana (kod) bırakılabilir.
 Boyutlar (192/320) mevcut manifestteki `frameWidth/frameHeight` değerleriyle uyumludur.

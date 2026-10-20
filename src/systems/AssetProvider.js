@@ -32,18 +32,29 @@ const DISPLAY_SIZES = {
 };
 
 /**
- * Animasyon tanımları — her key için frameRate ve frameCount.
- * Phaser anims.create ile kaydedilir, sprite.play(key) ile oynatılır.
+ * Animasyon tanımları — her key için bir veya BİRDEN ÇOK durum (state).
+ *
+ * İki şema desteklenir (geriye-uyumlu):
+ *  1. TEK DURUM (eski): { frameCount, frameRate, flipX } → yalnız 'idle' gibi davranır.
+ *  2. ÇOK DURUM (yeni): { flipX, states: { idle:{start,count,frameRate,loop}, walk:{...}, ... } }
+ *     Tek sprite sheet'te durumlar ARDIŞIK frame bloklarıdır (idle 0..5, walk 6..13, ...);
+ *     her state kendi {start, count} aralığıyla kesilir. loop:false → tek sefer oynar (attack/hurt/death).
+ *
+ * Frame SAYILARI ve BOYUT sabit değil — config'den okunur (Anıl: esnek). ChatGPT sheet'i ne
+ * üretirse buraya o start/count yazılır. Önerilen aralıklar ASSET-BRIEF.md'de.
+ *
+ * NOT: Aşağısı PLACEHOLDER tek-durum tanımlarıdır (mevcut klon sheet'leri idle-only). Gerçek
+ * çok-durumlu sheet'ler gelince ilgili key'e `states` eklenir; kod otomatik devralır.
  */
 const ANIM_DEFS = {
-  'enemy-ghoul':       { frameCount: 6, frameRate: 8,  flipX: true },
-  'enemy-gargoyle':        { frameCount: 6, frameRate: 7,  flipX: true },
-  'enemy-imp':           { frameCount: 6, frameRate: 12, flipX: true },
-  'enemy-soulVessel':    { frameCount: 6, frameRate: 8,  flipX: true },
-  'enemy-cursedKnight':          { frameCount: 6, frameRate: 7,  flipX: true },
+  'enemy-ghoul':          { frameCount: 6, frameRate: 8,  flipX: true },
+  'enemy-gargoyle':       { frameCount: 6, frameRate: 7,  flipX: true },
+  'enemy-imp':            { frameCount: 6, frameRate: 12, flipX: true },
+  'enemy-soulVessel':     { frameCount: 6, frameRate: 8,  flipX: true },
+  'enemy-cursedKnight':   { frameCount: 6, frameRate: 7,  flipX: true },
   'enemy-warden':         { frameCount: 6, frameRate: 7,  flipX: true },
-  'enemy-ooze':       { frameCount: 6, frameRate: 9,  flipX: true },
-  'enemy-cultist':         { frameCount: 6, frameRate: 8,  flipX: true },
+  'enemy-ooze':           { frameCount: 6, frameRate: 9,  flipX: true },
+  'enemy-cultist':        { frameCount: 6, frameRate: 8,  flipX: true },
   'enemy-boss_tank':      { frameCount: 6, frameRate: 6,  flipX: true },
   'enemy-boss_berserker': { frameCount: 6, frameRate: 7,  flipX: true },
   'enemy-boss_shaman':    { frameCount: 6, frameRate: 7,  flipX: true },
@@ -51,6 +62,24 @@ const ANIM_DEFS = {
   'enemy-boss_armored':   { frameCount: 6, frameRate: 6,  flipX: true },
   'defender-archer':      { frameCount: 6, frameRate: 8 },
 };
+
+/** Bir ANIM_DEF'i normalize et: hep { flipX, states:{...} } döndür (tek-durum → idle). */
+function normalizeAnim(def) {
+  if (!def) return null;
+  if (def.states) return { flipX: !!def.flipX, states: def.states };
+  // Eski tek-durum şeması → idle state'i
+  return {
+    flipX: !!def.flipX,
+    states: { idle: { start: 0, count: def.frameCount, frameRate: def.frameRate, loop: true } },
+  };
+}
+
+/** Oynatılacak durumu seç: istenen yoksa makul bir yedeğe düş (varsa idle, yoksa ilk state). */
+function resolveState(states, wanted) {
+  if (states[wanted]) return wanted;
+  if (states.idle) return 'idle';
+  return Object.keys(states)[0] || null;
+}
 
 const AssetProvider = {
   preload(scene) {
@@ -61,16 +90,26 @@ const AssetProvider = {
     }
   },
 
-  /** Spritesheet animasyonlarını Phaser anim manager'a kaydet (GameScene.create sonrası). */
+  /**
+   * Spritesheet animasyonlarını Phaser anim manager'a kaydet (GameScene.create sonrası).
+   * Her key için her STATE ayrı anim olur: Phaser key = '<spriteKey>-<state>' (örn 'enemy-ghoul-walk').
+   */
   createAnims(scene) {
-    for (const [key, def] of Object.entries(ANIM_DEFS)) {
-      if (scene.anims.exists(key)) continue;
-      scene.anims.create({
-        key,
-        frames: scene.anims.generateFrameNumbers(key, { start: 0, end: def.frameCount - 1 }),
-        frameRate: def.frameRate,
-        repeat: -1,
-      });
+    for (const [key, rawDef] of Object.entries(ANIM_DEFS)) {
+      const def = normalizeAnim(rawDef);
+      if (!def) continue;
+      for (const [state, s] of Object.entries(def.states)) {
+        const animKey = `${key}-${state}`;
+        if (scene.anims.exists(animKey)) continue;
+        const start = s.start ?? 0;
+        const end = start + (s.count ?? 1) - 1;
+        scene.anims.create({
+          key: animKey,
+          frames: scene.anims.generateFrameNumbers(key, { start, end }),
+          frameRate: s.frameRate ?? 8,
+          repeat: s.loop === false ? 0 : -1, // loop:false → tek sefer (attack/hurt/death)
+        });
+      }
     }
   },
 
@@ -98,14 +137,35 @@ const AssetProvider = {
     }
   },
 
-  /** Animasyonu oynat — anim tanımı yoksa sessizce geçer. */
-  playAnim(sprite, key) {
-    if (!sprite || typeof sprite.play !== 'function') return;
-    const def = ANIM_DEFS[key];
-    if (def) {
-      sprite.play(key, true);
+  /**
+   * Animasyonu oynat. state verilmezse 'idle'. Anim tanımı yoksa sessizce geçer (statik sprite).
+   * İstenen state yoksa idle'a/ilk state'e düşer. Aynı state zaten oynuyorsa yeniden başlatmaz
+   * (loop'u kesmemek için) — tek-sefer state'ler (loop:false) hep baştan oynatılır.
+   * @returns {string|null} oynatılan state (çağıran bitişi dinlemek isteyebilir)
+   */
+  playAnim(sprite, key, state = 'idle') {
+    if (!sprite || typeof sprite.play !== 'function') return null;
+    const def = normalizeAnim(ANIM_DEFS[key]);
+    if (!def) return null;
+    const resolved = resolveState(def.states, state);
+    if (!resolved) return null;
+    const s = def.states[resolved];
+    const animKey = `${key}-${resolved}`;
+    const once = s.loop === false;
+    // Döngüsel aynı anim zaten oynuyorsa dokunma (titremeyi önle)
+    if (!once && sprite.anims?.isPlaying && sprite.anims.currentAnim?.key === animKey) {
       if (def.flipX) sprite.setFlipX(true);
+      return resolved;
     }
+    sprite.play(animKey, !once);
+    if (def.flipX) sprite.setFlipX(true);
+    return resolved;
+  },
+
+  /** Bir sprite key'inin belirli bir state'i tanımlı mı? (durum geçişi öncesi kontrol için). */
+  hasState(key, state) {
+    const def = normalizeAnim(ANIM_DEFS[key]);
+    return !!(def && def.states[state]);
   },
 
   getDisplaySize(key) {

@@ -54,6 +54,12 @@ export default class Defender {
     this._engaged = null;       // melee: şu an dövüştüğü düşman
     this._lungeState = 'anchor'; // 'anchor' | 'lunging' | 'returning'
 
+    // Animasyon durumu (çok-durumlu sheet'ler için). _animOverride: tek-sefer anim (attack/hurt/death)
+    // süresi; bitene kadar türetilen state'in üstüne biner. Sheet yoksa playAnim sessizce geçer.
+    this._animState = 'idle';
+    this._animOverride = null;   // { state, timer }
+    this._isAnimated = (this.config.spriteType === 'sprite');
+
     // Sprite — config.spriteKey'den (spriteType: 'sprite' animasyonlu, 'image' statik).
     const key = this.config.spriteKey;
     if (key) {
@@ -146,7 +152,8 @@ export default class Defender {
       this.sprite.setTintFill(0xff5555);
       this.scene.time.delayedCall(70, () => { if (this.sprite && this.alive) this.sprite.clearTint(); });
     }
-    if (this.hp <= 0) this.die();
+    if (this.hp <= 0) { this.die(); return; }
+    this._triggerAnim('hurt', 0.18); // kısa sarsılma (sheet'te hurt yoksa idle'a düşer)
   }
 
   /** Birim öldü — sahneden düşer, SoulDebtManager diriltme kuyruğuna alır (K29). */
@@ -155,8 +162,16 @@ export default class Defender {
     this.alive = false;
     this.hp = 0;
     this._engaged = null;
+    // Death animasyonu varsa sprite görünür kalıp death oynar (diriltme cooldown'u içinde); yoksa
+    // eski davranış: hemen gizle. İki durumda da revive/permanentlyRemove sprite'ı yönetir.
+    const hasDeath = this._isAnimated && AssetProvider.hasState(this.config.spriteKey, 'death');
     if (this.sprite) {
-      this.sprite.setVisible(false);
+      if (hasDeath) {
+        this._animOverride = null; // override'ı temizle, death'i doğrudan oynat (loop:false)
+        AssetProvider.playAnim(this.sprite, this.config.spriteKey, 'death');
+      } else {
+        this.sprite.setVisible(false);
+      }
     }
     // Ölüm efekti (konumda)
     this.scene.spawnDeathParticles?.(this.x, this.y, 'unitDeath');
@@ -179,8 +194,10 @@ export default class Defender {
     this.y = this.anchorY;
     this._lungeState = 'anchor';
     this._engaged = null;
+    this._animOverride = null; // death override'ı temizle → idle'a dön
     if (this.sprite) {
       this.sprite.setPosition(this.x, this.y).setVisible(true).clearTint();
+      AssetProvider.playAnim(this.sprite, this.config.spriteKey, 'idle');
       // Diriliş pulse
       this.sprite.setScale(0.3);
       this.scene.tweens.add({ targets: this.sprite, scaleX: 1, scaleY: 1, duration: 250, ease: 'Back.easeOut' });
@@ -231,6 +248,7 @@ export default class Defender {
           this._attackTimer = 1 / rate;
           const isBoss = this._engaged.type?.startsWith('boss_');
           this._engaged.takeDamage(Math.max(1, Math.floor(this.getDamage(isBoss))), true);
+          this._triggerAnim('attack', 0.3); // melee vuruş → attack animasyonu
         }
       }
     } else {
@@ -247,6 +265,9 @@ export default class Defender {
       }
     }
     if (this.sprite) this.sprite.setPosition(this.x, this.y);
+    // Mantıksal durum: hareket ediyorsa walk, çıpada duruyorsa idle (attack override vuruşta biner)
+    const moving = this._lungeState === 'lunging' || this._lungeState === 'returning';
+    this._tickAnim(delta, moving ? 'walk' : 'idle');
   }
 
   update(delta, enemies) {
@@ -271,6 +292,7 @@ export default class Defender {
       this.cooldownTimer = 1 / this.getFireRate();
     }
     this._updateProjectiles(delta, enemies);
+    this._tickAnim(delta, 'idle'); // ranged çıpada sabit; attack override atışta biner
   }
 
   /** Uçuşan mermileri ilerlet, ölenleri havuza iade et. */
@@ -299,8 +321,10 @@ export default class Defender {
       this.cooldownTimer = 1 / this.getFireRate();
       if (healed && this.sprite) {
         this.scene.tweens.add({ targets: this.sprite, y: this.y - 3, duration: 80, yoyo: true, ease: 'Power1' });
+        this._triggerAnim('attack', 0.3); // heal pulse → cast/attack animasyonu
       }
     }
+    this._tickAnim(delta, 'idle'); // support çıpada sabit
   }
 
   /** Cleric heal gücü (upgrade + kıdem special çarpanı). */
@@ -349,6 +373,7 @@ export default class Defender {
     );
     this.projectiles.push(proj);
     if (this.config.fireSfx) this.scene.game.events.emit('sfx', this.config.fireSfx);
+    this._triggerAnim('attack', 0.3); // ranged atış → attack animasyonu (kısa, tek sefer)
 
     // Archer Mastery splash (Conquest) — config.archerSplash bayraklı birimlerde
     if (this.config.archerSplash) {
@@ -375,6 +400,30 @@ export default class Defender {
   getBlastRadius() {
     const l = this.getStateLevels();
     return calculateValue(this.config.blastRadius.base, this.config.blastRadius.multiplier, l.blastRadius);
+  }
+
+  // ─────────── Animasyon durumu (çok-durumlu sheet) ───────────
+
+  /** Tek-sefer animasyon tetikle (attack/hurt/death) — süresi dolana kadar türetileni örter. */
+  _triggerAnim(state, durationSec) {
+    if (!this._isAnimated) return;
+    this._animOverride = { state, timer: durationSec };
+  }
+
+  /**
+   * Her frame çağrılır: override varsa onu, yoksa logicState'i oynatır. Sheet'te o state yoksa
+   * AssetProvider idle'a/ilk state'e düşer, sheet hiç yoksa sessiz geçer (statik sprite korunur).
+   */
+  _tickAnim(delta, logicState) {
+    if (!this._isAnimated || !this.sprite) return;
+    let state = logicState;
+    if (this._animOverride) {
+      this._animOverride.timer -= delta;
+      if (this._animOverride.timer > 0) state = this._animOverride.state;
+      else this._animOverride = null;
+    }
+    this._animState = state;
+    AssetProvider.playAnim(this.sprite, this.config.spriteKey, state);
   }
 
   // ─────────── Ateş efektleri (config.fireFx ile seçilir) ───────────
