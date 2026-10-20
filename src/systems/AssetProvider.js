@@ -22,10 +22,10 @@ const DISPLAY_SIZES = {
   'enemy-boss_armored':   { w: 96, h: 96 },
   // defenders
   'defender-necromancer':       { w: 36, h: 72 },
-  'defender-archer':      { w: 57, h: 57 },   // 3/4 boyut
+  'defender-archer':      { w: 54, h: 54 },   // 96px sheet → oyunda ~54px
   'defender-golem':      { w: 32, h: 42 },
   'defender-mage':       { w: 28, h: 48 },
-  'defender-bruiser':    { w: 36, h: 30 },
+  'defender-bruiser':    { w: 56, h: 56 },    // 96px sheet → oyunda ~56px (ön-saf, biraz iri)
   'defender-cleric':     { w: 28, h: 48 },
   // projectiles
   'projectile-arrow':     { w: 1, h: 1 },
@@ -60,7 +60,26 @@ const ANIM_DEFS = {
   'enemy-boss_shaman':    { frameCount: 6, frameRate: 7,  flipX: true },
   'enemy-boss_splitter':  { frameCount: 6, frameRate: 7,  flipX: true },
   'enemy-boss_armored':   { frameCount: 6, frameRate: 6,  flipX: true },
-  'defender-archer':      { frameCount: 6, frameRate: 8 },
+  // İskelet Okçu — çok-durumlu (96×96, 7 sütun grid; satır-başı: idle0 walk7 attack14 hurt21 death28)
+  'defender-archer': {
+    states: {
+      idle:   { start: 0,  count: 5, frameRate: 6,  loop: true },
+      walk:   { start: 7,  count: 7, frameRate: 10, loop: true },
+      attack: { start: 14, count: 6, frameRate: 12, loop: false },
+      hurt:   { start: 21, count: 4, frameRate: 12, loop: false },
+      death:  { start: 28, count: 7, frameRate: 9,  loop: false },
+    },
+  },
+  // İskelet Bruiser — çok-durumlu (96×96, 7 sütun grid)
+  'defender-bruiser': {
+    states: {
+      idle:   { start: 0,  count: 5, frameRate: 6,  loop: true },
+      walk:   { start: 7,  count: 7, frameRate: 11, loop: true },
+      attack: { start: 14, count: 6, frameRate: 13, loop: false },
+      hurt:   { start: 21, count: 4, frameRate: 12, loop: false },
+      death:  { start: 28, count: 6, frameRate: 9,  loop: false },
+    },
+  },
 };
 
 /** Bir ANIM_DEF'i normalize et: hep { flipX, states:{...} } döndür (tek-durum → idle). */

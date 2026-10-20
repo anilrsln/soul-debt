@@ -203,7 +203,7 @@ export const CONFIG = {
       name: 'Skeleton Bruiser',
       combatType: 'melee', hp: 70, // melee TIKAÇ ön-saf (K22): golem'den dayanıksız ama hızlı+vurucu
       // Melee: mermi yok. Golem'den rol farkı: orta HP, yüksek hasar, HIZLI vuruş.
-      spriteKey: 'defender-bruiser', spriteType: 'image',
+      spriteKey: 'defender-bruiser', spriteType: 'sprite',
       fireFx: 'blast',
       meleeAttackRate: 1.8, // golem'in global 1.0'ından hızlı — bruiser'ın kimliği (ön-saf vurucu)
       soulCapacity: 14, // golem'den (20) ucuz dirilt; orta borç (K12)
@@ -260,10 +260,10 @@ export const CONFIG = {
     'enemy-boss_armored':   { sprite: 'assets/units/black-pawn-idle.png',     frames: { frameWidth: 192, frameHeight: 192 } },
     // Defenders — Bina asset'leri (statik PNG, frames yok)
     'defender-necromancer': { sprite: 'assets/buildings/blue-tower.png' },
-    'defender-archer':      { sprite: 'assets/units/blue-archer-idle.png', frames: { frameWidth: 192, frameHeight: 192 } },
+    'defender-archer':      { sprite: 'assets/units/skeleton-archer.png', frames: { frameWidth: 96, frameHeight: 96 } },
     'defender-golem':       { sprite: 'assets/buildings/blue-barracks.png' },
     'defender-mage':        { sprite: 'assets/buildings/blue-monastery.png' },
-    'defender-bruiser':     { sprite: 'assets/buildings/blue-castle.png' },
+    'defender-bruiser':     { sprite: 'assets/units/skeleton-bruiser.png', frames: { frameWidth: 96, frameHeight: 96 } },
     'defender-cleric':      { sprite: 'assets/buildings/blue-monastery.png' }, // placeholder (mage ile paylaşır; Anıl gerçek sprite koyar)
     // Projectiles — keep geometric for now (tiny, fast-moving objects)
     'projectile-arrow':      { sprite: 'assets/units/arrow.png' },
