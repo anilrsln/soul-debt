@@ -259,7 +259,7 @@ export const CONFIG = {
     'enemy-boss_splitter':  { sprite: 'assets/units/purple-monk-idle.png',    frames: { frameWidth: 192, frameHeight: 192 } },
     'enemy-boss_armored':   { sprite: 'assets/units/black-pawn-idle.png',     frames: { frameWidth: 192, frameHeight: 192 } },
     // Defenders — Bina asset'leri (statik PNG, frames yok)
-    'defender-necromancer': { sprite: 'assets/buildings/blue-tower.png' },
+    'defender-necromancer': { sprite: 'assets/units/necromancer.png', frames: { frameWidth: 192, frameHeight: 192 } },
     'defender-archer':      { sprite: 'assets/units/skeleton-archer.png', frames: { frameWidth: 96, frameHeight: 96 } },
     'defender-golem':       { sprite: 'assets/buildings/blue-barracks.png' },
     'defender-mage':        { sprite: 'assets/buildings/blue-monastery.png' },

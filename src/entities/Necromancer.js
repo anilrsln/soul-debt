@@ -18,8 +18,10 @@ import AssetProvider from '../systems/AssetProvider.js';
 export default class Necromancer extends Defender {
   constructor(scene, x, y) {
     super(scene, 'necromancer', x, y);
-    this.sprite = scene.add.image(x, y, 'defender-necromancer').setDepth(5);
+    this.sprite = scene.add.sprite(x, y, 'defender-necromancer').setDepth(5);
     AssetProvider.applySprite(this.sprite, 'defender-necromancer');
+    AssetProvider.playAnim(this.sprite, 'defender-necromancer', 'idle');
+    this._castTimer = 0; // ışın atarken kısa 'attack' animasyonu tutma süresi
     this.beamGraphics = scene.add.graphics().setDepth(6);
     this.glowPhase = 0;
     this.damageAccumulator = 0;
@@ -93,6 +95,17 @@ export default class Necromancer extends Defender {
 
     this.glowPhase += delta * 3;
     this.updateGlow();
+
+    // Animasyon: ışın atarken 'attack' (periyodik yeniden tetik — sürekli büyü hissi), boşta 'idle'.
+    this._castTimer -= delta;
+    if (this.target) {
+      if (this._castTimer <= 0) {
+        AssetProvider.playAnim(this.sprite, 'defender-necromancer', 'attack');
+        this._castTimer = 0.6; // attack döngüsünü ~0.6 sn'de bir yenile
+      }
+    } else if (this._castTimer <= 0) {
+      AssetProvider.playAnim(this.sprite, 'defender-necromancer', 'idle');
+    }
   }
 
   drawBeam(delta) {

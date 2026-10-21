@@ -21,7 +21,7 @@ const DISPLAY_SIZES = {
   'enemy-boss_splitter':  { w: 104, h: 104 },
   'enemy-boss_armored':   { w: 96, h: 96 },
   // defenders
-  'defender-necromancer':       { w: 36, h: 72 },
+  'defender-necromancer':       { w: 56, h: 68 },  // 192px sheet → oyunda ~dik figür
   'defender-archer':      { w: 54, h: 54 },   // 96px sheet → oyunda ~54px
   'defender-golem':      { w: 32, h: 42 },
   'defender-mage':       { w: 28, h: 48 },
@@ -68,6 +68,16 @@ const ANIM_DEFS = {
       attack: { start: 14, count: 6, frameRate: 12, loop: false },
       hurt:   { start: 21, count: 4, frameRate: 12, loop: false },
       death:  { start: 28, count: 7, frameRate: 9,  loop: false },
+    },
+  },
+  // Necromancer — çok-durumlu (192×192, 6 sütun grid; idle0 walk6 attack12 hurt18 death24)
+  'defender-necromancer': {
+    states: {
+      idle:   { start: 0,  count: 6, frameRate: 6,  loop: true },
+      walk:   { start: 6,  count: 6, frameRate: 9,  loop: true },
+      attack: { start: 12, count: 6, frameRate: 10, loop: false },
+      hurt:   { start: 18, count: 4, frameRate: 12, loop: false },
+      death:  { start: 24, count: 6, frameRate: 8,  loop: false },
     },
   },
   // İskelet Bruiser — çok-durumlu (96×96, 7 sütun grid)
