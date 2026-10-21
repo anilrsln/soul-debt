@@ -170,7 +170,7 @@ export const CONFIG = {
       name: 'Stone Golem',
       combatType: 'melee', hp: 120, // melee TIKAÇ: yolu tutar, dur-dövüş (K34 asıl tank)
       // Melee: mermi yok. Davranış alanları:
-      spriteKey: 'defender-golem', spriteType: 'image',
+      spriteKey: 'defender-golem', spriteType: 'sprite',
       fireFx: 'blast', // (melee olduğu için ateş efekti şu an çağrılmıyor; ileride ranged varyant için korunur)
       soulCapacity: 20, // yüksek — pahalı dirilt, çok borç (K12/K22 Taş Golem benzeri)
       // K30 placeholder: soul + essence (Golem benzeri ağır birim)
@@ -261,7 +261,7 @@ export const CONFIG = {
     // Defenders — Bina asset'leri (statik PNG, frames yok)
     'defender-necromancer': { sprite: 'assets/units/necromancer.png', frames: { frameWidth: 192, frameHeight: 192 } },
     'defender-archer':      { sprite: 'assets/units/skeleton-archer.png', frames: { frameWidth: 96, frameHeight: 96 } },
-    'defender-golem':       { sprite: 'assets/buildings/blue-barracks.png' },
+    'defender-golem':       { sprite: 'assets/units/stone-golem.png', frames: { frameWidth: 112, frameHeight: 112 } },
     'defender-mage':        { sprite: 'assets/buildings/blue-monastery.png' },
     'defender-bruiser':     { sprite: 'assets/units/skeleton-bruiser.png', frames: { frameWidth: 96, frameHeight: 96 } },
     'defender-cleric':      { sprite: 'assets/buildings/blue-monastery.png' }, // placeholder (mage ile paylaşır; Anıl gerçek sprite koyar)

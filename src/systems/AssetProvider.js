@@ -23,7 +23,7 @@ const DISPLAY_SIZES = {
   // defenders
   'defender-necromancer':       { w: 56, h: 68 },  // 192px sheet → oyunda ~dik figür
   'defender-archer':      { w: 54, h: 54 },   // 96px sheet → oyunda ~54px
-  'defender-golem':      { w: 32, h: 42 },
+  'defender-golem':      { w: 66, h: 66 },  // EN iri tank (112px sheet)
   'defender-mage':       { w: 28, h: 48 },
   'defender-bruiser':    { w: 56, h: 56 },    // 96px sheet → oyunda ~56px (ön-saf, biraz iri)
   'defender-cleric':     { w: 28, h: 48 },
@@ -78,6 +78,16 @@ const ANIM_DEFS = {
       attack: { start: 12, count: 6, frameRate: 10, loop: false },
       hurt:   { start: 18, count: 4, frameRate: 12, loop: false },
       death:  { start: 24, count: 6, frameRate: 8,  loop: false },
+    },
+  },
+  // Taş Golem — çok-durumlu (112×112, 6 sütun grid; idle0 walk6 attack12 hurt18 death24). Ağır/yavaş.
+  'defender-golem': {
+    states: {
+      idle:   { start: 0,  count: 6, frameRate: 5,  loop: true },
+      walk:   { start: 6,  count: 6, frameRate: 7,  loop: true },
+      attack: { start: 12, count: 6, frameRate: 9,  loop: false },
+      hurt:   { start: 18, count: 4, frameRate: 10, loop: false },
+      death:  { start: 24, count: 6, frameRate: 7,  loop: false },
     },
   },
   // İskelet Bruiser — çok-durumlu (96×96, 7 sütun grid)
