@@ -216,7 +216,7 @@ export const CONFIG = {
     cleric: {
       name: 'Cleric',
       combatType: 'support', hp: 35, // destek: savaşmaz, menzildeki dost birimleri iyileştirir (K22 healer)
-      spriteKey: 'defender-cleric', spriteType: 'image',
+      spriteKey: 'defender-cleric', spriteType: 'sprite',
       fireFx: 'heal', // yeşil pulse (fire değil, heal tetiğinde)
       soulCapacity: 12, // orta (K12)
       // K30 placeholder: soul + essence (büyücü ailesi — mage ile benzer)
@@ -264,7 +264,7 @@ export const CONFIG = {
     'defender-golem':       { sprite: 'assets/units/stone-golem.png', frames: { frameWidth: 112, frameHeight: 112 } },
     'defender-mage':        { sprite: 'assets/buildings/blue-monastery.png' },
     'defender-bruiser':     { sprite: 'assets/units/skeleton-bruiser.png', frames: { frameWidth: 96, frameHeight: 96 } },
-    'defender-cleric':      { sprite: 'assets/buildings/blue-monastery.png' }, // placeholder (mage ile paylaşır; Anıl gerçek sprite koyar)
+    'defender-cleric':      { sprite: 'assets/units/cleric.png', frames: { frameWidth: 96, frameHeight: 96 } },
     // Projectiles — keep geometric for now (tiny, fast-moving objects)
     'projectile-arrow':      { sprite: 'assets/units/arrow.png' },
     'projectile-mageBolt':   { shape: 'circle', size: 4, color: 0x88ccff },

@@ -26,7 +26,7 @@ const DISPLAY_SIZES = {
   'defender-golem':      { w: 66, h: 66 },  // EN iri tank (112px sheet)
   'defender-mage':       { w: 28, h: 48 },
   'defender-bruiser':    { w: 56, h: 56 },    // 96px sheet → oyunda ~56px (ön-saf, biraz iri)
-  'defender-cleric':     { w: 28, h: 48 },
+  'defender-cleric':     { w: 50, h: 56 },  // 96px sheet → dik büyücü figür
   // projectiles
   'projectile-arrow':     { w: 1, h: 1 },
 };
@@ -76,6 +76,16 @@ const ANIM_DEFS = {
       idle:   { start: 0,  count: 6, frameRate: 6,  loop: true },
       walk:   { start: 6,  count: 6, frameRate: 9,  loop: true },
       attack: { start: 12, count: 6, frameRate: 10, loop: false },
+      hurt:   { start: 18, count: 4, frameRate: 12, loop: false },
+      death:  { start: 24, count: 6, frameRate: 8,  loop: false },
+    },
+  },
+  // Şifacı (Cleric) — çok-durumlu (96×96, 6 sütun grid; idle0 walk6 attack12 hurt18 death24)
+  'defender-cleric': {
+    states: {
+      idle:   { start: 0,  count: 6, frameRate: 6,  loop: true },
+      walk:   { start: 6,  count: 6, frameRate: 9,  loop: true },
+      attack: { start: 12, count: 6, frameRate: 10, loop: false }, // şifa casting
       hurt:   { start: 18, count: 4, frameRate: 12, loop: false },
       death:  { start: 24, count: 6, frameRate: 8,  loop: false },
     },
