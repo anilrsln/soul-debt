@@ -203,4 +203,22 @@ durum (idle/walk/attack/hurt/death) destekler. Her durum tek sheet'te ardışık
 Defender ve Enemy durum geçişlerini otomatik yapar (yürü→walk, vuruş→attack tek sefer, ölüm→death).
 Sheet'te bir durum yoksa idle'a düşer (kırılmaz). Yani: sprite sheet'i üret → dosyayı koy → config
 ASSETS'e `frames` + ANIM_DEFS'e `states` gir. Entegrasyon adımları bana (kod) bırakılabilir.
-Boyutlar (192/320) mevcut manifestteki `frameWidth/frameHeight` değerleriyle uyumludur.
+
+**BAĞLANAN SPRITE'LAR (2026-10-21/23, placeholder — final değil):**
+necromancer (192px), archer (96px), bruiser (96px), golem (112px), cleric (96px). Hepsi çok-durumlu
+(idle/walk/attack/hurt/death). `public/assets/units/` altında: necromancer.png, skeleton-archer.png,
+skeleton-bruiser.png, stone-golem.png, cleric.png. golem attack/death kareleri placeholder-kusurlu
+(taş parçacık dağılması otomatik kesmeyi zorladı). Necromancer kendi entity'si (Necromancer.js),
+animasyonu orada elle (ışın atarken attack, boşta idle).
+
+**KALAN:** mage (son oyuncu birimi) + 8 düşman (ghoul/gargoyle/imp/soulVessel/cursedKnight/warden/
+ooze/cultist). Düşman asset anahtarı `enemy-<key>`.
+
+**SPRITE İŞLEME YÖNTEMİ (yeni agent için kritik):** ChatGPT sheet'leri doğrudan oyuna oturmaz
+(başlık metni, düzensiz frame aralıkları, checkerboard arka plan). Python/PIL ile işlenir:
+(1) checkerboard/arka planı şeffaflaştır (açık+düşük-doygunluk piksel → alpha 0; ya da gömülü
+alpha varsa onu kullan), (2) başlık metni satırlarını (küçük yükseklik) + sol-kenar etiketleri
+filtrele, (3) her animasyon satırını eşit-böl VEYA figür-tespit ile kes, (4) her frame'i NxN kutuya
+taban-hizalı ortala, (5) satır-satır grid PNG olarak kaydet. İPUCU: **şeffaf alpha gömülü PNG**
+(checkerboard değil) en temiz sonucu verir — attack/death bitişik kareleri bile ayrılır. İşleme
+script'leri scratchpad'de üretildi, kalıcı değil; yeni agent görseli analiz edip kendi script'ini yazar.

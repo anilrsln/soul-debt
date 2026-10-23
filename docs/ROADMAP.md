@@ -73,8 +73,8 @@
 - [x] Serbest (x,y) yerleştirme: birime tık→seç, boş yere tık→çıpa taşı (K24); necromancer hedefiyle çakışmaz
 - [x] Birim HP barları + seçim halkası + unitDeath ölüm efekti
 - [x] cannon → MELEE blokçu (mevcut kadroda gerçek tank yoktu; Golem gelince Faz G'de devralır)
-- [ ] **Kat-arası tam-duraklama kurulum fazı:** Şu an örme/taşıma SAVAŞTA açık (K28 — tasarıma uygun).
-      Ayrı "savaş durur, ince diz" fazı + absorbe Faz E cilası / sonraki iterasyon.
+- [x] **Kat-arası tam-duraklama kurulum fazı (K28):** TAMAM (Faz G içinde). Kat sonu savaş durur,
+      "İN" ile devam + geçiş kartı. (absorbe cilası hâlâ açık/park.)
 - [ ] **Harita engel-ÇARPIŞMASI:** drawObstacles şu an yalnız görsel doku. Gerçek engel/köprü/dar-boğaz
       + düşman steering (engelden kaç) sonraki iterasyon (K27). A* park'ta kalır.
 - [ ] **Ankerli otonomi cilası (ranged):** ranged birimler çıpada tam sabit; menzile hizalanma
@@ -109,12 +109,28 @@ Kadro + düşman refactoru TAMAM + push edildi (2026-10-18):
 - [x] **Düşman kimliği (K23):** ghoul/gargoyle/imp/soulVessel/cursedKnight/warden/ooze/cultist
       (healer→cultist, oyuncu cleric çakışması çözüldü); config/asset/weights/typeUnlocks/i18n.
 
-Kalan içerik (kadro bitti; sıra içerik + cila):
-- [ ] 10 wave = kat döngüsü, kat geçiş kartları (kat sonu ara-perde)
+Faz G içerik işleri (2026-10-18/23 arası TAMAMLANANLAR):
+- [x] **Kat-arası tam-duraklama fazı (K28):** kat sonu (10. wave, boss sonrası) savaş durur,
+      oyuncu dizer/örer/ölüleri gözden geçirir, "⬇ İN" ile devam. god wave hariç. WaveManager
+      isFloorBreak + GameScene _onFloorBreak banner.
+- [x] **Kat geçiş kartı (placeholder):** "İN" sonrası kısa "KAT N" perdesi (fade). _onFloorResumed.
+- [x] **Achievements yeniden yazımı:** kırık i18n anahtarı (cannonUnlock→golemUnlock) düzeltildi;
+      3 yeni (veteran5/firstCancel/floor3) + besleyen stat sayaçları.
+- [x] **Çok-durumlu animasyon altyapısı:** AssetProvider key başına states{idle,walk,attack,hurt,
+      death}; tek sheet ardışık frame blokları; geriye-uyumlu (eski idle-only otomatik). Defender +
+      Enemy durum geçişleri (walk/attack/hurt/death). Frame sayısı+boyut config-driven.
+- [x] **5 karakter sprite'ı bağlandı (placeholder asset):** necromancer, archer, bruiser, golem,
+      cleric. ChatGPT sheet'leri Python/PIL ile oyun-formatına çevrildi (başlık kırp, şeffaflaştır,
+      96/112/192px grid). public/assets/units/. golem attack/death placeholder-kusurlu.
+- [x] **Conquest fix:** clericUnlock koordinat çakışması (frostUnlock ile aynı x480y560) giderildi
+      → x660y680. Mage node'u görünür oldu, cleric+bruiser zinciri açıldı.
+
+Kalan içerik:
+- [ ] **mage sprite'ı** (son oyuncu birimi — placeholder) + **8 düşman sprite'ı** (ghoul/gargoyle/
+      imp/soulVessel/cursedKnight/warden/ooze/cultist). Aynı yöntemle bağlanır (PIL işleme).
 - [ ] Yeni düşman arketipleri + kat varyantları (mevcut 8 + boss temalandırma)
 - [ ] Lore: boss banner, bestiary, idle popup necromancer sesi
-- [ ] Achievements yeniden yazımı (K32'de ertelendi; mevcut achievement'lar eski kadro şemasında —
-      cannonUnlock/archerFull id'leri tarihsel kaldı, metinler güncel kadroya göre gözden geçirilmeli)
+- [ ] Spell efekt sprite'ları (A seçeneği — necromancer soul projectile/summon vb.)
 - [ ] i18n: TR + EN parite (lore ayrı yazılır, birebir çeviri değil)
 
 ### Faz H — Cila

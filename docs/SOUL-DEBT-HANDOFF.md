@@ -70,41 +70,57 @@ Repo'nun docs/ klasöründeki dosyalar tüm tasarımı içerir — başka yere b
   gereksiz işi ve yarım bırakılmış kararları sevmez. Açık uç çoğaltmak yerine
   karar kapatmayı tercih eder.
 
-## Mevcut Durum (2026-10-17, denetim+temizlik oturumu sonrası)
-- **Faz A (lava temizliği): TAMAM.** dieToWall → breachLine iskeleti (geçici ödülsüz
-  ölüm; necromancer hasarı + soul-debt Faz C/D'de gelecek).
-- **Faz B (ekonomi): TAMAM + bug'ları kapandı.** EXP→Soul, Food→bone/essence/crystal;
-  Model 3 craftCost (çoklu-meta, K30); meta-drop düşman metaType'ına göre; 4 sayaç UI;
-  onboarding tetiği (lifetimeSoul); SaveManager v6 migration. resources.* tamamen soul/meta.
-- **Denetim yapıldı (mimari-kurgu tutarlılığı):** K1-K32 koda karşı denetlendi. Faz A/B
-  iddiaları gerçek çıktı. İki gizli bug bulunup DÜZELTİLDİ:
-  1. SaveManager.applyLoad yalnız soul+bone yüklüyordu → 4 kaynak + lifetimeSoul yüklenir hale geldi.
-  2. ConquestManager canPurchase/purchase yalnız soul+bone kontrol ediyordu → maliyetteki
-     tüm kaynaklar (soul/bone/essence/crystal) döngüyle kontrol/harcanır (K21 unitUnlock'a hazır).
-- **Yabancı klon sistemleri temizlendi (K31/K32):** ComboManager KALDIRILDI (kill-streak
-  ödül çarpanı, K4/K9/K12 ile çelişiyordu); MILESTONE KALDIRILDI (sonsuz-wave varsayımı,
-  K7/K26 ile çelişiyordu); crit PARK (ekonomiye dokunmaz, Faz E'de karar); ACHIEVEMENTS
-  sistemi tutuldu, içeriği Faz G'ye ertelendi.
-- Tasarım kararları K1-K32, reddedilenler R1-R13 (DECISIONS.md). **Sıradaki: Faz C.**
-- Not: `PerkManager.js` ölü kod (hiçbir yere import edilmemiş) — Faz H'de silinebilir.
-  Düşman isimleri hâlâ eski (foodCarrier vb.); K23 yeniden-adlandırma Faz G işi.
-  Lane sistemi (LANE_COUNT/drawLanes/syncDefenders) hâlâ aktif; K24 serbest-yerleşim Faz E işi.
+## Mevcut Durum (2026-10-23 — Faz A-F TAMAM, Faz G çoğu bitti)
+Oyunun tam döngüsü çalışıyor + GitHub Pages'te yayında. Faz A-F ve Faz G'nin kadro/
+sistem kısmı bitti. Detaylı durum ROADMAP.md'de; özet:
 
-## Bu Oturumda Ne Yapacağız? (Faz C)
-**Denetim + yabancı-sistem temizliği TAMAMLANDI (yukarı bak).** Sıradaki iş Faz C.
+**TAMAMLANAN (Faz A-F):** lava sök, ekonomi (soul+3meta), necromancer+can havuzu,
+soul-debt+oto-diriltme, dur-dövüş+serbest yerleşim (K24/K27, lane söküldü), prestige
+(iki yol+Model Y).
 
-**Faz C — Necromancer varlığı + canı + breachLine'ı gerçek hasara bağlama** (MIGRATION §3):
-- GameState'e `necromancer: { hp, maxHp }` ekle; saveVersion bump + migration adımı.
-- Necromancer = başlangıç birimi (K25): mevcut `laser`/LaserMonument'ın damage/range/
-  fireRate mantığı necromancer'a taşınır; hiring yok, hep sahnede, sabit konum + menzilli.
-- `Enemy.breachLine()` artık gerçek: necromancer canından keser (şimdilik soul-debt YOK —
-  o Faz D). Can biterse kaybetme koşulu tetiklenir (zorlanmış prestige iskeleti Faz F'de).
-- Her 10 wave (kat sonu) necromancer full dolum; soul ile maxHp upgrade kolu.
-- Yönlendirilebilir hedefleme (K25): düşmana tık → yapışkan hedef; MVP'ye girer,
-  aktif yetenekler GİRMEZ (sonraki faz).
-- UI: necromancer can barı (üst barda veya necromancer üstünde).
-- **GIT NOTU:** commit/push'u KULLANICI (Anıl) yapar; sen docs/src yazarsın.
-Kod yazmadan önce faz kapsamını Anıl'la netleştir.
+**TAMAMLANAN (Faz G — bu oturumlar):**
+- **Veri-odaklı mimari:** tek `Defender` sınıfı + GameScene registry (defenderKeys döngüsü).
+  Yeni karakter = config'e obje. necromancer registry DIŞI (kendi entity'si).
+- **Kadro (6 oyuncu birimi):** necromancer (ranged, can havuzu), archer (ranged),
+  golem (melee tank), bruiser (melee ön-saf, hızlı), mage (ranged AoE), cleric (support/heal).
+  config.DEFENDERS; combatType melee/ranged/support. veteranBonus{damage,hp,special}.
+- **Düşman kimliği (K23):** ghoul/gargoyle/imp/soulVessel/cursedKnight/warden/ooze/cultist
+  + 5 boss (boss_* dokunulmadı). config.ENEMIES.
+- **Veteran sistemi (K37):** VeteranManager — soul-bazlı kıdem, eşit dağıtım, üstel eşik;
+  diriltme kıdemi KORUR, iptal ("✕ bırak") SIFIRLAR. Bu diriltmenin anlamıdır.
+- **Kat-arası tam-duraklama fazı (K28):** kat sonu savaş durur, "İN" + geçiş kartı.
+- **Achievements:** güncel kadroya göre + veteran/kat temalı yeniler.
+- **SaveManager v9:** eski anahtar map+temizle. Ölü kod silindi (PerkManager/LANE_COUNT/
+  prestigeUnlock/prestige.unlocked).
+- **Çok-durumlu animasyon altyapısı:** AssetProvider states{idle,walk,attack,hurt,death};
+  Defender+Enemy durum geçişleri; config-driven; geriye-uyumlu.
+- **5 karakter sprite'ı bağlandı (placeholder):** necromancer/archer/bruiser/golem/cleric.
+  ChatGPT sheet'leri Python/PIL ile işlendi (ASSET-BRIEF §9 yöntem).
+
+**Kararlar: K1-K37, reddedilenler R1-R14 (DECISIONS.md). SaveManager v9.**
+
+## SIRADAKİ İŞ — Faz G içerik kalanı → Faz H cila/MVP
+Öncelik (Anıl'la netleştir):
+1. **mage sprite'ı** (son oyuncu birimi placeholder) + **8 düşman sprite'ı** — asset Anıl'dan
+   gelir, ASSET-BRIEF §9 PIL yöntemiyle bağlanır. Düşman anahtarı `enemy-<key>`.
+2. **Lore** (boss banner, bestiary, idle necromancer replikleri) + spell efekt sprite'ları.
+3. **Faz H — denge playtest (Anıl oynar):** veteran kıdem hızı, cleric heal, borç eğrisi,
+   kat zorluğu — HEPSİ placeholder değer, config'de, oynamadan ayarlanamaz. MVP bitiş çizgisi.
+
+**Park (şimdilik DEĞİL):** harita engel-çarpışması + A*, ranged otonomi cilası, absorbe cilası,
+yeni düşman arketipleri, endless/NG+, ses/müzik. (ROADMAP park listesi.)
+
+## Çalışma Biçimi (ÖNEMLİ — Anıl'ın tercihleri)
+- **GIT:** commit'i SEN atarsın (src/docs), ama PUSH Anıl'da (bu repo için Claude GitHub App
+  kurulu DEĞİL, cloud oturumdan push 403). Commit'leri Anıl'a `git bundle` ile ver:
+  `git bundle create <AD>.bundle <onun-head'i>..HEAD` → SendUserFile. HER bundle'a FARKLI isim
+  ver (aynı isim Desktop'ta eski dosyayla karışır — bu bir kez 14 commit kaybına yol açtı).
+- **Her mantıksal adımda:** `node --check` tüm src + `npx vite build` + programatik mantık testi
+  (saf fonksiyonları izole çalıştır). Sonra commit. Anıl runtime'ı kendi test eder (cloud'dan
+  tarayıcı yok).
+- **Kapsamı önce netleştir:** Anıl açık uç/yarım karar sevmez; kod yazmadan önce kararı kapat.
+  Dürüst risk/fayda değerlendirmesi ister (erken optimizasyon uyarısı dahil).
+- Sprite işleme script'leri scratchpad'de (kalıcı değil); görseli analiz et, kendi script'ini yaz.
 ```
 
 ---
