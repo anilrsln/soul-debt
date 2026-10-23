@@ -480,7 +480,7 @@ export const CONFIG = {
       description: 'Cleric açılır — menzildeki dost birimleri iyileştirir',
       cost: { soul: 1500 },
       effect: { type: 'unlock', target: 'cleric' },
-      requires: ['frostUnlock'], x: 480, y: 560,
+      requires: ['frostUnlock'], x: 660, y: 680, // frostUnlock ile çakışmasın (eskiden x480 y560)
     },
   },
 };
