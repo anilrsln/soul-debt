@@ -183,7 +183,7 @@ export const CONFIG = {
     mage: {
       name: 'Damage Mage',
       combatType: 'ranged', hp: 40, // ranged AoE hasar büyücüsü (K22; yavaşlatma→AoE'ye evrilecek)
-      spriteKey: 'defender-mage', spriteType: 'image',
+      spriteKey: 'defender-mage', spriteType: 'sprite',
       projectileType: 'mageBolt', fireSfx: 'mageFire', fireFx: 'chill',
       onHitEffect: 'slow', // şimdilik yavaşlatma; K22 gereği ileride AoE hasara evrilecek
       soulCapacity: 12, // orta (K12/K22 Büyücü)
@@ -262,7 +262,7 @@ export const CONFIG = {
     'defender-necromancer': { sprite: 'assets/units/necromancer.png', frames: { frameWidth: 192, frameHeight: 192 } },
     'defender-archer':      { sprite: 'assets/units/skeleton-archer.png', frames: { frameWidth: 96, frameHeight: 96 } },
     'defender-golem':       { sprite: 'assets/units/stone-golem.png', frames: { frameWidth: 112, frameHeight: 112 } },
-    'defender-mage':        { sprite: 'assets/buildings/blue-monastery.png' },
+    'defender-mage':        { sprite: 'assets/units/mage.png', frames: { frameWidth: 96, frameHeight: 96 } },
     'defender-bruiser':     { sprite: 'assets/units/skeleton-bruiser.png', frames: { frameWidth: 96, frameHeight: 96 } },
     'defender-cleric':      { sprite: 'assets/units/cleric.png', frames: { frameWidth: 96, frameHeight: 96 } },
     // Projectiles — keep geometric for now (tiny, fast-moving objects)

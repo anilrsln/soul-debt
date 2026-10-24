@@ -24,7 +24,7 @@ const DISPLAY_SIZES = {
   'defender-necromancer':       { w: 56, h: 68 },  // 192px sheet → oyunda ~dik figür
   'defender-archer':      { w: 54, h: 54 },   // 96px sheet → oyunda ~54px
   'defender-golem':      { w: 66, h: 66 },  // EN iri tank (112px sheet)
-  'defender-mage':       { w: 28, h: 48 },
+  'defender-mage':       { w: 50, h: 56 },  // 96px sheet → dik büyücü figür
   'defender-bruiser':    { w: 56, h: 56 },    // 96px sheet → oyunda ~56px (ön-saf, biraz iri)
   'defender-cleric':     { w: 50, h: 56 },  // 96px sheet → dik büyücü figür
   // projectiles
@@ -76,6 +76,16 @@ const ANIM_DEFS = {
       idle:   { start: 0,  count: 6, frameRate: 6,  loop: true },
       walk:   { start: 6,  count: 6, frameRate: 9,  loop: true },
       attack: { start: 12, count: 6, frameRate: 10, loop: false },
+      hurt:   { start: 18, count: 4, frameRate: 12, loop: false },
+      death:  { start: 24, count: 6, frameRate: 8,  loop: false },
+    },
+  },
+  // Hasar Büyücüsü (Mage) — çok-durumlu (96×96, 6 sütun grid; idle0 walk6 attack12 hurt18 death24)
+  'defender-mage': {
+    states: {
+      idle:   { start: 0,  count: 6, frameRate: 6,  loop: true },
+      walk:   { start: 6,  count: 6, frameRate: 10, loop: true },
+      attack: { start: 12, count: 6, frameRate: 11, loop: false }, // alev büyüsü
       hurt:   { start: 18, count: 4, frameRate: 12, loop: false },
       death:  { start: 24, count: 6, frameRate: 8,  loop: false },
     },
