@@ -90,14 +90,13 @@ const ANIM_DEFS = {
       death:  { start: 24, count: 6, frameRate: 8,  loop: false },
     },
   },
-  // Şifacı (Cleric) — çok-durumlu (96×96, 6 sütun grid; idle0 walk6 attack12 hurt18 death24)
+  // Şifacı (Cleric) — SALDIRMAZ, yalnız HEAL. 3 satır sheet (96×96, 6 sütun; idle0 walk6 heal12).
+  // attack/hurt/death YOK — kod bunları istediğinde idle'a düşer (kırılmaz). heal = şifa casting.
   'defender-cleric': {
     states: {
-      idle:   { start: 0,  count: 6, frameRate: 6,  loop: true },
-      walk:   { start: 6,  count: 6, frameRate: 9,  loop: true },
-      attack: { start: 12, count: 6, frameRate: 10, loop: false }, // şifa casting
-      hurt:   { start: 18, count: 4, frameRate: 12, loop: false },
-      death:  { start: 24, count: 6, frameRate: 8,  loop: false },
+      idle: { start: 0,  count: 6, frameRate: 6,  loop: true },
+      walk: { start: 6,  count: 6, frameRate: 9,  loop: true },
+      heal: { start: 12, count: 6, frameRate: 10, loop: false }, // asa kaldır → şifa dairesi
     },
   },
   // Taş Golem — çok-durumlu (112×112, 6 sütun grid; idle0 walk6 attack12 hurt18 death24). Ağır/yavaş.

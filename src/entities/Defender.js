@@ -321,7 +321,7 @@ export default class Defender {
       this.cooldownTimer = 1 / this.getFireRate();
       if (healed && this.sprite) {
         this.scene.tweens.add({ targets: this.sprite, y: this.y - 3, duration: 80, yoyo: true, ease: 'Power1' });
-        this._triggerAnim('attack', 0.3); // heal pulse → cast/attack animasyonu
+        this._triggerAnim('heal', 0.4); // cleric SALDIRMAZ — heal pulse → şifa casting animasyonu
       }
     }
     this._tickAnim(delta, 'idle'); // support çıpada sabit
