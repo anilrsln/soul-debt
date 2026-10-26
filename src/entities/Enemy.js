@@ -31,6 +31,9 @@ export default class Enemy {
     this._baseSpeed = undefined;
     this._healTimer = undefined;
     this._flashing = false;
+    // Buz Büyücüsü (bluemage) kontrolü: ayaz yığını + donma (havuz güvenliği için sıfırla)
+    this._frostStacks = 0;
+    this._frozenTimer = undefined;
     this._shieldBroken = false;
 
     const config = CONFIG.ENEMIES[type];
@@ -131,7 +134,20 @@ export default class Enemy {
       if (this._slowTimer <= 0) {
         this._slowTimer = undefined;
         if (this._baseSpeed !== undefined) { this.speed = this._baseSpeed; this._baseSpeed = undefined; }
+        if (this.sprite && this._frozenTimer === undefined) this.sprite.clearTint();
+      }
+    }
+    // DONMA (bluemage): donmuş düşman hiçbir şey yapmaz — hareket + saldırı durur, HP alır (hedeflenebilir).
+    if (this._frozenTimer !== undefined) {
+      this._frozenTimer -= delta;
+      if (this._frozenTimer <= 0) {
+        this._frozenTimer = undefined;
+        this._frostStacks = 0; // donma bitince ayaz yığını sıfırlanır (karar)
         if (this.sprite) this.sprite.clearTint();
+      } else {
+        this.updateHPBar();
+        this._tickAnim(delta, 'idle'); // donmuş: yerinde kal
+        return; // dövüşmez, ilerlemez
       }
     }
     // Dur-dövüş (K8/K34): yoluna çıkan ilk MELEE tıkaça temas edince dur, karşılıklı HP tüket.

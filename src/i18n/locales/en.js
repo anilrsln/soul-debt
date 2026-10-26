@@ -16,7 +16,7 @@ export default {
     prestigeBtn: '✦ PRESTIGE',
     tab: {
       necromancer: 'Necromancer', archer: 'Archer', golem: 'Golem',
-      mage: 'Mage', bruiser: 'Bruiser', cleric: 'Cleric', economy: 'Economy',
+      mage: 'Mage', bruiser: 'Bruiser', cleric: 'Cleric', bluemage: 'Frost', economy: 'Economy',
     },
     level: 'Lv.{n}',
     costSoul: '{n} Soul',
@@ -34,7 +34,7 @@ export default {
     prestigePermanent: 'Multiplier is permanent.',
     confirm: 'PRESTIGE',
     cancel: 'CANCEL',
-    nodeHint: { golem: 'Golem Unlock', mage: 'Mage Unlock', bruiser: 'Bruiser Unlock', cleric: 'Cleric Unlock', default: 'Unlock' },
+    nodeHint: { golem: 'Golem Unlock', mage: 'Mage Unlock', bruiser: 'Bruiser Unlock', cleric: 'Cleric Unlock', bluemage: 'Frost Mage Unlock', default: 'Unlock' },
     langBtn: 'EN',
   },
   conquestMap: {
@@ -113,6 +113,7 @@ export default {
     mage: 'Damage Mage',
     bruiser: 'Skeleton Bruiser',
     cleric: 'Cleric Mage',
+    bluemage: 'Frost Mage',
   },
   enemy: {
     ghoul: 'Ghoul',
@@ -173,5 +174,6 @@ export default {
     frostUnlock:     { name: 'Mage Unlock',             description: 'Unlocks Damage Mage — slows enemies' },
     catapultUnlock:  { name: 'Bruiser Unlock',          description: 'Unlocks Skeleton Bruiser — front-line melee' },
     clericUnlock:    { name: 'Cleric Unlock',           description: 'Unlocks Cleric — heals friendly units in range' },
+    bluemageUnlock:  { name: 'Frost Mage Unlock',       description: 'Unlocks Frost Mage — slows + freezes with stacked frost' },
   },
 };

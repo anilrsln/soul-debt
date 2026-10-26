@@ -36,6 +36,10 @@ const GameState = {
       unlocked: false, canBeHired: false, count: 0, maxCount: 2,
       heal: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 }, // support: heal/fireRate/range
     },
+    bluemage: {
+      unlocked: false, canBeHired: false, count: 0, maxCount: 3,
+      damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 }, // ranged kontrol büyücüsü
+    },
   },
   conquestMap: {
     unlockedNodes: [],
@@ -75,6 +79,7 @@ export function resetAll(state) {
     mage: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
     bruiser: { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 } },
     cleric: { unlocked: false, canBeHired: false, count: 0, maxCount: 2, heal: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
+    bluemage: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
   };
   state.conquestMap = { unlockedNodes: [], bonuses: {} };
   state.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };
@@ -97,6 +102,8 @@ export function resetForPrestige(state) {
   state.defenders.golem = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } };
   state.defenders.mage = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
   state.defenders.bruiser = { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } };
+  state.defenders.cleric = { unlocked: false, canBeHired: false, count: 0, maxCount: 2, heal: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
+  state.defenders.bluemage = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
   state.conquestMap.unlockedNodes = [];
   state.economy = { soulBoost: { level: 0 }, metaBoost: { level: 0 } };
   state.meta.soulRate = 0; // prestige sonrası düşük DPS'e göre yeniden ölçülür

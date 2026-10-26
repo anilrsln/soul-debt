@@ -182,22 +182,37 @@ export const CONFIG = {
     },
     mage: {
       name: 'Damage Mage',
-      combatType: 'ranged', hp: 40, // ranged AoE hasar büyücüsü (K22; yavaşlatma→AoE'ye evrilecek)
+      combatType: 'ranged', hp: 40, // ranged HASAR büyücüsü (kırmızı/ateş). Kontrol rolü bluemage'e geçti.
       spriteKey: 'defender-mage', spriteType: 'sprite',
-      projectileType: 'mageBolt', fireSfx: 'mageFire', fireFx: 'chill',
-      onHitEffect: 'slow', // şimdilik yavaşlatma; K22 gereği ileride AoE hasara evrilecek
+      projectileType: 'mageBolt', fireSfx: 'mageFire', fireFx: 'blast',
+      // onHitEffect YOK — mage artık saf hasar (yavaşlatma bluemage'in işi, kadro ayrışması).
       soulCapacity: 12, // orta (K12/K22 Büyücü)
-      // K30 placeholder: soul + bone + essence (çok-metalı — Büyücü benzeri)
       craftCost: { soul: 300, bone: 15, essence: 5 }, craftCostMultiplier: 1.8,
       hireCost: 300,
       hireCostMultiplier: 1.8,
-      // Hasar düşük; asıl değer yavaşlatma
-      damage:       { base: 2,   multiplier: 1.15, baseCost: 20 },
-      fireRate:     { base: 0.6, multiplier: 1.1,  baseCost: 22 },
+      damage:       { base: 9,   multiplier: 1.2,  baseCost: 20 }, // gerçek hasar (archer 3 üstü, ranged vurucu)
+      fireRate:     { base: 0.7, multiplier: 1.1,  baseCost: 22 },
       range:        { base: 130, multiplier: 1.08, baseCost: 28 },
-      // Yavaşlatma: hedef hızını slowFraction'a düşürür, slowDuration sn sonra normale döner
-      slowFraction: 0.45, // hedef hızının %45'ine iner
-      slowDuration: 2.5,  // saniye
+    },
+    bluemage: {
+      name: 'Frost Mage',
+      combatType: 'ranged', hp: 38, // ranged KONTROL büyücüsü (buz): yavaşlat + ayaz yığını + donma
+      spriteKey: 'defender-bluemage', spriteType: 'sprite',
+      projectileType: 'iceBolt', fireSfx: 'mageFire', fireFx: 'chill',
+      onHitEffect: 'freeze', // her vuruş yavaşlatır + ayaz yığını; eşikte dondurur (zincir YOK)
+      soulCapacity: 12,
+      craftCost: { soul: 350, bone: 10, essence: 8 }, craftCostMultiplier: 1.8,
+      hireCost: 350,
+      hireCostMultiplier: 1.8,
+      // Düşük hasar (mage'in ~yarısı) — asıl değer KONTROL
+      damage:       { base: 4,   multiplier: 1.15, baseCost: 20 },
+      fireRate:     { base: 0.7, multiplier: 1.1,  baseCost: 22 },
+      range:        { base: 130, multiplier: 1.08, baseCost: 28 },
+      // Yavaşlatma + donma parametreleri (playtest placeholder)
+      slowFraction: 0.55,          // her vuruş: hızın %55'ine iner
+      slowDuration: 2,             // sn
+      frostStacksToFreeze: 4,      // 4 ayaz yığını → dondur
+      freezeDuration: 2,           // sn tam donma, sonra stack sıfırlanır
     },
     bruiser: {
       name: 'Skeleton Bruiser',
@@ -234,6 +249,7 @@ export const CONFIG = {
   PROJECTILES: {
     arrow:      { speed: 350, size: 3 },
     mageBolt:   { speed: 280, size: 4 },
+    iceBolt:    { speed: 300, size: 4 },
   },
 
   // ─────────────────────────────────────────────────────────────
@@ -263,11 +279,13 @@ export const CONFIG = {
     'defender-archer':      { sprite: 'assets/units/skeleton-archer.png', frames: { frameWidth: 96, frameHeight: 96 } },
     'defender-golem':       { sprite: 'assets/units/stone-golem.png', frames: { frameWidth: 112, frameHeight: 112 } },
     'defender-mage':        { sprite: 'assets/units/mage.png', frames: { frameWidth: 96, frameHeight: 96 } },
+    'defender-bluemage':    { sprite: 'assets/units/frost-mage.png', frames: { frameWidth: 96, frameHeight: 96 } },
     'defender-bruiser':     { sprite: 'assets/units/skeleton-bruiser.png', frames: { frameWidth: 96, frameHeight: 96 } },
     'defender-cleric':      { sprite: 'assets/units/cleric.png', frames: { frameWidth: 96, frameHeight: 96 } },
     // Projectiles — keep geometric for now (tiny, fast-moving objects)
     'projectile-arrow':      { sprite: 'assets/units/arrow.png' },
-    'projectile-mageBolt':   { shape: 'circle', size: 4, color: 0x88ccff },
+    'projectile-mageBolt':   { shape: 'circle', size: 4, color: 0xff8844 },
+    'projectile-iceBolt':    { shape: 'circle', size: 4, color: 0x66ccff },
   },
 
   // Düşman değerleri
@@ -481,6 +499,13 @@ export const CONFIG = {
       cost: { soul: 1500 },
       effect: { type: 'unlock', target: 'cleric' },
       requires: ['frostUnlock'], x: 660, y: 680, // frostUnlock ile çakışmasın (eskiden x480 y560)
+    },
+    bluemageUnlock: {
+      id: 'bluemageUnlock', name: 'Frost Mage Unlock',
+      description: 'Buz Büyücüsü açılır — yavaşlatır + üst üste ayaz ile dondurur',
+      cost: { soul: 1800 },
+      effect: { type: 'unlock', target: 'bluemage' },
+      requires: ['frostUnlock'], x: 480, y: 680,
     },
   },
 };

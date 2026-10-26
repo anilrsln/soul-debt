@@ -18,7 +18,7 @@ export default {
     // Sekmeler
     tab: {
       necromancer: 'Necromancer', archer: 'Okçu', golem: 'Golem',
-      mage: 'Büyücü', bruiser: 'Bruiser', cleric: 'Şifacı', economy: 'Ekonomi',
+      mage: 'Büyücü', bruiser: 'Bruiser', cleric: 'Şifacı', bluemage: 'Buz', economy: 'Ekonomi',
     },
     // Yükseltme / kiralama
     level: 'Lv.{n}',
@@ -39,7 +39,7 @@ export default {
     confirm: 'ONAYLA',
     cancel: 'VAZGEÇ',
     // Nodehint (kilitli sekme ipucu)
-    nodeHint: { golem: 'Golem Açılışı', mage: 'Büyücü Açılışı', bruiser: 'Bruiser Açılışı', cleric: 'Şifacı Açılışı', default: 'Açılış' },
+    nodeHint: { golem: 'Golem Açılışı', mage: 'Büyücü Açılışı', bruiser: 'Bruiser Açılışı', cleric: 'Şifacı Açılışı', bluemage: 'Buz Büyücüsü Açılışı', default: 'Açılış' },
     langBtn: 'TR',
   },
   conquestMap: {
@@ -119,6 +119,7 @@ export default {
     mage: 'Hasar Büyücüsü',
     bruiser: 'İskelet Bruiser',
     cleric: 'Şifacı Büyücü',
+    bluemage: 'Buz Büyücüsü',
   },
   // Düşmanlar (ENEMIES + BOSSES)
   enemy: {
@@ -183,5 +184,6 @@ export default {
     frostUnlock:     { name: 'Büyücü Açılışı',        description: 'Hasar Büyücüsü açılır — düşmanları yavaşlatır' },
     catapultUnlock:  { name: 'Bruiser Açılışı',       description: 'İskelet Bruiser açılır — ön-saf melee' },
     clericUnlock:    { name: 'Şifacı Açılışı',        description: 'Şifacı açılır — menzildeki dost birimleri iyileştirir' },
+    bluemageUnlock:  { name: 'Buz Büyücüsü Açılışı',  description: 'Buz Büyücüsü açılır — yavaşlatır + üst üste ayaz ile dondurur' },
   },
 };

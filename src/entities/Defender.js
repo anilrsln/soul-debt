@@ -19,7 +19,7 @@ import AssetProvider from '../systems/AssetProvider.js';
  *  - 'melee' (golem/bruiser/blokçu): çıpada TIKAÇ. Düşman temas edince dur-dövüş (karşılıklı HP).
  *    lungeRadius içindeki düşmanı yakalamaya kısa mesafe gider, sonra çıpasına döner. Mermi YOK.
  *
- * onHitEffect (config): 'slow' (mage) | 'heal' (cleric) | undefined. fire() mermiye onHit geçer.
+ * onHitEffect (config): 'slow' | 'freeze' (bluemage) | 'heal' (cleric) | undefined. fire() mermiye onHit geçer.
  * fireFx (config): 'recoil' | 'blast' | 'heavy' | 'chill' — görsel ateş efekti seçimi.
  *
  * Birimin HP'si vardır (necromancer hariç — onun canı GameState.necromancer'da ayrı, kendi entity'si).
@@ -391,9 +391,10 @@ export default class Defender {
   /** config.onHitEffect'e göre mermi çarpınca çalışacak callback üretir (yoksa null). */
   _makeOnHit() {
     switch (this.config.onHitEffect) {
-      case 'slow': return (enemy) => this._applySlow(enemy);
-      case 'heal': return null; // heal hedefi düşman değil birim; ayrı mekanik (cleric — Aşama 4)
-      default:     return null;
+      case 'slow':   return (enemy) => this._applySlow(enemy);
+      case 'freeze': return (enemy) => this._applyFreeze(enemy); // bluemage: yavaşlat + ayaz yığını + donma
+      case 'heal':   return null; // heal hedefi düşman değil birim; ayrı mekanik (cleric)
+      default:       return null;
     }
   }
 
@@ -457,6 +458,34 @@ export default class Defender {
     enemy.speed = enemy._baseSpeed * slowFrac;
     enemy._slowTimer = dur;
     if (enemy.sprite) enemy.sprite.setTint(0x88ccff);
+  }
+
+  /**
+   * Buz Büyücüsü (bluemage) onHit — her vuruş: yavaşlat + ayaz yığını ekle. Yığın eşiğe ulaşınca
+   * düşman DONAR (hareket+saldırı durur). Zincir YOK — yalnız vurulan hedef (karar). Donma bitince
+   * stack sıfırlanır (Enemy.update). Donmuş düşmana tekrar stack eklenmez (zaten donmuş).
+   */
+  _applyFreeze(enemy) {
+    if (!enemy || !enemy.alive) return;
+    // Yavaşlatma (donmuş değilse)
+    if (enemy._frozenTimer === undefined) {
+      const slowFrac = this.config.slowFraction ?? 0.55;
+      const dur = (this.config.slowDuration ?? 2) * this.getSpecialMultiplier();
+      if (!enemy._baseSpeed) enemy._baseSpeed = enemy.speed;
+      enemy.speed = enemy._baseSpeed * slowFrac;
+      enemy._slowTimer = dur;
+      if (enemy.sprite) enemy.sprite.setTint(0x66ccff);
+      // Ayaz yığını — eşikte dondur (kıdem/special yığın eşiğini AZALTMAZ; süreyi uzatır)
+      enemy._frostStacks = (enemy._frostStacks || 0) + 1;
+      const threshold = this.config.frostStacksToFreeze ?? 4;
+      if (enemy._frostStacks >= threshold) {
+        enemy._frozenTimer = (this.config.freezeDuration ?? 2) * this.getSpecialMultiplier();
+        if (enemy.sprite) enemy.sprite.setTint(0x33aaff); // donma: daha koyu buz mavisi
+        // Donma parıltısı
+        const ring = this.scene.add.circle(enemy.sprite.x, enemy.sprite.y, 16, 0x66ccff, 0.4).setDepth(9);
+        this.scene.tweens.add({ targets: ring, scaleX: 2, scaleY: 2, alpha: 0, duration: 350, onComplete: () => ring.destroy() });
+      }
+    }
   }
 
   /** Hedef etrafındaki düşmanlara alan hasarı (Archer Mastery splash). */
