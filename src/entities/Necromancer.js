@@ -90,30 +90,36 @@ export default class Necromancer extends Defender {
       this.stickyTarget = null;
     }
 
-    // Hareket: komut hedefi varsa ona MENZİL KENARINA kadar yürü (ranged gibi), yoksa çıpaya yürü.
-    let moving = false;
+    // Hareket: komut hedefi varsa ONU ÖLENE KADAR KOVALA (menzil dışıysa yürü, menzildeyse
+    // yürümese bile ışınla); yoksa çıpaya yürü.
+    let moving = false, inRange = true;
     if (this.commandedTarget && this.commandedTarget.sprite) {
       const range = this.getRange();
+      const stopDist = range * 0.9; // menzilin biraz içine yürü (kenar titremesi + yetişme)
       const tx = this.commandedTarget.sprite.x, ty = this.commandedTarget.sprite.y;
       const dx = tx - this.x, dy = ty - this.y;
       const dist = Math.hypot(dx, dy) || 1;
       if (dist > range) {
-        const step = Math.min(CONFIG.COMBAT.lungeSpeed * delta, dist - range);
+        const step = Math.min(CONFIG.COMBAT.lungeSpeed * delta, dist - stopDist);
         this.x += (dx / dist) * step;
         this.y += (dy / dist) * step;
         if (this.sprite) this.sprite.setPosition(this.x, this.y);
         moving = true;
       }
+      inRange = dist <= range; // menzildeyse ışınla (yürümüş olsa da)
       this.anchorX = this.x; this.anchorY = this.y; // komut bitince burada kalır
+      // Komut hedefi SABİT ışın hedefi — findTarget'a bırakma (kaçanı ölene kadar kovala/ışınla)
+      this.target = this.commandedTarget;
     } else {
       moving = this._walkToAnchor(delta); // taşıma komutu → çıpaya yürü
+      inRange = !moving;
+      this.target = this.findTarget(enemies);
     }
 
-    this.target = this.findTarget(enemies);
     this.beamGraphics.clear();
 
-    // Yürürken ışın atma (hedefe varana kadar); durunca menzildeki hedefe ışınla
-    if (this.target && !moving) {
+    // Menzildeyse ışınla (komutla kovalarken menzile girince yürüyor olsa da ışınlar)
+    if (this.target && inRange) {
       this.isBeamActive = true;
       this.drawBeam(delta);
       this.applyDamage(delta);

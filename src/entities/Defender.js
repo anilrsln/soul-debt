@@ -331,29 +331,35 @@ export default class Defender {
     if (this.cooldownTimer > 0) this.cooldownTimer -= delta;
     let rangedMoving = false;
 
+    let inRange = true; // menzil içindeyse ateş serbest (hareket halindeyken bile)
     if (this.commandedTarget && this.commandedTarget.sprite) {
-      // Komut: hedefe doğru MENZİL KENARINA kadar yürü, menzildeyse ateş et.
+      // Komut: hedefi ölene/komut değişene kadar KOVALA. Menzil dışıysa yürü, menzildeyse
+      // (yürüyor olsa da) ateş et — kaçan düşman kovalanırken de vurulabilsin.
       const range = this.getRange();
+      // Menzilin biraz içine kadar yürü (kenar titremesini önle + kaçan hedefe yetiş)
+      const stopDist = range * 0.9;
       const tx = this.commandedTarget.sprite.x, ty = this.commandedTarget.sprite.y;
       const dx = tx - this.x, dy = ty - this.y;
       const dist = Math.hypot(dx, dy) || 1;
       if (dist > range) {
-        const step = Math.min(CONFIG.COMBAT.lungeSpeed * delta, dist - range);
+        const step = Math.min(CONFIG.COMBAT.lungeSpeed * delta, dist - stopDist);
         this.x += (dx / dist) * step;
         this.y += (dy / dist) * step;
         if (this.sprite) this.sprite.setPosition(this.x, this.y);
         rangedMoving = true;
       }
+      inRange = dist <= range; // menzildeyse ateş (yürümüş olsa da)
       // Çıpayı güncel konuma sabitle → komut bitince burada kalır (geri yürümez)
       this.anchorX = this.x; this.anchorY = this.y;
       this.target = this.commandedTarget;
     } else {
       // Otomatik: çıpaya yürür (taşınınca), çıpada menzilden ateş eder
       rangedMoving = this._walkToAnchor(delta);
+      inRange = !rangedMoving; // otomatikte yürürken ateş yok (çıpaya varınca)
       this.target = this.findTarget(enemies);
     }
 
-    if (this.target && !rangedMoving && this.cooldownTimer <= 0) {
+    if (this.target && inRange && this.cooldownTimer <= 0) {
       this.fire(this.target);
       this.cooldownTimer = 1 / this.getFireRate();
     }
