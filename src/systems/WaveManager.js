@@ -11,6 +11,7 @@ export default class WaveManager {
     this.waveBreakTimer = 0;
     this.isWaveBreak = false;
     this.isFloorBreak = false; // kat-arası tam-duraklama (K28)
+    this.isDeployPhase = false; // floor başı dizme fazı (K38): ekip barda, oyuncu dizer, "BAŞLA" der
 
     // K27: lane YOK — düşmanlar savaş alanının rastgele Y'sinde doğar (serbest akış).
     this._spawnBandTop = CONFIG.CORRIDOR_TOP + 20;
@@ -145,12 +146,28 @@ export default class WaveManager {
     }
   }
 
-  /** Oyuncu "İn" dedi — kat-arası duraklamayı bitir, sonraki kata geç. */
+  /** Oyuncu "İn" dedi — kat-arası duraklamayı bitir, dizme fazına geç (K38). */
   resumeFromFloorBreak() {
     if (!this.isFloorBreak) return;
     this.isFloorBreak = false;
     this.spawnTimer = 0;
     this.scene.events.emit('floor-resumed', { wave: GameState.wave.current });
+    // İniş kartından sonra dizme fazını başlat (yeni floor'un ilk wave'i öncesi)
+    this.startDeployPhase();
+  }
+
+  /** Floor başı dizme fazını başlat (K38): savaş durur, ekip bara toplanır, oyuncu dizer. */
+  startDeployPhase() {
+    this.isDeployPhase = true;
+    this.scene.events.emit('deploy-phase-start', { wave: GameState.wave.current });
+  }
+
+  /** Oyuncu "BAŞLA" dedi — dizme fazını bitir, wave başlasın (K38). */
+  endDeployPhase() {
+    if (!this.isDeployPhase) return;
+    this.isDeployPhase = false;
+    this.spawnTimer = 0;
+    this.scene.events.emit('deploy-phase-end', { wave: GameState.wave.current });
   }
 
   update(delta) {
@@ -158,6 +175,11 @@ export default class WaveManager {
     // Kat-arası tam-duraklama: spawn YOK, oyuncu "İn" deyene kadar bekler (K28). Kalan düşman
     // normalde olmaz (kat boss ölünce biter) ama güvenlik için kalanları güncelle.
     if (this.isFloorBreak) {
+      this.updateEnemies(delta);
+      return;
+    }
+    // Dizme fazı (K38): spawn YOK, oyuncu "BAŞLA" diyene kadar bekler. Savaş alanında düşman olmaz.
+    if (this.isDeployPhase) {
       this.updateEnemies(delta);
       return;
     }

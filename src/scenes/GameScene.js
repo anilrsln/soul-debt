@@ -144,6 +144,9 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('floor-break', this._onFloorBreak, this);
     // Kat geçiş kartı (placeholder): "İN" sonrası yeni kata inerken kısa perde
     this.events.on('floor-resumed', this._onFloorResumed, this);
+    // Dizme fazı (K38): floor başı — ekip bara toplanır, oyuncu dizer, "BAŞLA" der
+    this.events.on('deploy-phase-start', this._onDeployPhaseStart, this);
+    this.events.on('deploy-phase-end', this._onDeployPhaseEnd, this);
 
     // Kritik vuruş bildirimi
     this.game.events.off('crit-hit', this.onCritHit, this);
@@ -179,6 +182,12 @@ export default class GameScene extends Phaser.Scene {
     this._rateSampleTime = 0;
     this._lastRateSoul = GameState.stats.totalSoulEarned;
     this._lastRateMeta = GameState.stats.totalMetaEarned;
+
+    // Dizme fazı (K38): oyunun EN BAŞINDA (floor 1, ilk wave) ekibi sıfırdan dizdir.
+    // Kayıtlı oyun ortasından devamda (wave>1) tetiklenmez — ekip zaten dizili.
+    if (GameState.wave.current === 1 && !idleEarnings) {
+      this.time.delayedCall(60, () => this.waveManager?.startDeployPhase());
+    }
   }
 
   /** Idle gelir popup'ı gösterir. */
@@ -350,7 +359,9 @@ export default class GameScene extends Phaser.Scene {
    *  savaş/kurulum fazında tıklayıp seçtiği birimi taşıyabilir (placeAnchor). */
   syncDefenders(type, list) {
     const state = GameState.defenders[type];
-    const targetCount = state.count || 0;
+    // Deploy fazı (K38): sahada yalnız DİZİLMİŞ birimler bulunur. deployedCount tanımsızsa
+    // (deploy sistemi devrede değil) eski davranış: count kadar otomatik spawn.
+    const targetCount = (state.deployedCount != null) ? state.deployedCount : (state.count || 0);
 
     while (list.length < targetCount) {
       const idx = list.length;
@@ -529,6 +540,53 @@ export default class GameScene extends Phaser.Scene {
       this._floorBreakEls = null;
     });
     this._floorBreakEls = els;
+  }
+
+  /**
+   * Dizme fazı başladı (K38) — ekip bara toplanır: tüm defender deployedCount=0 olur,
+   * syncDefenders onları sahadan kaldırır. Craft'lanmış toplam (count) korunur; oyuncu
+   * barda bu birimleri dizecek. Necromancer da toplanır (bar kartı Parça 2+).
+   * Parça 1: yalnız state iskeleti — görünür bar UI sonraki parçada.
+   */
+  _onDeployPhaseStart() {
+    // PARÇA 1 (iskelet): bar UI henüz yok. Oyunu kırmamak için ekibi sahada bırakıyoruz
+    // (deployedCount = count). PARÇA 2'de bu satır deployedCount=0 olacak ve birimler bara
+    // toplanacak; bar'dan dizilecek. Şimdilik yalnız faz banner + BAŞLA butonu görünür.
+    for (const key of this.defenderKeys) {
+      const st = GameState.defenders[key];
+      if (st) st.deployedCount = st.count || 0;
+    }
+    this._deselectUnit?.();
+    this._showDeployBanner();
+  }
+
+  /** Dizme fazı bitti (K38) — wave başlar. Dizilmemiş birimler sahada değil (ekipte kalır). */
+  _onDeployPhaseEnd() {
+    if (this._deployEls) { this._deployEls.forEach(e => e.destroy()); this._deployEls = null; }
+  }
+
+  /** Parça 1 minimal dizme faz göstergesi: banner + BAŞLA butonu (bar UI Parça 2'de). */
+  _showDeployBanner() {
+    if (this._deployEls) { this._deployEls.forEach(e => e.destroy()); }
+    const cx = CONFIG.CANVAS_WIDTH / 2;
+    const els = [];
+    const band = this.add.rectangle(cx, CONFIG.CORRIDOR_TOP + 44, CONFIG.CANVAS_WIDTH, 52, 0x0a0a2a, 0.7).setDepth(300);
+    const title = this.add.text(cx, CONFIG.CORRIDOR_TOP + 34, i18n('game.deployTitle'), {
+      fontSize: '18px', fontFamily: 'monospace', color: '#8affc9', stroke: '#000', strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(301);
+    const hint = this.add.text(cx, CONFIG.CORRIDOR_TOP + 56, i18n('game.deployHint'), {
+      fontSize: '11px', fontFamily: 'monospace', color: '#aaaaaa', stroke: '#000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(301);
+    const by = CONFIG.CORRIDOR_BOTTOM - 10;
+    const btn = this.add.rectangle(cx, by, 160, 34, 0x1a3a2a).setDepth(301).setStrokeStyle(2, 0x8affc9).setInteractive({ useHandCursor: true });
+    const btnLabel = this.add.text(cx, by, i18n('game.deployStart'), {
+      fontSize: '15px', fontFamily: 'monospace', color: '#ffffff', stroke: '#000', strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(302);
+    btn.on('pointerover', () => btn.setFillStyle(0x2a5a3a));
+    btn.on('pointerout', () => btn.setFillStyle(0x1a3a2a));
+    btn.on('pointerdown', (p, x, y, e) => { e?.stopPropagation?.(); this.waveManager?.endDeployPhase(); });
+    els.push(band, title, hint, btn, btnLabel);
+    this._deployEls = els;
   }
 
   /**
