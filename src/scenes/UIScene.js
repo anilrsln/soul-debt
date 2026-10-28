@@ -146,6 +146,23 @@ export default class UIScene extends Phaser.Scene {
     });
   }
 
+  /**
+   * Maliyeti okunabilir metne çevirir. getHireCost artık çok-metalı bir obje
+   * ({ soul, bone, essence, crystal }) döndürüyor; tek sayı değil.
+   * Örn: { soul: 350, bone: 10 } → "350👻 10🦴"
+   */
+  formatCost(cost) {
+    if (cost == null) return '0';
+    if (typeof cost === 'number') return formatNumber(cost);
+    const icons = { soul: '👻', bone: '🦴', essence: '🔮', crystal: '💎' };
+    const parts = [];
+    for (const [res, amt] of Object.entries(cost)) {
+      if (!amt) continue;
+      parts.push(`${formatNumber(amt)}${icons[res] || res}`);
+    }
+    return parts.length ? parts.join(' ') : '0';
+  }
+
   textStyle(size, color) {
     return {
       fontSize: `${size}px`, fontFamily: 'monospace',
@@ -166,15 +183,17 @@ export default class UIScene extends Phaser.Scene {
 
   // ═══════ SEKMELER ═══════
   createTabs() {
-    const tabNames = { necromancer: t('ui.tab.necromancer'), archer: t('ui.tab.archer'), golem: t('ui.tab.golem'), mage: t('ui.tab.mage'), bruiser: t('ui.tab.bruiser'), economy: t('ui.tab.economy') };
-    const tabWidth = 78, tabHeight = 22, startX = 10, tabY = this.panelY + 5;
+    // Sekme isimleri this.tabs'tan türetilir — yeni birim eklenince otomatik gelir.
+    const n = this.tabs.length;
+    const gap = 5, startX = 10, tabHeight = 22, tabY = this.panelY + 5;
+    const tabWidth = Math.floor((CONFIG.CANVAS_WIDTH - 2 * startX - (n - 1) * gap) / n);
 
     this.tabs.forEach((type, i) => {
-      const x = startX + i * (tabWidth + 5) + tabWidth / 2;
+      const x = startX + i * (tabWidth + gap) + tabWidth / 2;
       const y = tabY + tabHeight / 2;
 
       const bg = this.add.rectangle(x, y, tabWidth, tabHeight, CONFIG.COLORS.UI_BUTTON, 1).setDepth(102).setInteractive({ useHandCursor: true });
-      const label = this.add.text(x, y, tabNames[type], this.textStyle(11, '#ffffff')).setOrigin(0.5).setDepth(103);
+      const label = this.add.text(x, y, t(`ui.tab.${type}`), this.textStyle(10, '#ffffff')).setOrigin(0.5).setDepth(103);
 
       bg.on('pointerdown', () => { this.activeTab = type; this.updateTabs(); this.panelDirty = true; });
       bg.on('pointerover', () => { if (this.activeTab !== type) bg.setFillStyle(CONFIG.COLORS.UI_BUTTON_HOVER); });
@@ -218,7 +237,7 @@ export default class UIScene extends Phaser.Scene {
     // Kilitli defender
     if (!info.unlocked) {
       const lockText = this.add.text(CONFIG.CANVAS_WIDTH / 2, startY + 25,
-        t('ui.hireFirst', { name: t(`defender.${this.activeTab}`), cost: formatNumber(info.hireCost) }),
+        t('ui.hireFirst', { name: t(`defender.${this.activeTab}`), cost: this.formatCost(info.hireCost) }),
         this.textStyle(13, '#aaaaaa')
       ).setOrigin(0.5).setDepth(102);
       this.upgradeElements.push(lockText);
@@ -349,7 +368,7 @@ export default class UIScene extends Phaser.Scene {
     // İlk kilit açma durumu: tek buton (Aç). Açıldıktan sonra iki buton (Yerleştir / Hızlı).
     if (!info.unlocked) {
       const bg = this.add.rectangle(x, y, 130, 26, canHire ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED, 1).setDepth(102).setInteractive({ useHandCursor: true });
-      const label = this.add.text(x, y, t('ui.unlock', { cost: formatNumber(info.hireCost) }), this.textStyle(10, canHire ? '#66ff66' : '#666666')).setOrigin(0.5).setDepth(103);
+      const label = this.add.text(x, y, t('ui.unlock', { cost: this.formatCost(info.hireCost) }), this.textStyle(10, canHire ? '#66ff66' : '#666666')).setOrigin(0.5).setDepth(103);
       bg.on('pointerdown', () => this._doHire(type, bg, true)); // ilk açılış = yerleştirme modu
       bg.on('pointerover', () => { if (canHire) bg.setFillStyle(0x2a8a2a); });
       bg.on('pointerout', () => { bg.setFillStyle(canHire ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED); });
@@ -361,7 +380,7 @@ export default class UIScene extends Phaser.Scene {
     const c = canHire ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED;
     const c2 = canHire ? 0x0f3460 : CONFIG.COLORS.UI_BUTTON_DISABLED;
     const placeBg = this.add.rectangle(x - 34, y, 62, 26, c, 1).setDepth(102).setInteractive({ useHandCursor: true });
-    const placeLbl = this.add.text(x - 34, y, t('ui.hirePlace', { cost: formatNumber(info.hireCost) }), this.textStyle(9, canHire ? '#66ff66' : '#666666')).setOrigin(0.5).setDepth(103);
+    const placeLbl = this.add.text(x - 34, y, t('ui.hirePlace', { cost: this.formatCost(info.hireCost) }), this.textStyle(9, canHire ? '#66ff66' : '#666666')).setOrigin(0.5).setDepth(103);
     const quickBg = this.add.rectangle(x + 34, y, 62, 26, c2, 1).setDepth(102).setInteractive({ useHandCursor: true });
     const quickLbl = this.add.text(x + 34, y, t('ui.hireQuick'), this.textStyle(9, canHire ? '#cccccc' : '#666666')).setOrigin(0.5).setDepth(103);
 
