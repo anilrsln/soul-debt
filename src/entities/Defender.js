@@ -252,21 +252,16 @@ export default class Defender {
         }
       }
     } else {
-      // Düşman yok: çıpaya geri dön
-      const dx = this.anchorX - this.x, dy = this.anchorY - this.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist > 1) {
-        const step = Math.min(C.lungeSpeed * delta, dist);
-        this.x += (dx / dist) * step;
-        this.y += (dy / dist) * step;
-        this._lungeState = 'returning';
-      } else {
-        this._lungeState = 'anchor';
-      }
+      // Düşman yok: başladığı yere DÖNME — son durduğu yerde kal (oyuncu isteği).
+      // Çıpayı mevcut konuma sabitle ki bir sonraki lunge'dan sonra da buraya sadık kalsın
+      // ve "seç-taşı" yeni çıpayı doğru referans alsın.
+      this.anchorX = this.x;
+      this.anchorY = this.y;
+      this._lungeState = 'anchor';
     }
     if (this.sprite) this.sprite.setPosition(this.x, this.y);
-    // Mantıksal durum: hareket ediyorsa walk, çıpada duruyorsa idle (attack override vuruşta biner)
-    const moving = this._lungeState === 'lunging' || this._lungeState === 'returning';
+    // Mantıksal durum: hareket ediyorsa walk, duruyorsa idle (attack override vuruşta biner)
+    const moving = this._lungeState === 'lunging';
     this._tickAnim(delta, moving ? 'walk' : 'idle');
   }
 

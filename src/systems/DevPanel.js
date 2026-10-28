@@ -43,7 +43,9 @@ const GROUPS = [
       { path: 'DEBUG.jumpWaveTarget', label: 'Hedef wave', min: 1, max: 500, step: 1 },
       { type: 'action', label: "Wave'e atla", run: (game) => game.events.emit('dev-jump-wave', CONFIG.DEBUG.jumpWaveTarget) },
       { type: 'action', label: '+10K Soul', run: () => { GameState.resources.soul += 10000; } },
-      { type: 'action', label: '+100 Bone', run: () => { GameState.resources.bone += 100; } },
+      { type: 'action', label: '+100 Bone 🦴', run: () => { GameState.resources.bone += 100; } },
+      { type: 'action', label: '+100 Essence 🔮', run: () => { GameState.resources.essence += 100; } },
+      { type: 'action', label: '+100 Crystal 💎', run: () => { GameState.resources.crystal += 100; } },
     ],
   },
 ];
