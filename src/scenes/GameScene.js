@@ -72,9 +72,18 @@ export default class GameScene extends Phaser.Scene {
     //  2) Bir birime tık → o birimi SEÇ (taşımaya hazırla)
     //  3) Bir düşmana tık → necromancer'a yapışkan hedef (K25)
     this._selectedUnit = null;
+    // Sağ-tık tarayıcı context-menu'sünü kapat (yoksa sağ-tık deselect kullanılamaz)
+    this.input.mouse?.disableContextMenu();
     this.input.on('pointerdown', (pointer) => {
       if (this.isGameOver) return;
       const px = pointer.worldX, py = pointer.worldY;
+
+      // Sağ-tık → seçimi bırak (selected=false), başka iş yapma
+      if (pointer.rightButtonDown()) {
+        if (this._placing) return; // yerleştirme modunda sağ-tık'ı yok say
+        this._deselectUnit();
+        return;
+      }
 
       // 0) Yerleştirme modu (K36): tık = birimi oraya koy (savaş alanı içinde)
       if (this._placing) {
@@ -84,9 +93,9 @@ export default class GameScene extends Phaser.Scene {
         return; // yerleştirme modunda başka tık işlemi yok
       }
 
-      // Birime tık? (en yakın birim, 30px)
+      // Birime tık? (en yakın birim, 30px) — necromancer dahil tüm yönetilebilir birimler
       let unit = null, ud = 30 * 30;
-      for (const u of this.getAllUnits()) {
+      for (const u of this._selectableUnits()) {
         if (!u.alive || !u.sprite) continue;
         const dx = u.x - px, dy = u.y - py;
         const d = dx * dx + dy * dy;
@@ -378,6 +387,17 @@ export default class GameScene extends Phaser.Scene {
   getAllUnits() {
     const out = [];
     for (const key of this.defenderKeys) out.push(...this.defenders[key]);
+    return out;
+  }
+
+  /**
+   * Seçilip taşınabilen birimler — necromancer DAHİL (getAllUnits necromancer'ı
+   * dışlar; o kendi yaşam döngüsünde). Seçim/taşıma UI'ı bunu kullanır; HP barı,
+   * cleric hedefi, melee listesi gibi iç sistemler getAllUnits'te kalır.
+   */
+  _selectableUnits() {
+    const out = this.getAllUnits();
+    if (this.necromancer) out.push(this.necromancer);
     return out;
   }
 
@@ -737,6 +757,14 @@ export default class GameScene extends Phaser.Scene {
     this.showFloatingText(i18n('game.unitSelected'), unit.x, unit.y - 24, 0x00ffff, 11, 900);
   }
 
+  /** Seçimi bırak (sağ-tık) — selected=false, halkayı gizle. */
+  _deselectUnit() {
+    if (!this._selectedUnit) return;
+    this._selectedUnit = null;
+    if (this._selectRing) this._selectRing.setVisible(false);
+    this.game.events.emit('sfx', 'uiClick');
+  }
+
   /** Seçili birimin çıpasını yeni konuma taşı (yürüyerek gider — K24). */
   _moveUnitAnchor(unit, x, y) {
     unit.anchorX = x;
@@ -746,8 +774,8 @@ export default class GameScene extends Phaser.Scene {
       this.tweens.add({ targets: unit, x, y, duration: 300, ease: 'Sine.easeInOut',
         onUpdate: () => unit.sprite?.setPosition(unit.x, unit.y) });
     }
-    this._selectedUnit = null;
-    if (this._selectRing) this._selectRing.setVisible(false);
+    // Seçim DÜŞMEZ — aynı birim tekrar seçilmeden tekrar taşınabilir.
+    // Bırakmak için sağ-tık (deselect). Halka _drawUnitHpBars'ta birimi takip eder.
     this.game.events.emit('sfx', 'mapOpen');
   }
 
@@ -765,9 +793,14 @@ export default class GameScene extends Phaser.Scene {
       g.fillStyle(ratio > 0.3 ? 0x66ccff : 0xff5555, 1); // birim HP: buz mavisi (iskelet)
       g.fillRect(bx, by, w * ratio, h);
     }
-    // seçim halkası birimi takip etsin
-    if (this._selectedUnit && this._selectedUnit.alive && this._selectRing) {
-      this._selectRing.setPosition(this._selectedUnit.x, this._selectedUnit.y);
+    // seçim halkası birimi takip etsin; birim öldüyse seçimi düşür
+    if (this._selectedUnit && this._selectRing) {
+      if (this._selectedUnit.alive) {
+        this._selectRing.setPosition(this._selectedUnit.x, this._selectedUnit.y);
+      } else {
+        this._selectedUnit = null;
+        this._selectRing.setVisible(false);
+      }
     }
   }
 
