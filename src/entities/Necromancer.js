@@ -82,6 +82,8 @@ export default class Necromancer extends Defender {
 
   update(delta, enemies) {
     if (!this.alive) return;
+    // Oyuncu sağ-tıkla taşıdıysa çıpaya yürü (K38/seç-taşı). Yürürken sprite konumu güncellenir.
+    const moving = this._walkToAnchor(delta);
     this.target = this.findTarget(enemies);
     this.beamGraphics.clear();
 
@@ -96,9 +98,11 @@ export default class Necromancer extends Defender {
     this.glowPhase += delta * 3;
     this.updateGlow();
 
-    // Animasyon: ışın atarken 'attack' (periyodik yeniden tetik — sürekli büyü hissi), boşta 'idle'.
+    // Animasyon: yürürken 'walk', ışın atarken 'attack' (periyodik yeniden tetik), boşta 'idle'.
     this._castTimer -= delta;
-    if (this.target) {
+    if (moving) {
+      AssetProvider.playAnim(this.sprite, 'defender-necromancer', 'walk');
+    } else if (this.target) {
       if (this._castTimer <= 0) {
         AssetProvider.playAnim(this.sprite, 'defender-necromancer', 'attack');
         this._castTimer = 0.6; // attack döngüsünü ~0.6 sn'de bir yenile

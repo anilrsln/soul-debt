@@ -196,8 +196,9 @@ export default class GameScene extends Phaser.Scene {
 
     // Dizme fazı (K38): oyunun EN BAŞINDA (floor 1, ilk wave) ekibi sıfırdan dizdir.
     // Kayıtlı oyun ortasından devamda (wave>1) tetiklenmez — ekip zaten dizili.
+    // Gecikmesiz: ilk update'ten (ve ilk spawn'dan) önce faz kurulsun.
     if (GameState.wave.current === 1 && !idleEarnings) {
-      this.time.delayedCall(60, () => this.waveManager?.startDeployPhase());
+      this.waveManager.startDeployPhase();
     }
   }
 

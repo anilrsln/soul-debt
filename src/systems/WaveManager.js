@@ -159,6 +159,12 @@ export default class WaveManager {
   /** Floor başı dizme fazını başlat (K38): savaş durur, ekip bara toplanır, oyuncu dizer. */
   startDeployPhase() {
     this.isDeployPhase = true;
+    this.isWaveBreak = false;
+    this.spawnTimer = 0;
+    GameState.wave.enemiesSpawned = 0;
+    GameState.wave.enemiesKilled = 0;
+    // Gecikme/ara sırasında spawn olmuş düşmanları temizle — faz boyunca saha boş kalmalı
+    this.clearAll?.();
     this.scene.events.emit('deploy-phase-start', { wave: GameState.wave.current });
   }
 
