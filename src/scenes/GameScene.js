@@ -690,10 +690,17 @@ export default class GameScene extends Phaser.Scene {
     const pending = this._deploySlots.filter(s => !s.deployed);
     if (pending.length === 0) return;
 
-    const cardW = 72, cardH = 80, gap = 6;
+    const cardW = 72, cardH = 76, gap = 6;
     const totalW = pending.length * cardW + (pending.length - 1) * gap;
     let startX = Math.max(10, (CONFIG.CANVAS_WIDTH - totalW) / 2);
-    const y = CONFIG.CORRIDOR_BOTTOM - cardH - 44; // savaş alanı altı, BAŞLA butonu üstü şeridi
+    // Kartlar EN ALT sırada — savaş alanının dışında, alt panelin dibinde (K38 düzeltme).
+    const y = CONFIG.CANVAS_HEIGHT - cardH - 6;
+
+    // Kart şeridi arka planı (paneldeki craft butonlarından ayrışsın)
+    const stripH = cardH + 10;
+    const strip = this.add.rectangle(CONFIG.CANVAS_WIDTH / 2, y + cardH / 2, CONFIG.CANVAS_WIDTH, stripH, 0x06101e, 0.96)
+      .setDepth(304);
+    this._deployBarEls.push(strip);
 
     for (const slot of pending) {
       const cx = startX + cardW / 2;
