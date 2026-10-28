@@ -82,6 +82,17 @@ export default class GameScene extends Phaser.Scene {
                       py > CONFIG.CORRIDOR_TOP && py < CONFIG.CORRIDOR_BOTTOM;
       const isRight = pointer.rightButtonDown();
 
+      // Dizme fazı (K38): kart seçiliyken sahaya SAĞ tık = o slotu oraya diz.
+      // (Kart seçimi barda sol-tıkla olur; bar kartları kendi handler'ında.)
+      if (this.waveManager?.isDeployPhase) {
+        if (isRight && this._deploySelectedSlot && inField) {
+          if (this._deploySlotAt(this._deploySelectedSlot, px, py)) {
+            this._deploySelectedSlot = null;
+          }
+        }
+        return; // deploy fazında başka tık işlemi yok (seçim/komut kapalı)
+      }
+
       // Yerleştirme modu (K36): SOL tık = birimi oraya koy; sağ tık yok sayılır.
       if (this._placing) {
         if (!isRight && inField) this._commitPlacement(px, py);
@@ -312,8 +323,10 @@ export default class GameScene extends Phaser.Scene {
     // Tüm düşmanlar listesi
     const enemies = this.waveManager.enemies;
 
-    // Necromancer (her zaman aktif)
-    this.necromancer.update(delta, enemies);
+    // Necromancer — deploy fazında gizli/dizilmemişse güncelleme (ışın atmasın)
+    if (!(this.waveManager?.isDeployPhase && !this.necromancer._deployed)) {
+      this.necromancer.update(delta, enemies);
+    }
     // Birim HP barları (dur-dövüş görünürlüğü — K34)
     this._drawUnitHpBars();
 
@@ -358,9 +371,11 @@ export default class GameScene extends Phaser.Scene {
    *  Yeni birim bir BAŞLANGIÇ çıpasına yerleşir (melee öne, ranged arkaya); oyuncu sonra
    *  savaş/kurulum fazında tıklayıp seçtiği birimi taşıyabilir (placeAnchor). */
   syncDefenders(type, list) {
+    // Deploy fazında sync DEVRE DIŞI — birimler park sisteminde tutulur (kıdem korunur),
+    // oyuncu dizdikçe park'tan sahaya geri konur (K38). Otomatik spawn/destroy yok.
+    if (this.waveManager?.isDeployPhase) return;
     const state = GameState.defenders[type];
-    // Deploy fazı (K38): sahada yalnız DİZİLMİŞ birimler bulunur. deployedCount tanımsızsa
-    // (deploy sistemi devrede değil) eski davranış: count kadar otomatik spawn.
+    // deployedCount tanımsızsa (deploy sistemi devrede değil) eski davranış: count kadar spawn.
     const targetCount = (state.deployedCount != null) ? state.deployedCount : (state.count || 0);
 
     while (list.length < targetCount) {
@@ -373,8 +388,17 @@ export default class GameScene extends Phaser.Scene {
       const x = combatType === 'melee' ? frontX : backX;
       const bandTop = CONFIG.CORRIDOR_TOP + 30;
       const bandH = (CONFIG.CORRIDOR_BOTTOM - CONFIG.CORRIDOR_TOP) - 60;
-      const y = bandTop + ((idx * 53) % bandH); // dikeyde yay (çakışmayı azalt)
-      list.push(new Defender(this, type, x, y, idx));
+      let y = bandTop + ((idx * 53) % bandH); // dikeyde yay (çakışmayı azalt)
+      // Deploy fazında oyuncunun seçtiği konum varsa onu kullan (K38)
+      let px = x, py = y;
+      if (this._pendingDeployPlace && this._pendingDeployPlace.length) {
+        const pi = this._pendingDeployPlace.findIndex(p => p.type === type);
+        if (pi >= 0) { px = this._pendingDeployPlace[pi].x; py = this._pendingDeployPlace[pi].y; this._pendingDeployPlace.splice(pi, 1); }
+      }
+      const d = new Defender(this, type, px, py, idx);
+      d.anchorX = px; d.anchorY = py; d.x = px; d.y = py;
+      if (d.sprite) d.sprite.setPosition(px, py);
+      list.push(d);
     }
 
     while (list.length > targetCount) {
@@ -544,25 +568,93 @@ export default class GameScene extends Phaser.Scene {
 
   /**
    * Dizme fazı başladı (K38) — ekip bara toplanır: tüm defender deployedCount=0 olur,
-   * syncDefenders onları sahadan kaldırır. Craft'lanmış toplam (count) korunur; oyuncu
-   * barda bu birimleri dizecek. Necromancer da toplanır (bar kartı Parça 2+).
-   * Parça 1: yalnız state iskeleti — görünür bar UI sonraki parçada.
+   * syncDefenders onları sahadan kaldırır; necromancer da gizlenir. Her craft'lanmış kopya
+   * + necromancer için bir "deploy slot" üretilir; oyuncu barda bunları sahaya dizer.
    */
   _onDeployPhaseStart() {
-    // PARÇA 1 (iskelet): bar UI henüz yok. Oyunu kırmamak için ekibi sahada bırakıyoruz
-    // (deployedCount = count). PARÇA 2'de bu satır deployedCount=0 olacak ve birimler bara
-    // toplanacak; bar'dan dizilecek. Şimdilik yalnız faz banner + BAŞLA butonu görünür.
-    for (const key of this.defenderKeys) {
-      const st = GameState.defenders[key];
-      if (st) st.deployedCount = st.count || 0;
-    }
     this._deselectUnit?.();
+    this._parked = {};        // type → park edilmiş canlı birim nesneleri (kıdem korunur)
+    this._deploySlots = [];   // bardaki kartlar: { id, type, unit? , deployed }
+
+    // Necromancer slot'u (tek entity — gizlenir, dizilince gösterilir)
+    if (this.necromancer) {
+      this.necromancer._deployed = false;
+      this.necromancer.sprite?.setVisible(false);
+      this.necromancer.beamGraphics?.clear();
+    }
+    this._deploySlots.push({ id: 'necromancer', type: 'necromancer', unit: this.necromancer, deployed: false });
+
+    // Her defender tipi: canlı birimleri park'a taşı (DESTROY ETME → kıdem korunur), slot üret
+    for (const key of this.defenderKeys) {
+      const list = this.defenders[key] || [];
+      this._parked[key] = [];
+      for (const u of list) {
+        u.sprite?.setVisible(false);
+        u.commandedTarget = null;
+        this._parked[key].push(u);
+        this._deploySlots.push({ id: `${key}-${this._deploySlots.length}`, type: key, unit: u, deployed: false });
+      }
+      this.defenders[key] = []; // sahadan çıkar (park'ta tutuluyor)
+      const st = GameState.defenders[key];
+      if (st) st.deployedCount = 0;
+    }
+
     this._showDeployBanner();
+    this._rebuildDeployBar();
+    this.game.events.emit('deploy-bar-changed'); // UIScene alt paneli deploy moduna geçsin
   }
 
   /** Dizme fazı bitti (K38) — wave başlar. Dizilmemiş birimler sahada değil (ekipte kalır). */
   _onDeployPhaseEnd() {
     if (this._deployEls) { this._deployEls.forEach(e => e.destroy()); this._deployEls = null; }
+    if (this._deployBarEls) { this._deployBarEls.forEach(e => e.destroy()); this._deployBarEls = null; }
+    // Necromancer dizilmediyse yine de sahada olmalı (oyun necromancer'sız oynanmaz) — varsayılan yere koy
+    if (this.necromancer && !this.necromancer._deployed) {
+      this._deployNecromancer(CONFIG.WALL_X + 40, Math.round((CONFIG.CORRIDOR_TOP + CONFIG.CORRIDOR_BOTTOM) / 2));
+    }
+    // Dizilmemiş park birimleri: destroy ET ama GameState.count'u KORU (ekipte kalır, sonraki
+    // floor fazında yine barda çıkar). deployedCount zaten dizilen kadar.
+    if (this._parked) {
+      for (const key of Object.keys(this._parked)) {
+        for (const u of this._parked[key]) u.destroy?.();
+      }
+    }
+    this._parked = null;
+    this._deploySlots = null;
+    this._deploySelectedSlot = null;
+    this.game.events.emit('deploy-bar-changed');
+  }
+
+  /** Necromancer'ı verilen konuma diz (göster + konumlandır + deployed işaretle). */
+  _deployNecromancer(x, y) {
+    const n = this.necromancer;
+    if (!n) return;
+    n.x = x; n.y = y; n.anchorX = x; n.anchorY = y;
+    n._deployed = true;
+    n.sprite?.setPosition(x, y).setVisible(true);
+  }
+
+  /** Bir slot'u (defender kopyası veya necromancer) sahaya diz. Park'tan geri koyar (kıdem korunur). */
+  _deploySlotAt(slot, x, y) {
+    if (!slot || slot.deployed) return false;
+    if (slot.type === 'necromancer') {
+      this._deployNecromancer(x, y);
+    } else {
+      const u = slot.unit;
+      if (!u) return false;
+      // Park'tan çıkar, sahaya geri koy
+      const pk = this._parked?.[slot.type];
+      if (pk) { const i = pk.indexOf(u); if (i >= 0) pk.splice(i, 1); }
+      u.x = x; u.y = y; u.anchorX = x; u.anchorY = y;
+      u.sprite?.setPosition(x, y).setVisible(true);
+      this.defenders[slot.type].push(u);
+      const st = GameState.defenders[slot.type];
+      if (st) st.deployedCount = (st.deployedCount || 0) + 1;
+    }
+    slot.deployed = true;
+    this._rebuildDeployBar();
+    this.game.events.emit('sfx', 'hire');
+    return true;
   }
 
   /** Parça 1 minimal dizme faz göstergesi: banner + BAŞLA butonu (bar UI Parça 2'de). */
@@ -587,6 +679,70 @@ export default class GameScene extends Phaser.Scene {
     btn.on('pointerdown', (p, x, y, e) => { e?.stopPropagation?.(); this.waveManager?.endDeployPhase(); });
     els.push(band, title, hint, btn, btnLabel);
     this._deployEls = els;
+  }
+
+  /** Deployment barı: dizilmemiş her slot bir kart (mini sprite + isim + Lv/Kıdem). K38 Parça 2. */
+  _rebuildDeployBar() {
+    if (this._deployBarEls) { this._deployBarEls.forEach(e => e.destroy()); }
+    this._deployBarEls = [];
+    if (!this._deploySlots) return;
+    const pending = this._deploySlots.filter(s => !s.deployed);
+    if (pending.length === 0) return;
+
+    const cardW = 72, cardH = 80, gap = 6;
+    const totalW = pending.length * cardW + (pending.length - 1) * gap;
+    let startX = Math.max(10, (CONFIG.CANVAS_WIDTH - totalW) / 2);
+    const y = CONFIG.CORRIDOR_BOTTOM - cardH - 44; // savaş alanı altı, BAŞLA butonu üstü şeridi
+
+    for (const slot of pending) {
+      const cx = startX + cardW / 2;
+      const selected = this._deploySelectedSlot === slot;
+      const bg = this.add.rectangle(cx, y + cardH / 2, cardW, cardH, selected ? 0x234a3a : 0x12223a, 0.95)
+        .setDepth(305).setStrokeStyle(2, selected ? 0x8affc9 : 0x2a3a5a).setInteractive({ useHandCursor: true });
+
+      // Mini sprite
+      const cfg = slot.type === 'necromancer' ? CONFIG.DEFENDERS.necromancer : CONFIG.DEFENDERS[slot.type];
+      const spriteKey = cfg?.spriteKey;
+      let icon = null;
+      if (spriteKey && this.textures.exists(spriteKey)) {
+        icon = this.add.sprite(cx, y + 26, spriteKey).setDepth(306);
+        AssetProvider.applySprite(icon, spriteKey);
+        icon.setDisplaySize(34, 40); // kartta sabit küçük boy
+      }
+
+      // İsim
+      const nameKey = `defender.${slot.type}`;
+      const name = this.add.text(cx, y + 52, i18n(nameKey), {
+        fontSize: '9px', fontFamily: 'monospace', color: '#cfe8ff', stroke: '#000', strokeThickness: 2,
+      }).setOrigin(0.5).setDepth(306);
+
+      // Level + Kıdem bilgisi
+      const vet = slot.unit?.veteranLevel || 0;
+      const lvl = this._slotStatLevel(slot);
+      const infoStr = vet > 0 ? `Lv.${lvl} ★${vet}` : `Lv.${lvl}`;
+      const info = this.add.text(cx, y + 66, infoStr, {
+        fontSize: '9px', fontFamily: 'monospace', color: '#ffd77a', stroke: '#000', strokeThickness: 2,
+      }).setOrigin(0.5).setDepth(306);
+
+      bg.on('pointerdown', (p, lx, ly, e) => {
+        e?.stopPropagation?.();
+        this._deploySelectedSlot = (this._deploySelectedSlot === slot) ? null : slot;
+        this._rebuildDeployBar();
+      });
+      bg.on('pointerover', () => { if (!selected) bg.setFillStyle(0x1a3350); });
+      bg.on('pointerout', () => { if (this._deploySelectedSlot !== slot) bg.setFillStyle(0x12223a); });
+
+      this._deployBarEls.push(bg);
+      if (icon) this._deployBarEls.push(icon);
+      this._deployBarEls.push(name, info);
+      startX += cardW + gap;
+    }
+  }
+
+  /** Bir slot için gösterilecek "ana stat" level'ı (damage varsa o, yoksa 1). */
+  _slotStatLevel(slot) {
+    const st = GameState.defenders[slot.type];
+    return st?.damage?.level || st?.heal?.level || 1;
   }
 
   /**
