@@ -712,12 +712,15 @@ export default class GameScene extends Phaser.Scene {
     const pending = this._deploySlots.filter(s => !s.deployed);
     if (pending.length === 0) return;
 
-    const cardW = 64, cardH = 62, gap = 6;
+    // Kartlar ekranın MUTLAK EN ALTINDA, tek sıra, scrollsuz — tüm kartlar yan yana sığsın
+    // diye genişlik mevcut alana göre ölçeklenir (çok birim varsa kartlar daralır). K38 Parça 3.2
+    const gap = 4, sideMargin = 8;
+    const avail = CONFIG.CANVAS_WIDTH - 2 * sideMargin;
+    const cardW = Math.max(40, Math.min(70, Math.floor((avail - (pending.length - 1) * gap) / pending.length)));
+    const cardH = 48;
     const totalW = pending.length * cardW + (pending.length - 1) * gap;
-    let startX = Math.max(10, (CONFIG.CANVAS_WIDTH - totalW) / 2);
-    // Kartlar savaş alanının EN ALT şeridinde (koridorun dibi, panelin üstü). Deploy fazında
-    // saha boş olduğundan burası serbesttir; alt panel (craft) tam görünür kalır. K38 Parça 3.
-    const y = CONFIG.CORRIDOR_BOTTOM - cardH - 4;
+    let startX = Math.max(sideMargin, (CONFIG.CANVAS_WIDTH - totalW) / 2);
+    const y = CONFIG.CANVAS_HEIGHT - cardH - 2; // panelin de altı — ekranın dibi
 
     // Kart şeridi arka planı
     const stripH = cardH + 8;
@@ -739,28 +742,25 @@ export default class GameScene extends Phaser.Scene {
       const bg = this.add.rectangle(cx, y + cardH / 2, cardW, cardH, selected ? 0x234a3a : 0x12223a, 0.95)
         .setDepth(305).setStrokeStyle(2, selected ? 0x8affc9 : 0x2a3a5a).setInteractive({ useHandCursor: true });
 
-      // Mini sprite
+      // Mini sprite (kartın üst yarısı)
       const cfg = slot.type === 'necromancer' ? CONFIG.DEFENDERS.necromancer : CONFIG.DEFENDERS[slot.type];
       const spriteKey = cfg?.spriteKey;
       let icon = null;
       if (spriteKey && this.textures.exists(spriteKey)) {
-        icon = this.add.sprite(cx, y + 20, spriteKey).setDepth(306);
+        icon = this.add.sprite(cx, y + 15, spriteKey).setDepth(306);
         AssetProvider.applySprite(icon, spriteKey);
-        icon.setDisplaySize(28, 32); // kartta sabit küçük boy
+        icon.setDisplaySize(22, 26); // kartta sabit küçük boy
       }
 
-      // İsim
-      const nameKey = `defender.${slot.type}`;
-      const name = this.add.text(cx, y + 40, i18n(nameKey), {
-        fontSize: '8px', fontFamily: 'monospace', color: '#cfe8ff', stroke: '#000', strokeThickness: 2,
-      }).setOrigin(0.5).setDepth(306);
-
-      // Level + Kıdem bilgisi
+      // İsim (kısa) + Level/Kıdem — iki satır, kartın alt yarısı
       const vet = slot.unit?.veteranLevel || 0;
       const lvl = this._slotStatLevel(slot);
+      const name = this.add.text(cx, y + 31, i18n(`defender.${slot.type}`), {
+        fontSize: '7px', fontFamily: 'monospace', color: '#cfe8ff', stroke: '#000', strokeThickness: 2,
+      }).setOrigin(0.5).setDepth(306);
       const infoStr = vet > 0 ? `Lv.${lvl} ★${vet}` : `Lv.${lvl}`;
-      const info = this.add.text(cx, y + 52, infoStr, {
-        fontSize: '8px', fontFamily: 'monospace', color: '#ffd77a', stroke: '#000', strokeThickness: 2,
+      const info = this.add.text(cx, y + 41, infoStr, {
+        fontSize: '7px', fontFamily: 'monospace', color: '#ffd77a', stroke: '#000', strokeThickness: 2,
       }).setOrigin(0.5).setDepth(306);
 
       bg.on('pointerdown', (p, lx, ly, e) => {
@@ -1056,17 +1056,17 @@ export default class GameScene extends Phaser.Scene {
   /** SAĞ-tık düşman: seçili birime "o düşmana saldır" komutu. Birim ona doğru yürür,
    *  menzile/temasa girince vurur; hedef ölünce otomatik en yakına geçer (Defender.update). */
   _commandAttack(unit, enemy) {
+    // Yeni saldırı komutu var olan tüm görevi BIRAKIR (tüm birimler, necromancer dahil):
+    // eski komut hedefi, melee dövüşü ve yürüyüş iptal olur; birim yeni hedefe yönelir.
+    // Necromancer da artık ranged gibi hedefe YÜRÜR (menzil kenarına kadar), sonra ışınlar.
+    unit.commandedTarget = enemy;
+    unit._engaged = enemy;        // melee: eski dövüşü bırak, yeni hedefe kilitlen
+    unit._attackTimer = 0;        // yeni hedefe ilk fırsatta vur
+    unit._lungeState = 'lunging';
     if (unit === this.necromancer) {
-      // Necromancer yerinde durur, ışın atar — yeni hedef eski sticky/autoLock'u EZER
+      // Necromancer: komut hedefi sticky olarak da işaretlensin (findTarget önceliği)
       unit.setStickyTarget(enemy);
       unit._autoLock = enemy;
-    } else {
-      // Yeni saldırı komutu var olan tüm görevi BIRAKIR: eski komut hedefi, eski melee
-      // dövüşü (_engaged) ve devam eden yürüyüş iptal olur; birim yeni hedefe yönelir.
-      unit.commandedTarget = enemy;
-      unit._engaged = enemy;        // melee: eski dövüşü bırak, yeni hedefe kilitlen
-      unit._attackTimer = 0;        // yeni hedefe ilk fırsatta vur
-      unit._lungeState = 'lunging';
     }
     this._showTargetMarker(enemy);
     this.game.events.emit('sfx', 'mapOpen');

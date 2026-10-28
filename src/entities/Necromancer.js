@@ -28,6 +28,7 @@ export default class Necromancer extends Defender {
     this.isBeamActive = false;
     this.stickyTarget = null; // oyuncunun tıkladığı yapışkan hedef (K25)
     this._autoLock = null;    // otomatik kilitli hedef (K35) — ölene/menzilden çıkana kadar sadık
+    this.commandedTarget = null; // sağ-tık saldırı komutu — hedefe yürür, menzilde ışınlar (K38)
   }
 
   /** Oyuncu bir düşmanı tıkladı — yapışkan hedef ata (K25). */
@@ -82,12 +83,37 @@ export default class Necromancer extends Defender {
 
   update(delta, enemies) {
     if (!this.alive) return;
-    // Oyuncu sağ-tıkla taşıdıysa çıpaya yürü (K38/seç-taşı). Yürürken sprite konumu güncellenir.
-    const moving = this._walkToAnchor(delta);
+
+    // Komut hedefi geçersizse temizle (ölen hedef → otomatik moda dön)
+    if (this.commandedTarget && (!this.commandedTarget.alive || this.commandedTarget.dying)) {
+      this.commandedTarget = null;
+      this.stickyTarget = null;
+    }
+
+    // Hareket: komut hedefi varsa ona MENZİL KENARINA kadar yürü (ranged gibi), yoksa çıpaya yürü.
+    let moving = false;
+    if (this.commandedTarget && this.commandedTarget.sprite) {
+      const range = this.getRange();
+      const tx = this.commandedTarget.sprite.x, ty = this.commandedTarget.sprite.y;
+      const dx = tx - this.x, dy = ty - this.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      if (dist > range) {
+        const step = Math.min(CONFIG.COMBAT.lungeSpeed * delta, dist - range);
+        this.x += (dx / dist) * step;
+        this.y += (dy / dist) * step;
+        if (this.sprite) this.sprite.setPosition(this.x, this.y);
+        moving = true;
+      }
+      this.anchorX = this.x; this.anchorY = this.y; // komut bitince burada kalır
+    } else {
+      moving = this._walkToAnchor(delta); // taşıma komutu → çıpaya yürü
+    }
+
     this.target = this.findTarget(enemies);
     this.beamGraphics.clear();
 
-    if (this.target) {
+    // Yürürken ışın atma (hedefe varana kadar); durunca menzildeki hedefe ışınla
+    if (this.target && !moving) {
       this.isBeamActive = true;
       this.drawBeam(delta);
       this.applyDamage(delta);
