@@ -1012,7 +1012,10 @@ export default class GameScene extends Phaser.Scene {
 
   /** SAĞ-tık boş zemin: seçili birime "oraya yürü" komutu (çıpayı taşı, komut hedefi temizle). */
   _commandMove(unit, x, y) {
-    unit.commandedTarget = null; // yürü komutu saldırı komutunu iptal eder
+    // Yürü komutu var olan tüm görevi bırakır: saldırı komutu, melee dövüşü, sticky target
+    unit.commandedTarget = null;
+    unit._engaged = null;         // melee: dövüşü bırak, hedefe değil çıpaya yürü
+    if (unit === this.necromancer) unit.stickyTarget = null; // necromancer: kilidi bırak
     unit.anchorX = x;
     unit.anchorY = y;
     // Hareket update döngüsünde — tüm combatType'lar çıpaya yürür. Seçim DÜŞMEZ.
@@ -1023,11 +1026,16 @@ export default class GameScene extends Phaser.Scene {
    *  menzile/temasa girince vurur; hedef ölünce otomatik en yakına geçer (Defender.update). */
   _commandAttack(unit, enemy) {
     if (unit === this.necromancer) {
-      // Necromancer yerinde durur, ışın atar — sticky target ile o hedefe kilitlenir
+      // Necromancer yerinde durur, ışın atar — yeni hedef eski sticky/autoLock'u EZER
       unit.setStickyTarget(enemy);
+      unit._autoLock = enemy;
     } else {
-      // Diğer birimler hedefe doğru yürür, menzile/temasa girince vurur
+      // Yeni saldırı komutu var olan tüm görevi BIRAKIR: eski komut hedefi, eski melee
+      // dövüşü (_engaged) ve devam eden yürüyüş iptal olur; birim yeni hedefe yönelir.
       unit.commandedTarget = enemy;
+      unit._engaged = enemy;        // melee: eski dövüşü bırak, yeni hedefe kilitlen
+      unit._attackTimer = 0;        // yeni hedefe ilk fırsatta vur
+      unit._lungeState = 'lunging';
     }
     this._showTargetMarker(enemy);
     this.game.events.emit('sfx', 'mapOpen');
