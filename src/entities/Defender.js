@@ -52,7 +52,8 @@ export default class Defender {
     this.hp = this.maxHp;
     this._attackTimer = 0;      // melee dur-dövüş vuruş sayacı
     this._engaged = null;       // melee: şu an dövüştüğü düşman
-    this._lungeState = 'anchor'; // 'anchor' | 'lunging' | 'returning'
+    this.commandedTarget = null; // oyuncu sağ-tıkla verdiği saldırı hedefi (tüm tipler)
+    this._lungeState = 'anchor'; // 'anchor' | 'lunging' | 'walking' | 'engaged' | 'returning'
 
     // Animasyon durumu (çok-durumlu sheet'ler için). _animOverride: tek-sefer anim (attack/hurt/death)
     // süresi; bitene kadar türetilen state'in üstüne biner. Sheet yoksa playAnim sessizce geçer.
@@ -194,13 +195,15 @@ export default class Defender {
     this.y = this.anchorY;
     this._lungeState = 'anchor';
     this._engaged = null;
+    this.commandedTarget = null; // dirilince komut hedefi sıfırlanır
     this._animOverride = null; // death override'ı temizle → idle'a dön
     if (this.sprite) {
       this.sprite.setPosition(this.x, this.y).setVisible(true).clearTint();
       AssetProvider.playAnim(this.sprite, this.config.spriteKey, 'idle');
-      // Diriliş pulse
-      this.sprite.setScale(0.3);
-      this.scene.tweens.add({ targets: this.sprite, scaleX: 1, scaleY: 1, duration: 250, ease: 'Back.easeOut' });
+      // Diriliş pulse — base scale'e dön (sabit 1 DEĞİL; yoksa sprite kalıcı büyür)
+      const bs = AssetProvider.baseScale(this.sprite);
+      this.sprite.setScale(bs.x * 0.3, bs.y * 0.3);
+      this.scene.tweens.add({ targets: this.sprite, scaleX: bs.x, scaleY: bs.y, duration: 250, ease: 'Back.easeOut' });
     }
     this.scene.game.events.emit('sfx', 'hire');
   }
@@ -210,12 +213,19 @@ export default class Defender {
   /** Melee birimin savaş güncellemesi: tıkaç + lunge + dur-dövüş. */
   updateMelee(delta, enemies) {
     const C = CONFIG.COMBAT;
+    // Komut hedefi geçersizse temizle (ölen hedef → otomatik moda dön)
+    if (this.commandedTarget && (!this.commandedTarget.alive || this.commandedTarget.dying)) {
+      this.commandedTarget = null;
+    }
     // Hâlâ geçerli bir düşmanla dövüşüyor muyuz?
     const wasEngaged = !!this._engaged;
     if (this._engaged && (!this._engaged.alive || this._engaged.dying)) this._engaged = null;
 
-    if (!this._engaged) {
-      // lungeRadius içindeki en yakın düşmanı hedefle (yakala)
+    // Komut hedefi varsa her şeyin üstünde: mesafe sınırı YOK, oraya yürür.
+    if (this.commandedTarget && this.commandedTarget.sprite) {
+      this._engaged = this.commandedTarget;
+    } else if (!this._engaged) {
+      // Otomatik: lungeRadius içindeki en yakın düşmanı hedefle (yakala)
       let nearest = null, nd = Infinity;
       for (const e of enemies) {
         if (!e.alive || e.dying || !e.sprite) continue;
@@ -311,11 +321,37 @@ export default class Defender {
       this.updateSupport(delta);
       return;
     }
-    // ranged: çıpaya yürür (taşınınca), çıpada menzilden config.projectileType mermisiyle vur
-    const rangedMoving = this._walkToAnchor(delta);
+    // Komut hedefi geçersizse temizle (ölen hedef → otomatik moda dön)
+    if (this.commandedTarget && (!this.commandedTarget.alive || this.commandedTarget.dying)) {
+      this.commandedTarget = null;
+    }
+
     if (this.cooldownTimer > 0) this.cooldownTimer -= delta;
-    this.target = this.findTarget(enemies);
-    if (this.target && this.cooldownTimer <= 0) {
+    let rangedMoving = false;
+
+    if (this.commandedTarget && this.commandedTarget.sprite) {
+      // Komut: hedefe doğru MENZİL KENARINA kadar yürü, menzildeyse ateş et.
+      const range = this.getRange();
+      const tx = this.commandedTarget.sprite.x, ty = this.commandedTarget.sprite.y;
+      const dx = tx - this.x, dy = ty - this.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      if (dist > range) {
+        const step = Math.min(CONFIG.COMBAT.lungeSpeed * delta, dist - range);
+        this.x += (dx / dist) * step;
+        this.y += (dy / dist) * step;
+        if (this.sprite) this.sprite.setPosition(this.x, this.y);
+        rangedMoving = true;
+      }
+      // Çıpayı güncel konuma sabitle → komut bitince burada kalır (geri yürümez)
+      this.anchorX = this.x; this.anchorY = this.y;
+      this.target = this.commandedTarget;
+    } else {
+      // Otomatik: çıpaya yürür (taşınınca), çıpada menzilden ateş eder
+      rangedMoving = this._walkToAnchor(delta);
+      this.target = this.findTarget(enemies);
+    }
+
+    if (this.target && !rangedMoving && this.cooldownTimer <= 0) {
       this.fire(this.target);
       this.cooldownTimer = 1 / this.getFireRate();
     }

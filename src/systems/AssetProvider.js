@@ -204,6 +204,16 @@ const AssetProvider = {
     if (size) {
       imageObj.setDisplaySize(size.w * childScale, size.h * childScale);
     }
+    // Pulse/diriliş tween'leri (setScale) için DOĞRU temel ölçeği sakla. setDisplaySize
+    // frame boyutuna göre 1 olmayan bir scale üretir; tween'ler 1'e dönerse sprite kalıcı
+    // büyür (ölüm/güçlendirme pulse'ları birikir). Base scale buradan okunmalı.
+    imageObj._baseScaleX = imageObj.scaleX;
+    imageObj._baseScaleY = imageObj.scaleY;
+  },
+
+  /** Bir sprite'ın applySprite ile kaydedilmiş temel ölçeği (yoksa mevcut scale). */
+  baseScale(sprite) {
+    return { x: sprite?._baseScaleX ?? sprite?.scaleX ?? 1, y: sprite?._baseScaleY ?? sprite?.scaleY ?? 1 };
   },
 
   /**

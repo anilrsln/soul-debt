@@ -78,46 +78,40 @@ export default class GameScene extends Phaser.Scene {
       if (this.isGameOver) return;
       const px = pointer.worldX, py = pointer.worldY;
 
-      // Sağ-tık → seçimi bırak (selected=false), başka iş yapma
-      if (pointer.rightButtonDown()) {
-        if (this._placing) return; // yerleştirme modunda sağ-tık'ı yok say
-        this._deselectUnit();
+      const inField = px > CONFIG.WALL_X && px < CONFIG.CANVAS_WIDTH &&
+                      py > CONFIG.CORRIDOR_TOP && py < CONFIG.CORRIDOR_BOTTOM;
+      const isRight = pointer.rightButtonDown();
+
+      // Yerleştirme modu (K36): SOL tık = birimi oraya koy; sağ tık yok sayılır.
+      if (this._placing) {
+        if (!isRight && inField) this._commitPlacement(px, py);
         return;
       }
 
-      // 0) Yerleştirme modu (K36): tık = birimi oraya koy (savaş alanı içinde)
-      if (this._placing) {
-        if (px > CONFIG.WALL_X && px < CONFIG.CANVAS_WIDTH && py > CONFIG.CORRIDOR_TOP && py < CONFIG.CORRIDOR_BOTTOM) {
-          this._commitPlacement(px, py);
+      // En yakın birime olan mesafe (seçim/komut için ortak)
+      const unitHit = this._unitAt(px, py, 30);
+      // En yakın düşman (sağ-tık komut hedefi için)
+      const enemyHit = this._enemyAt(px, py, 40);
+
+      if (isRight) {
+        // ── SAĞ TIK = HAREKET / SALDIR KOMUTU (yalnız seçili birim varken) ──
+        if (!this._selectedUnit || !this._selectedUnit.alive) return;
+        if (enemyHit) {
+          // Düşmana saldır komutu: o düşmana doğru yürü, menzile/temasa girince vur
+          this._commandAttack(this._selectedUnit, enemyHit);
+        } else if (inField) {
+          // Boş zemine yürü komutu
+          this._commandMove(this._selectedUnit, px, py);
         }
-        return; // yerleştirme modunda başka tık işlemi yok
+        return;
       }
 
-      // Birime tık? (en yakın birim, 30px) — necromancer dahil tüm yönetilebilir birimler
-      let unit = null, ud = 30 * 30;
-      for (const u of this._selectableUnits()) {
-        if (!u.alive || !u.sprite) continue;
-        const dx = u.x - px, dy = u.y - py;
-        const d = dx * dx + dy * dy;
-        if (d < ud) { ud = d; unit = u; }
-      }
-      if (unit) { this._selectUnit(unit); return; }
-
-      // Düşmana tık? (necromancer hedefi, 40px)
-      const enemies = this.waveManager?.enemies || [];
-      let nearest = null, nd = 40 * 40;
-      for (const e of enemies) {
-        if (!e.alive || e.dying || !e.sprite) continue;
-        const dx = e.sprite.x - px, dy = e.sprite.y - py;
-        const d = dx * dx + dy * dy;
-        if (d < nd) { nd = d; nearest = e; }
-      }
-      if (nearest) { this.necromancer.setStickyTarget(nearest); this._showTargetMarker(nearest); return; }
-
-      // Boş zemin + seçili birim → taşı (yalnız savaş alanı içinde)
-      if (this._selectedUnit && px > CONFIG.WALL_X && px < CONFIG.CANVAS_WIDTH &&
-          py > CONFIG.CORRIDOR_TOP && py < CONFIG.CORRIDOR_BOTTOM) {
-        this._moveUnitAnchor(this._selectedUnit, px, py);
+      // ── SOL TIK = YALNIZCA SEÇİM ──
+      if (unitHit) {
+        this._selectUnit(unitHit);
+      } else {
+        // Karakter DIŞI bir alana sol-tık → seçimi bırak (deselect'in TEK yolu)
+        this._deselectUnit();
       }
     });
     // Defender registry (Faz G mimari): anahtar → canlı birim dizisi.
@@ -487,9 +481,15 @@ export default class GameScene extends Phaser.Scene {
     const list = type === 'necromancer' ? [this.necromancer] : (this.defenders[type] || []);
     for (const d of list) {
       if (!d || !d.sprite) continue;
+      // Önceki pulse tween'ini iptal et ve base scale'e sıfırla — üst üste binen
+      // tween'ler yoyo'yu bozup kalıcı büyüme bırakmasın (setDisplaySize scale≠1).
+      this.tweens.killTweensOf(d.sprite);
+      const bs = AssetProvider.baseScale(d.sprite);
+      d.sprite.setScale(bs.x, bs.y);
       this.tweens.add({
-        targets: d.sprite, scaleX: 1.35, scaleY: 1.35,
+        targets: d.sprite, scaleX: bs.x * 1.35, scaleY: bs.y * 1.35,
         duration: 110, yoyo: true, ease: 'Quad.easeOut',
+        onComplete: () => d.sprite && d.sprite.setScale(bs.x, bs.y),
       });
     }
   }
@@ -757,7 +757,7 @@ export default class GameScene extends Phaser.Scene {
     this.showFloatingText(i18n('game.unitSelected'), unit.x, unit.y - 24, 0x00ffff, 11, 900);
   }
 
-  /** Seçimi bırak (sağ-tık) — selected=false, halkayı gizle. */
+  /** Seçimi bırak — selected=false, halkayı gizle (karakter dışı alana SOL tık). */
   _deselectUnit() {
     if (!this._selectedUnit) return;
     this._selectedUnit = null;
@@ -765,16 +765,54 @@ export default class GameScene extends Phaser.Scene {
     this.game.events.emit('sfx', 'uiClick');
   }
 
-  /** Seçili birimin çıpasını yeni konuma taşı — birim update'te çıpaya yürür (K24). */
-  _moveUnitAnchor(unit, x, y) {
+  /** (px,py)'ye en yakın canlı yönetilebilir birim (necromancer dahil), r piksel içinde. */
+  _unitAt(px, py, r) {
+    let best = null, bd = r * r;
+    for (const u of this._selectableUnits()) {
+      if (!u.alive || !u.sprite) continue;
+      const dx = u.x - px, dy = u.y - py, d = dx * dx + dy * dy;
+      if (d < bd) { bd = d; best = u; }
+    }
+    return best;
+  }
+
+  /** (px,py)'ye en yakın canlı düşman, r piksel içinde. */
+  _enemyAt(px, py, r) {
+    const enemies = this.waveManager?.enemies || [];
+    let best = null, bd = r * r;
+    for (const e of enemies) {
+      if (!e.alive || e.dying || !e.sprite) continue;
+      const dx = e.sprite.x - px, dy = e.sprite.y - py, d = dx * dx + dy * dy;
+      if (d < bd) { bd = d; best = e; }
+    }
+    return best;
+  }
+
+  /** SAĞ-tık boş zemin: seçili birime "oraya yürü" komutu (çıpayı taşı, komut hedefi temizle). */
+  _commandMove(unit, x, y) {
+    unit.commandedTarget = null; // yürü komutu saldırı komutunu iptal eder
     unit.anchorX = x;
     unit.anchorY = y;
-    // Hareket update döngüsünde yönetilir (ranged/support/melee hepsi çıpaya yürür) —
-    // tween kaldırıldı ki tek hareket kaynağı update olsun, çakışma olmasın.
-    // Seçim DÜŞMEZ — aynı birim tekrar seçilmeden tekrar taşınabilir.
-    // Bırakmak için sağ-tık (deselect). Halka _drawUnitHpBars'ta birimi takip eder.
+    // Hareket update döngüsünde — tüm combatType'lar çıpaya yürür. Seçim DÜŞMEZ.
     this.game.events.emit('sfx', 'mapOpen');
   }
+
+  /** SAĞ-tık düşman: seçili birime "o düşmana saldır" komutu. Birim ona doğru yürür,
+   *  menzile/temasa girince vurur; hedef ölünce otomatik en yakına geçer (Defender.update). */
+  _commandAttack(unit, enemy) {
+    if (unit === this.necromancer) {
+      // Necromancer yerinde durur, ışın atar — sticky target ile o hedefe kilitlenir
+      unit.setStickyTarget(enemy);
+    } else {
+      // Diğer birimler hedefe doğru yürür, menzile/temasa girince vurur
+      unit.commandedTarget = enemy;
+    }
+    this._showTargetMarker(enemy);
+    this.game.events.emit('sfx', 'mapOpen');
+  }
+
+  /** Geriye uyum: eski çağrılar _commandMove'a yönlenir. */
+  _moveUnitAnchor(unit, x, y) { this._commandMove(unit, x, y); }
 
   /** Tüm dizilebilir birimlerin HP barlarını çiz (her frame — update'ten çağrılır). */
   _drawUnitHpBars() {
