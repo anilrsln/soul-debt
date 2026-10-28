@@ -53,6 +53,7 @@ export default class Defender {
     this._attackTimer = 0;      // melee dur-dövüş vuruş sayacı
     this._engaged = null;       // melee: şu an dövüştüğü düşman
     this.commandedTarget = null; // oyuncu sağ-tıkla verdiği saldırı hedefi (tüm tipler)
+    this.commandedHealTarget = null; // cleric: sağ-tıkla verdiği iyileştirme hedefi (K38)
     this._lungeState = 'anchor'; // 'anchor' | 'lunging' | 'walking' | 'engaged' | 'returning'
 
     // Animasyon durumu (çok-durumlu sheet'ler için). _animOverride: tek-sefer anim (attack/hurt/death)
@@ -196,6 +197,7 @@ export default class Defender {
     this._lungeState = 'anchor';
     this._engaged = null;
     this.commandedTarget = null; // dirilince komut hedefi sıfırlanır
+    this.commandedHealTarget = null;
     this._animOverride = null; // death override'ı temizle → idle'a dön
     if (this.sprite) {
       this.sprite.setPosition(this.x, this.y).setVisible(true).clearTint();
@@ -378,11 +380,35 @@ export default class Defender {
 
   /** Cleric iyileştirme güncellemesi: çıpada sabit, periyodik olarak menzildeki en yaralı dostu iyileştirir. */
   updateSupport(delta) {
-    const moving = this._walkToAnchor(delta); // taşınınca çıpaya yürür (seç-taşı)
+    // Komut hedefi geçersizse (ölü/full can) temizle → otomatiğe dön (K38)
+    const ht = this.commandedHealTarget;
+    if (ht && (!ht.alive || ht.hp >= ht.maxHp)) this.commandedHealTarget = null;
+
+    let moving = false;
+    if (this.commandedHealTarget && this.commandedHealTarget.sprite) {
+      // Komut: hedef dosta ŞİFA MENZİLİ kenarına kadar yürü, sonra sadece onu iyileştir
+      const t = this.commandedHealTarget;
+      const range = this.getRange();
+      const dx = t.x - this.x, dy = t.y - this.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      if (dist > range) {
+        const step = Math.min(CONFIG.COMBAT.lungeSpeed * delta, dist - range);
+        this.x += (dx / dist) * step;
+        this.y += (dy / dist) * step;
+        if (this.sprite) this.sprite.setPosition(this.x, this.y);
+        moving = true;
+      }
+      this.anchorX = this.x; this.anchorY = this.y; // komut bitince burada kalır
+    } else {
+      moving = this._walkToAnchor(delta); // taşınınca çıpaya yürür (seç-taşı)
+    }
+
     if (this.cooldownTimer > 0) this.cooldownTimer -= delta;
-    if (this.cooldownTimer <= 0) {
-      const healed = this._healPulse();
-      // Hedef bulunsa da bulunmasa da cooldown dönsün (boşa pulse spam'ini önler)
+    if (!moving && this.cooldownTimer <= 0) {
+      // Komut hedefi varsa SADECE onu iyileştir; yoksa otomatik en yaralı dost
+      const healed = this.commandedHealTarget
+        ? this._healTarget(this.commandedHealTarget)
+        : this._healPulse();
       this.cooldownTimer = 1 / this.getFireRate();
       if (healed && this.sprite) {
         this.scene.tweens.add({ targets: this.sprite, y: this.y - 3, duration: 80, yoyo: true, ease: 'Power1' });
@@ -390,6 +416,18 @@ export default class Defender {
       }
     }
     this._tickAnim(delta, moving ? 'walk' : 'idle'); // yürürken walk, çıpada idle
+  }
+
+  /** Belirli bir dost birimi iyileştir (komut hedefi). Menzilde ve eksik canda ise iyileştirir. */
+  _healTarget(u) {
+    if (!u || !u.alive || u.maxHp == null || u.hp >= u.maxHp) return false;
+    const range = this.getRange();
+    const dx = u.x - this.x, dy = u.y - this.y;
+    if (dx * dx + dy * dy > range * range) return false; // menzil dışı (yürüyor olmalı)
+    u.hp = Math.min(u.maxHp, u.hp + this.getHealAmount());
+    const spark = this.scene.add.circle(u.x, u.y, 10, 0x66ff88, 0.5).setDepth(14);
+    this.scene.tweens.add({ targets: spark, scaleX: 2, scaleY: 2, alpha: 0, duration: 300, onComplete: () => spark.destroy() });
+    return true;
   }
 
   /** Cleric heal gücü (upgrade + kıdem special çarpanı). */

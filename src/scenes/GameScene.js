@@ -105,14 +105,25 @@ export default class GameScene extends Phaser.Scene {
       const enemyHit = this._enemyAt(px, py, 40);
 
       if (isRight) {
-        // ── SAĞ TIK = HAREKET / SALDIR KOMUTU (yalnız seçili birim varken) ──
-        if (!this._selectedUnit || !this._selectedUnit.alive) return;
-        if (enemyHit) {
-          // Düşmana saldır komutu: o düşmana doğru yürü, menzile/temasa girince vur
-          this._commandAttack(this._selectedUnit, enemyHit);
+        // ── SAĞ TIK = KOMUT (yalnız seçili birim varken) ──
+        const sel = this._selectedUnit;
+        if (!sel || !sel.alive) return;
+        const isSupport = sel.combatType === 'support'; // cleric
+        if (isSupport) {
+          // Cleric: dost birime sağ-tık = iyileştir komutu; düşmana sağ-tık YOK SAYILIR
+          // (cleric saldırmaz); boş zemine sağ-tık = yürü.
+          if (unitHit && unitHit !== sel) {
+            this._commandHeal(sel, unitHit);
+          } else if (!enemyHit && inField) {
+            this._commandMove(sel, px, py);
+          }
+          // düşmana sağ-tık veya kendine tık: yok say
+        } else if (enemyHit) {
+          // Saldır komutu: o düşmana doğru yürü, menzile/temasa girince vur
+          this._commandAttack(sel, enemyHit);
         } else if (inField) {
           // Boş zemine yürü komutu
-          this._commandMove(this._selectedUnit, px, py);
+          this._commandMove(sel, px, py);
         }
         return;
       }
@@ -1045,12 +1056,30 @@ export default class GameScene extends Phaser.Scene {
   _commandMove(unit, x, y) {
     // Yürü komutu var olan tüm görevi bırakır: saldırı komutu, melee dövüşü, sticky target
     unit.commandedTarget = null;
+    unit.commandedHealTarget = null; // cleric: iyileştirme kilidini bırak
     unit._engaged = null;         // melee: dövüşü bırak, hedefe değil çıpaya yürü
     if (unit === this.necromancer) unit.stickyTarget = null; // necromancer: kilidi bırak
     unit.anchorX = x;
     unit.anchorY = y;
     // Hareket update döngüsünde — tüm combatType'lar çıpaya yürür. Seçim DÜŞMEZ.
     this.game.events.emit('sfx', 'mapOpen');
+  }
+
+  /** SAĞ-tık dost birim (cleric seçiliyken): o birime kilitli iyileştirme komutu. Cleric
+   *  şifa menziline kadar yürür, hedef FULL can olana kadar sadece onu iyileştirir, sonra
+   *  otomatiğe döner (Defender.updateSupport). */
+  _commandHeal(cleric, ally) {
+    cleric.commandedHealTarget = ally;
+    this._showHealMarker(ally);
+    this.game.events.emit('sfx', 'mapOpen');
+  }
+
+  /** İyileştirme hedefi üstünde kısa yeşil halka göstergesi. */
+  _showHealMarker(ally) {
+    if (!ally?.sprite) return;
+    const ring = this.add.circle(ally.x, ally.y, 16, 0x66ff88, 0).setStrokeStyle(2, 0x66ff88, 0.9).setDepth(60);
+    this.tweens.add({ targets: ring, scaleX: 1.6, scaleY: 1.6, alpha: 0, duration: 450,
+      onComplete: () => ring.destroy() });
   }
 
   /** SAĞ-tık düşman: seçili birime "o düşmana saldır" komutu. Birim ona doğru yürür,
