@@ -101,6 +101,7 @@ export default {
     floorSetupHint: 'Diz · ör · absorbe et — hazır olunca in',
     deployTitle: '⚔ EKİBİNİ DİZ',
     deployHint: 'Karakterleri haritaya yerleştir — hazır olunca başla',
+    deployPlaceHint: '📍 Yerleştirmek için sahaya sağ-tıkla',
     deployStart: '▶ BAŞLA',
     descendNext: '⬇ İN',
     descendingTo: 'KAT {n}',

@@ -95,6 +95,7 @@ export default {
     floorSetupHint: 'Arrange · craft · absorb — descend when ready',
     deployTitle: '⚔ DEPLOY YOUR TEAM',
     deployHint: 'Place your characters on the map — start when ready',
+    deployPlaceHint: '📍 Right-click the field to place',
     deployStart: '▶ START',
     descendNext: '⬇ DESCEND',
     descendingTo: 'FLOOR {n}',

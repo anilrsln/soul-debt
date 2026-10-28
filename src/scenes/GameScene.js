@@ -158,6 +158,10 @@ export default class GameScene extends Phaser.Scene {
     // Dizme fazı (K38): floor başı — ekip bara toplanır, oyuncu dizer, "BAŞLA" der
     this.events.on('deploy-phase-start', this._onDeployPhaseStart, this);
     this.events.on('deploy-phase-end', this._onDeployPhaseEnd, this);
+    // Deploy fazında craft edilen birim bara düşer (K38 Parça 3)
+    this.game.events.off('defender-crafted', this._onDefenderCrafted, this);
+    this.game.events.on('defender-crafted', this._onDefenderCrafted, this);
+    this.events.once('shutdown', () => this.game.events.off('defender-crafted', this._onDefenderCrafted, this));
 
     // Kritik vuruş bildirimi
     this.game.events.off('crit-hit', this.onCritHit, this);
@@ -605,6 +609,24 @@ export default class GameScene extends Phaser.Scene {
     this.game.events.emit('deploy-bar-changed'); // UIScene alt paneli deploy moduna geçsin
   }
 
+  /**
+   * Deploy fazında craft edilen birim bara düşer (K38 Parça 3). UpgradeManager count'u
+   * arttırdı ama sync devre dışı; burada yeni birimi yaratıp park'a + slot'a ekleriz.
+   */
+  _onDefenderCrafted(data) {
+    if (!this.waveManager?.isDeployPhase) return; // faz dışıysa normal sync yaratır
+    const type = data?.type;
+    if (!type || !this.defenderKeys.includes(type)) return;
+    // Yeni birimi gizli yarat, park'a koy, slot ekle
+    const u = new Defender(this, type, CONFIG.WALL_X + 60, CONFIG.CORRIDOR_TOP + 60);
+    u.sprite?.setVisible(false);
+    if (!this._parked) this._parked = {};
+    if (!this._parked[type]) this._parked[type] = [];
+    this._parked[type].push(u);
+    this._deploySlots.push({ id: `${type}-${this._deploySlots.length}`, type, unit: u, deployed: false });
+    this._rebuildDeployBar();
+  }
+
   /** Dizme fazı bitti (K38) — wave başlar. Dizilmemiş birimler sahada değil (ekipte kalır). */
   _onDeployPhaseEnd() {
     if (this._deployEls) { this._deployEls.forEach(e => e.destroy()); this._deployEls = null; }
@@ -690,17 +712,26 @@ export default class GameScene extends Phaser.Scene {
     const pending = this._deploySlots.filter(s => !s.deployed);
     if (pending.length === 0) return;
 
-    const cardW = 72, cardH = 76, gap = 6;
+    const cardW = 64, cardH = 62, gap = 6;
     const totalW = pending.length * cardW + (pending.length - 1) * gap;
     let startX = Math.max(10, (CONFIG.CANVAS_WIDTH - totalW) / 2);
-    // Kartlar EN ALT sırada — savaş alanının dışında, alt panelin dibinde (K38 düzeltme).
-    const y = CONFIG.CANVAS_HEIGHT - cardH - 6;
+    // Kartlar savaş alanının EN ALT şeridinde (koridorun dibi, panelin üstü). Deploy fazında
+    // saha boş olduğundan burası serbesttir; alt panel (craft) tam görünür kalır. K38 Parça 3.
+    const y = CONFIG.CORRIDOR_BOTTOM - cardH - 4;
 
-    // Kart şeridi arka planı (paneldeki craft butonlarından ayrışsın)
-    const stripH = cardH + 10;
-    const strip = this.add.rectangle(CONFIG.CANVAS_WIDTH / 2, y + cardH / 2, CONFIG.CANVAS_WIDTH, stripH, 0x06101e, 0.96)
+    // Kart şeridi arka planı
+    const stripH = cardH + 8;
+    const strip = this.add.rectangle(CONFIG.CANVAS_WIDTH / 2, y + cardH / 2, CONFIG.CANVAS_WIDTH, stripH, 0x06101e, 0.92)
       .setDepth(304);
     this._deployBarEls.push(strip);
+
+    // Seçili kart varsa "sağ-tıkla yerleştir" ipucu (şeridin üstünde)
+    if (this._deploySelectedSlot && !this._deploySelectedSlot.deployed) {
+      const tip = this.add.text(CONFIG.CANVAS_WIDTH / 2, y - 10, i18n('game.deployPlaceHint'), {
+        fontSize: '11px', fontFamily: 'monospace', color: '#8affc9', stroke: '#000', strokeThickness: 2,
+      }).setOrigin(0.5).setDepth(306);
+      this._deployBarEls.push(tip);
+    }
 
     for (const slot of pending) {
       const cx = startX + cardW / 2;
@@ -713,23 +744,23 @@ export default class GameScene extends Phaser.Scene {
       const spriteKey = cfg?.spriteKey;
       let icon = null;
       if (spriteKey && this.textures.exists(spriteKey)) {
-        icon = this.add.sprite(cx, y + 26, spriteKey).setDepth(306);
+        icon = this.add.sprite(cx, y + 20, spriteKey).setDepth(306);
         AssetProvider.applySprite(icon, spriteKey);
-        icon.setDisplaySize(34, 40); // kartta sabit küçük boy
+        icon.setDisplaySize(28, 32); // kartta sabit küçük boy
       }
 
       // İsim
       const nameKey = `defender.${slot.type}`;
-      const name = this.add.text(cx, y + 52, i18n(nameKey), {
-        fontSize: '9px', fontFamily: 'monospace', color: '#cfe8ff', stroke: '#000', strokeThickness: 2,
+      const name = this.add.text(cx, y + 40, i18n(nameKey), {
+        fontSize: '8px', fontFamily: 'monospace', color: '#cfe8ff', stroke: '#000', strokeThickness: 2,
       }).setOrigin(0.5).setDepth(306);
 
       // Level + Kıdem bilgisi
       const vet = slot.unit?.veteranLevel || 0;
       const lvl = this._slotStatLevel(slot);
       const infoStr = vet > 0 ? `Lv.${lvl} ★${vet}` : `Lv.${lvl}`;
-      const info = this.add.text(cx, y + 66, infoStr, {
-        fontSize: '9px', fontFamily: 'monospace', color: '#ffd77a', stroke: '#000', strokeThickness: 2,
+      const info = this.add.text(cx, y + 52, infoStr, {
+        fontSize: '8px', fontFamily: 'monospace', color: '#ffd77a', stroke: '#000', strokeThickness: 2,
       }).setOrigin(0.5).setDepth(306);
 
       bg.on('pointerdown', (p, lx, ly, e) => {
