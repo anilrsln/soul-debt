@@ -116,29 +116,30 @@ export default class Necromancer extends Defender {
       this.target = this.findTarget(enemies);
     }
 
-    this.beamGraphics.clear();
+    this.beamGraphics.clear(); // beam kaldırıldı; artık mermi atıyor (K39)
 
-    // Menzildeyse ışınla (komutla kovalarken menzile girince yürüyor olsa da ışınlar)
-    if (this.target && inRange) {
-      this.isBeamActive = true;
-      this.drawBeam(delta);
-      this.applyDamage(delta);
-    } else {
-      this.isBeamActive = false;
+    // MERMİ sistemi (archer/mage gibi): menzildeyse cooldown dolunca tek tek mor ruh mermisi at.
+    let justFired = false;
+    if (this.cooldownTimer > 0) this.cooldownTimer -= delta;
+    if (this.target && inRange && this.cooldownTimer <= 0) {
+      this.fire(this.target);                 // base Defender.fire — config.projectileType='soulBolt'
+      this.cooldownTimer = 1 / this.getFireRate();
+      this._castTimer = 0.3;                   // atış anim penceresi (bir kez attack)
+      justFired = true;
     }
+    this._updateProjectiles(delta, enemies);
+    this.isBeamActive = false;
 
     this.glowPhase += delta * 3;
     this.updateGlow();
 
-    // Animasyon: yürürken 'walk', ışın atarken 'attack' (periyodik yeniden tetik), boşta 'idle'.
-    this._castTimer -= delta;
+    // Animasyon: yürürken 'walk'; atış anında bir kez 'attack' (0.3 sn pencere); aksi halde idle.
+    // Attack her atışta BİR KEZ tetiklenir, pencere dolunca idle'a döner — flick YOK (K39).
+    if (this._castTimer > 0) this._castTimer -= delta;
     if (moving) {
       AssetProvider.playAnim(this.sprite, 'defender-necromancer', 'walk');
-    } else if (this.target) {
-      if (this._castTimer <= 0) {
-        AssetProvider.playAnim(this.sprite, 'defender-necromancer', 'attack');
-        this._castTimer = 0.6; // attack döngüsünü ~0.6 sn'de bir yenile
-      }
+    } else if (justFired) {
+      AssetProvider.playAnim(this.sprite, 'defender-necromancer', 'attack');
     } else if (this._castTimer <= 0) {
       AssetProvider.playAnim(this.sprite, 'defender-necromancer', 'idle');
     }

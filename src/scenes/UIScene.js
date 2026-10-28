@@ -402,8 +402,9 @@ export default class UIScene extends Phaser.Scene {
       // Deploy fazında (K38) craft edilen birim bara kart olarak düşer; GameScene yakalar.
       this.game.events.emit('defender-crafted', { type });
       if (placeMode) {
-        // GameScene syncDefenders bu frame birimi yaratır; sonra placement başlat
-        this.time.delayedCall(20, () => this.game.events.emit('start-placement', { type }));
+        // GameScene bir sonraki update'te syncDefenders ile birimi yaratır; birkaç frame
+        // sonra placement başlat (birimin oluşmasını garantile).
+        this.time.delayedCall(60, () => this.game.events.emit('start-placement', { type }));
       }
     } else {
       this.game.events.emit('sfx', 'uiDenied');

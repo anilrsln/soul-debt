@@ -625,10 +625,19 @@ export default class GameScene extends Phaser.Scene {
    * arttırdı ama sync devre dışı; burada yeni birimi yaratıp park'a + slot'a ekleriz.
    */
   _onDefenderCrafted(data) {
-    if (!this.waveManager?.isDeployPhase) return; // faz dışıysa normal sync yaratır
     const type = data?.type;
     if (!type || !this.defenderKeys.includes(type)) return;
-    // Yeni birimi gizli yarat, park'a koy, slot ekle
+    const st = GameState.defenders[type];
+
+    // SAVAŞ sırasında (deploy fazı dışında): deployedCount'u da arttır ki syncDefenders yeni
+    // birimi yaratsın. Aksi halde deployedCount deploy sonrası sabit kalır → birim hiç
+    // oluşmaz → oyuncu yerleştiremez. (Bu, "oyun içinde eklediğimi yerleştiremiyorum" bug'ı.)
+    if (!this.waveManager?.isDeployPhase) {
+      if (st && st.deployedCount != null) st.deployedCount += 1;
+      return; // syncDefenders bu frame birimi yaratır; _doHire placeMode ise placement başlatır
+    }
+
+    // DEPLOY fazında: yeni birimi gizli yarat, park'a koy, slot ekle (bara düşer)
     const u = new Defender(this, type, CONFIG.WALL_X + 60, CONFIG.CORRIDOR_TOP + 60);
     u.sprite?.setVisible(false);
     if (!this._parked) this._parked = {};

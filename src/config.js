@@ -140,8 +140,10 @@ export const CONFIG = {
     necromancer: {
       name: 'Necromancer',
       combatType: 'ranged', hp: 9999, // necromancer canı ayrı yönetilir (GameState.necromancer)
-      // NOT: necromancer kendi entity'si (Necromancer.js) ile çizilir; registry'ye dahil DEĞİL.
-      // Davranış alanları (projectileType vb.) burada tutulmaz — hire edilmez.
+      // Necromancer kendi entity'si (Necromancer.js) ile çizilir; registry'ye dahil DEĞİL.
+      // Artık archer/mage gibi tek-tek MERMİ atar (beam değil) — mor ruh mermisi (K39).
+      spriteKey: 'defender-necromancer',
+      projectileType: 'soulBolt', fireSfx: 'mageFire', fireFx: 'blast',
       damage:   { base: 5,  multiplier: 1.2,  baseCost: 10 },
       fireRate: { base: 1.2, multiplier: 1.1, baseCost: 15 },
       range:    { base: 150, multiplier: 1.08, baseCost: 20 },
@@ -250,6 +252,7 @@ export const CONFIG = {
     arrow:      { speed: 350, size: 3 },
     mageBolt:   { speed: 280, size: 4 },
     iceBolt:    { speed: 300, size: 4 },
+    soulBolt:   { speed: 300, size: 5 }, // necromancer mor ruh mermisi (K39)
   },
 
   // ─────────────────────────────────────────────────────────────
@@ -286,6 +289,7 @@ export const CONFIG = {
     'projectile-arrow':      { sprite: 'assets/units/arrow.png' },
     'projectile-mageBolt':   { shape: 'circle', size: 4, color: 0xff8844 },
     'projectile-iceBolt':    { shape: 'circle', size: 4, color: 0x66ccff },
+    'projectile-soulBolt':   { shape: 'circle', size: 5, color: 0xb060ff }, // mor ruh mermisi
   },
 
   // Düşman değerleri
