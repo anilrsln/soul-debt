@@ -765,15 +765,12 @@ export default class GameScene extends Phaser.Scene {
     this.game.events.emit('sfx', 'uiClick');
   }
 
-  /** Seçili birimin çıpasını yeni konuma taşı (yürüyerek gider — K24). */
+  /** Seçili birimin çıpasını yeni konuma taşı — birim update'te çıpaya yürür (K24). */
   _moveUnitAnchor(unit, x, y) {
     unit.anchorX = x;
     unit.anchorY = y;
-    // ranged anında yeni çıpaya kayar; melee zaten lunge/return ile yürür
-    if (unit.combatType === 'ranged') {
-      this.tweens.add({ targets: unit, x, y, duration: 300, ease: 'Sine.easeInOut',
-        onUpdate: () => unit.sprite?.setPosition(unit.x, unit.y) });
-    }
+    // Hareket update döngüsünde yönetilir (ranged/support/melee hepsi çıpaya yürür) —
+    // tween kaldırıldı ki tek hareket kaynağı update olsun, çakışma olmasın.
     // Seçim DÜŞMEZ — aynı birim tekrar seçilmeden tekrar taşınabilir.
     // Bırakmak için sağ-tık (deselect). Halka _drawUnitHpBars'ta birimi takip eder.
     this.game.events.emit('sfx', 'mapOpen');

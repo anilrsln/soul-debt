@@ -211,6 +211,7 @@ export default class Defender {
   updateMelee(delta, enemies) {
     const C = CONFIG.COMBAT;
     // Hâlâ geçerli bir düşmanla dövüşüyor muyuz?
+    const wasEngaged = !!this._engaged;
     if (this._engaged && (!this._engaged.alive || this._engaged.dying)) this._engaged = null;
 
     if (!this._engaged) {
@@ -252,17 +253,48 @@ export default class Defender {
         }
       }
     } else {
-      // Düşman yok: başladığı yere DÖNME — son durduğu yerde kal (oyuncu isteği).
-      // Çıpayı mevcut konuma sabitle ki bir sonraki lunge'dan sonra da buraya sadık kalsın
-      // ve "seç-taşı" yeni çıpayı doğru referans alsın.
-      this.anchorX = this.x;
-      this.anchorY = this.y;
-      this._lungeState = 'anchor';
+      // Düşman yok.
+      if (wasEngaged) {
+        // Savaştan yeni çıktı: başladığı yere DÖNME — son durduğu yerde kal (oyuncu isteği).
+        // Çıpayı lunge bittiği noktaya BİR KEZ sabitle; böylece aşağıdaki "çıpaya yürü"
+        // dalı bu konumu referans alır ve geri yürümez.
+        this.anchorX = this.x;
+        this.anchorY = this.y;
+        this._lungeState = 'anchor';
+      } else {
+        // Oyuncu taşımış olabilir: çıpaya doğru YÜRÜ (seç-taşı komutu). Çıpa savaş
+        // sonrası güncel konuma sabit olduğundan, taşınmadıkça bu dal hareket üretmez.
+        const dx = this.anchorX - this.x, dy = this.anchorY - this.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > 1) {
+          const step = Math.min(C.lungeSpeed * delta, dist);
+          this.x += (dx / dist) * step;
+          this.y += (dy / dist) * step;
+          this._lungeState = 'walking';
+        } else {
+          this._lungeState = 'anchor';
+        }
+      }
     }
     if (this.sprite) this.sprite.setPosition(this.x, this.y);
     // Mantıksal durum: hareket ediyorsa walk, duruyorsa idle (attack override vuruşta biner)
-    const moving = this._lungeState === 'lunging';
+    const moving = this._lungeState === 'lunging' || this._lungeState === 'walking';
     this._tickAnim(delta, moving ? 'walk' : 'idle');
+  }
+
+  /**
+   * Birimi çıpasına doğru yürütür (ranged/support taşınınca — K24 seç-taşı).
+   * @returns {boolean} bu frame hareket etti mi (walk animasyonu için)
+   */
+  _walkToAnchor(delta) {
+    const dx = this.anchorX - this.x, dy = this.anchorY - this.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist <= 1) return false;
+    const step = Math.min(CONFIG.COMBAT.lungeSpeed * delta, dist);
+    this.x += (dx / dist) * step;
+    this.y += (dy / dist) * step;
+    if (this.sprite) this.sprite.setPosition(this.x, this.y);
+    return true;
   }
 
   update(delta, enemies) {
@@ -279,7 +311,8 @@ export default class Defender {
       this.updateSupport(delta);
       return;
     }
-    // ranged: çıpada sabit, menzilden config.projectileType mermisiyle vur
+    // ranged: çıpaya yürür (taşınınca), çıpada menzilden config.projectileType mermisiyle vur
+    const rangedMoving = this._walkToAnchor(delta);
     if (this.cooldownTimer > 0) this.cooldownTimer -= delta;
     this.target = this.findTarget(enemies);
     if (this.target && this.cooldownTimer <= 0) {
@@ -287,7 +320,7 @@ export default class Defender {
       this.cooldownTimer = 1 / this.getFireRate();
     }
     this._updateProjectiles(delta, enemies);
-    this._tickAnim(delta, 'idle'); // ranged çıpada sabit; attack override atışta biner
+    this._tickAnim(delta, rangedMoving ? 'walk' : 'idle'); // yürürken walk, çıpada idle; attack override atışta biner
   }
 
   /** Uçuşan mermileri ilerlet, ölenleri havuza iade et. */
@@ -309,6 +342,7 @@ export default class Defender {
 
   /** Cleric iyileştirme güncellemesi: çıpada sabit, periyodik olarak menzildeki en yaralı dostu iyileştirir. */
   updateSupport(delta) {
+    const moving = this._walkToAnchor(delta); // taşınınca çıpaya yürür (seç-taşı)
     if (this.cooldownTimer > 0) this.cooldownTimer -= delta;
     if (this.cooldownTimer <= 0) {
       const healed = this._healPulse();
@@ -319,7 +353,7 @@ export default class Defender {
         this._triggerAnim('heal', 0.4); // cleric SALDIRMAZ — heal pulse → şifa casting animasyonu
       }
     }
-    this._tickAnim(delta, 'idle'); // support çıpada sabit
+    this._tickAnim(delta, moving ? 'walk' : 'idle'); // yürürken walk, çıpada idle
   }
 
   /** Cleric heal gücü (upgrade + kıdem special çarpanı). */
