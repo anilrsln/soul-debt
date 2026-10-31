@@ -103,6 +103,7 @@ export default {
     deployHint: 'Karakterleri haritaya yerleştir — hazır olunca başla',
     deployPlaceHint: '📍 Yerleştirmek için sahaya sağ-tıkla',
     deployStart: '▶ BAŞLA',
+    deployNeedNecro: '☠ Önce Necromancer\'ı yerleştir!',
     descendNext: '⬇ İN',
     descendingTo: 'KAT {n}',
     unitSelected: '✋ Seçildi — boş yere tıkla',

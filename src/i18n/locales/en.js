@@ -97,6 +97,7 @@ export default {
     deployHint: 'Place your characters on the map — start when ready',
     deployPlaceHint: '📍 Right-click the field to place',
     deployStart: '▶ START',
+    deployNeedNecro: '☠ Place the Necromancer first!',
     descendNext: '⬇ DESCEND',
     descendingTo: 'FLOOR {n}',
     unitSelected: '✋ Selected — click empty ground',

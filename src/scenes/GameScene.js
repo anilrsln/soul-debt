@@ -213,6 +213,10 @@ export default class GameScene extends Phaser.Scene {
     // Kayıtlı oyun ortasından devamda (wave>1) tetiklenmez — ekip zaten dizili.
     // Gecikmesiz: ilk update'ten (ve ilk spawn'dan) önce faz kurulsun.
     if (GameState.wave.current === 1 && !idleEarnings) {
+      // create'te görünür spawn edilen necromancer'ı faz başlamadan BAŞTAN gizle — başta
+      // sahada "otomatik" necromancer görünmesin, sadece karttan dizilen görünsün (K39).
+      this.necromancer._deployed = false;
+      this.necromancer.sprite?.setVisible(false);
       this.waveManager.startDeployPhase();
     }
   }
@@ -647,14 +651,11 @@ export default class GameScene extends Phaser.Scene {
     this._rebuildDeployBar();
   }
 
-  /** Dizme fazı bitti (K38) — wave başlar. Dizilmemiş birimler sahada değil (ekipte kalır). */
+  /** Dizme fazı bitti (K38) — wave başlar. Dizilmemiş birimler sahada değil (ekipte kalır).
+   *  Necromancer zorunlu dizilir (K39): BAŞLA bu kontrolü yapar, buraya dizilmiş gelir. */
   _onDeployPhaseEnd() {
     if (this._deployEls) { this._deployEls.forEach(e => e.destroy()); this._deployEls = null; }
     if (this._deployBarEls) { this._deployBarEls.forEach(e => e.destroy()); this._deployBarEls = null; }
-    // Necromancer dizilmediyse yine de sahada olmalı (oyun necromancer'sız oynanmaz) — varsayılan yere koy
-    if (this.necromancer && !this.necromancer._deployed) {
-      this._deployNecromancer(CONFIG.WALL_X + 40, Math.round((CONFIG.CORRIDOR_TOP + CONFIG.CORRIDOR_BOTTOM) / 2));
-    }
     // Dizilmemiş park birimleri: destroy ET ama GameState.count'u KORU (ekipte kalır, sonraki
     // floor fazında yine barda çıkar). deployedCount zaten dizilen kadar.
     if (this._parked) {
@@ -719,7 +720,17 @@ export default class GameScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(302);
     btn.on('pointerover', () => btn.setFillStyle(0x2a5a3a));
     btn.on('pointerout', () => btn.setFillStyle(0x1a3a2a));
-    btn.on('pointerdown', (p, x, y, e) => { e?.stopPropagation?.(); this.waveManager?.endDeployPhase(); });
+    btn.on('pointerdown', (p, x, y, e) => {
+      e?.stopPropagation?.();
+      // Necromancer ZORUNLU (K39): dizilmeden başlanamaz — oyun necromancer'sız oynanmaz.
+      if (!this.necromancer?._deployed) {
+        this.game.events.emit('sfx', 'uiDenied');
+        this.showFloatingText(i18n('game.deployNeedNecro'), CONFIG.CANVAS_WIDTH / 2,
+          CONFIG.CORRIDOR_BOTTOM - 40, 0xff6b6b, 14, 1600);
+        return;
+      }
+      this.waveManager?.endDeployPhase();
+    });
     els.push(band, title, hint, btn, btnLabel);
     this._deployEls = els;
   }
