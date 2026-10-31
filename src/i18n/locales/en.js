@@ -21,6 +21,7 @@ export default {
     level: 'Lv.{n}',
     costSoul: '{n} Soul',
     conquestLock: '🔒 Buy the "{node}" node on the Conquest Map',
+    unlockFromPanel: '{name} locked — unlock here or on the Conquest Map',
     hireFirst: 'Craft {name} first ({cost})',
     hirePlus: 'Craft +1 ({cost})',
     hirePlace: 'Place ({cost})',

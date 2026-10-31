@@ -387,7 +387,7 @@ export const CONFIG = {
       description: 'Unlocks Skeleton Archer',
       cost: { soul: 60 },
       effect: { type: 'unlock', target: 'archer' },
-      requires: [], x: 280, y: 320,
+      requires: [], x: 100, y: 440,
     },
     laserBoost1: {
       id: 'laserBoost1', name: 'Laser Boost I',
@@ -422,7 +422,8 @@ export const CONFIG = {
       description: '+30% Archer Damage',
       cost: { soul: 300 },
       effect: { type: 'defenderBoost', target: 'archer', stat: 'damage', value: 0.3 },
-      requires: ['defenderAura'], x: 480, y: 200,
+      // Archer Unlock'tan BİR SONRA (K40): önce archer açılır, sonra ustalığı alınır.
+      requires: ['archerUnlock'], x: 280, y: 440,
     },
     metaGain: {
       id: 'metaGain', name: 'Meta Boost',

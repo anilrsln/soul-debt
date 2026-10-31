@@ -31,6 +31,34 @@ const ConquestManager = {
     return true;
   },
 
+  /** Bir defender tipini açan unlock node'unun id'si (effect.type==='unlock' && target===type). */
+  unlockNodeIdFor(type) {
+    for (const [id, node] of Object.entries(CONFIG.CONQUEST_NODES)) {
+      if (node.effect?.type === 'unlock' && node.effect.target === type) return id;
+    }
+    return null;
+  },
+
+  /** Bir tipin unlock node'u şu an satın alınabilir mi? (gereksinim + maliyet) */
+  canUnlockFromPanel(type) {
+    const id = this.unlockNodeIdFor(type);
+    return id ? this.canPurchase(id) : false;
+  },
+
+  /** Bir tipin unlock node'unun maliyeti (panelde göstermek için). */
+  unlockCostFor(type) {
+    const id = this.unlockNodeIdFor(type);
+    return id ? CONFIG.CONQUEST_NODES[id]?.cost : null;
+  },
+
+  /** Panelden unlock: o tipin conquest node'unu satın al (map ile TEK ve AYNI işlem — K40).
+   *  Böylece map'ten de panelden de açılabilir, biri açılınca diğeri de açık olur, çift ödeme yok. */
+  purchaseUnlockFor(type) {
+    const id = this.unlockNodeIdFor(type);
+    if (!id) return false;
+    return this.purchase(id);
+  },
+
   /** Node satın al. */
   purchase(nodeId) {
     if (!this.canPurchase(nodeId)) return false;

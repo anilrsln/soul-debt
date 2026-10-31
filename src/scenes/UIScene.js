@@ -5,6 +5,7 @@ import UpgradeManager from '../systems/UpgradeManager.js';
 import EconomyManager from '../systems/EconomyManager.js';
 import SoulDebtManager from '../systems/SoulDebtManager.js';
 import PrestigeManager from '../systems/PrestigeManager.js';
+import ConquestManager from '../systems/ConquestManager.js';
 import { t, toggleLocale, getLocale } from '../i18n/index.js';
 
 /**
@@ -223,14 +224,50 @@ export default class UIScene extends Phaser.Scene {
     const info = UpgradeManager.getDefenderUpgradeInfo(this.activeTab);
     const startX = 10, startY = this.panelY + 32;
 
-    // Conquest kilidi (Cannon / Frost / Catapult)
+    // Conquest kilidi: panelden de unlock edilebilir (map ile aynı node — K40). Node'un
+    // gereksinimleri karşılanmışsa "Aç" butonu; değilse map'e yönlendiren ipucu.
     if (info.conquestLocked) {
-      const nodeName = t(`ui.nodeHint.${this.activeTab}`) || t('ui.nodeHint.default');
-      const lockText = this.add.text(CONFIG.CANVAS_WIDTH / 2, startY + 30,
-        t('ui.conquestLock', { node: nodeName }),
-        this.textStyle(12, '#888888')
-      ).setOrigin(0.5).setDepth(102);
-      this.upgradeElements.push(lockText);
+      const type = this.activeTab;
+      const nodeName = t(`ui.nodeHint.${type}`) || t('ui.nodeHint.default');
+      const canUnlock = ConquestManager.canUnlockFromPanel(type);
+      const nodeId = ConquestManager.unlockNodeIdFor(type);
+      const available = nodeId ? ConquestManager.isAvailable(nodeId) : false;
+
+      if (available) {
+        // Gereksinimler tamam → panelden açılabilir. Buton maliyeti conquest node'undan.
+        const cost = ConquestManager.unlockCostFor(type);
+        const infoText = this.add.text(CONFIG.CANVAS_WIDTH / 2, startY + 18,
+          t('ui.unlockFromPanel', { name: t(`defender.${type}`) }),
+          this.textStyle(12, '#aaaaaa')
+        ).setOrigin(0.5).setDepth(102);
+        this.upgradeElements.push(infoText);
+
+        const bx = CONFIG.CANVAS_WIDTH / 2, by = startY + 48;
+        const bg = this.add.rectangle(bx, by, 150, 28, canUnlock ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED, 1)
+          .setDepth(102).setInteractive({ useHandCursor: true });
+        const label = this.add.text(bx, by, t('ui.unlock', { cost: this.formatCost(cost) }),
+          this.textStyle(10, canUnlock ? '#66ff66' : '#666666')).setOrigin(0.5).setDepth(103);
+        bg.on('pointerdown', () => {
+          if (ConquestManager.purchaseUnlockFor(type)) {
+            this.flashButton(bg);
+            this.panelDirty = true;
+            this.game.events.emit('sfx', 'hire');
+            this.game.events.emit('conquest-node-purchased'); // map açıksa yenilensin
+          } else {
+            this.game.events.emit('sfx', 'uiDenied');
+          }
+        });
+        bg.on('pointerover', () => { if (canUnlock) bg.setFillStyle(0x2a8a2a); });
+        bg.on('pointerout', () => bg.setFillStyle(canUnlock ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED));
+        this.upgradeElements.push(bg, label);
+      } else {
+        // Önce gereksinim node'ları gerekiyor → map'e yönlendir.
+        const lockText = this.add.text(CONFIG.CANVAS_WIDTH / 2, startY + 30,
+          t('ui.conquestLock', { node: nodeName }),
+          this.textStyle(12, '#888888')
+        ).setOrigin(0.5).setDepth(102);
+        this.upgradeElements.push(lockText);
+      }
       return;
     }
 

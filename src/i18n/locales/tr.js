@@ -24,6 +24,7 @@ export default {
     level: 'Lv.{n}',
     costSoul: '{n} Soul',
     conquestLock: '🔒 Fetih Haritası\'nda "{node}" düğümünü satın al',
+    unlockFromPanel: '{name} kilitli — buradan veya Fetih Haritası\'ndan aç',
     hireFirst: 'Önce {name} ör ({cost})',
     hirePlus: '+1 Ör ({cost})',
     hirePlace: 'Yerleştir ({cost})',
