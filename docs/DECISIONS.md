@@ -362,6 +362,9 @@ hissi.
   ama ikisi AYNI conquest node'unu satın alır (ConquestManager.purchaseUnlockFor). Biri açılınca diğeri
   de açık görünür, ÇİFT ÖDEME YOK. Panelde node gereksinimleri karşılanmışsa "Aç (maliyet)" butonu;
   değilse map'e yönlendirir.
+  **(K42 ile REVİZE: panelden unlock SATIN ALMA kaldırıldı — unlock artık yalnız conquest map'ten.
+  K41 çekirdeği, necromancer hariç tüm kadronun conquest-gate olması, korunur; yalnız çift-giriş
+  kolaylığı düştü. Panelde kilitli birim artık satın-alma değil map'e yönlendirme gösterir.)**
 - **archerUnlock → archerMastery sırası:** önce unlock, sonra ustalık (requires zinciri).
 
 Kapsam: GameState archer'a canBeHired:false (3 reset yolu); EconomyManager/UpgradeManager conquest-lock
@@ -372,6 +375,43 @@ unlockCostFor/purchaseUnlockFor; UIScene panel unlock butonu; i18n unlockFromPan
 K22 kadrosu 6→7'ye çıktı. bluemage: kontrol büyücüsü (ranged), yavaşlatma + üst üste X vuruşta dondurma
 (frost stack, zincir YOK, düşük hasar). mage saf-hasara ayrıldı (onHitEffect kaldırıldı, dmg artırıldı,
 turuncu bolt); slow/freeze kimliği bluemage'e taşındı. conquest: bluemageUnlock. (2026-10-28.)
+
+### K42 — Conquest map TEK kazanım ekranı (unlock + signature); panel = işletme (K41 revize)
+**Karar (Anıl, 2026-10-31):** İki ekranın (conquest map + alt panel) iş bölümü netleştirildi. Üç olasılık
+tartışıldı: (1) signature'ı da unlock gibi iki ekrandan açılabilir yap, (2) unlock'ı panelden kaldır →
+map tek kazanım ekranı, (3) K41 hali kalsın. **Olasılık 2 seçildi.**
+
+- **Tek cümlelik kural:** *Kazan (unlock + signature) = conquest map; işlet (stat upgrade + hire/craft +
+  sayı) = panel.* Her ekranın tek işi var, sıfır örtüşme.
+- **Unlock artık YALNIZ map'ten.** K41'in panel-unlock çift-girişi (purchaseUnlockFor satın-alma butonu)
+  KALDIRILDI. K41 çekirdeği korunur: necromancer hariç tüm kadro conquest-gate (archerUnlock dahil).
+  Yalnız ikincil kolaylık (panelden satın alma) düştü.
+- **Signature (özel yetenek) node'ları da yalnız map'ten.** Signature'lar ağacın ortasında, prerequisite'li
+  node'lar; ağaç bağlamında (ne gerekti / neye açılıyor görünür) satın alınmaları doğru. Panele taşınmaz.
+- **Panelde kilitli birim → map'e YÖNLENDİR** (bilgilendirici, ikinci satın-alma yolu değil): "Kilitli —
+  Conquest Map'ten aç" + map'i açan buton. Mevcut "gereksinim karşılanmadı → map'e git" yolu (UIScene)
+  tüm kilitli birimlere genişler.
+
+**Gerekçe:**
+- **Map = tek ilerleme omurgası (K21).** Panelden her şeyi yapabilmek map'i skip-edilebilir süse çevirir;
+  map'in asıl değeri prerequisite zincirini ve "soul'u nereye?" genel görünümünü GÖSTERMESİ. Olasılık 1
+  bu yüzden reddedildi (R15).
+- **İki stat-yüzeyi örtüşmesi çözülür.** Oyunda zaten İKİ stat sistemi vardı: panel (UpgradeManager —
+  per-birim damage/fireRate/range, tekrarlı, oyuncu-öncelikli) VE conquest (defenderBoost — tek-seferlik
+  "+% birim statı"). Aynı işi iki yerde yapmak kafa karıştırıcıydı. Olasılık 2 işi ayırır: stat-grind
+  yalnız panel, kazanım yalnız map.
+- **Öğrenilebilirlik:** oyuncu kuralı tek cümlede söyler ("yeni şey → map, güçlendir → panel").
+
+**Takip (henüz AÇIK — conquest-reorg kapatır):** per-birim stat-grind'i tümüyle panele taşıma + generic
+"+% birim statı" conquest node'larını kaldırma (laserBoost1/2, archerMastery, cannonPower1 — işlerini
+panel yapar; global/ekonomi node'ları defenderAura/bossPenetration/soulGain/metaGain/kingsDecree KALIR) +
+melee birimlere (golem/bruiser) panelde `hp`+`fireRate` ekleme. Bunlar K42 prensibinin uygulaması;
+Anıl'ın onayıyla conquest-reorg node listesinde netleşir.
+
+**Kapsam (kod):** UIScene renderUpgradePanel — kilitli birimde unlock-satın-alma butonu yerine map
+yönlendirmesi; ConquestManager purchaseUnlockFor/canUnlockFromPanel satın-alma için KULLANILMAZ
+(yönlendirme yardımcısına iner veya kaldırılır); signature node'ları panelde ASLA görünmez; i18n
+ui.unlockFromPanel yönlendirme metnine döner.
 
 ---
 
@@ -422,3 +462,10 @@ Sorun: (a) dolaylı — oyuncu neden yavaşladığını anlamaz; (b) ekonomi zat
 ölünce zaten az kill olur → çifte ceza hissi. Yerine borç yalnız diriltme maliyetini çarpar
 (doğrudan, okunur). "İkisi birden" (hem kazanım yavaşlat hem diriltme pahalandır) da playtest'te
 aşırı sert bulunacağı için MVP'ye alınmadı.
+
+### R15 — Signature'ı (ve her kazanımı) panelden de açılabilir yapmak (Olasılık 1)
+K42'de signature'ın da unlock gibi iki ekrandan açılması reddedildi. Panelden her kazanımı yapabilmek
+(a) map'i skip-edilebilir süse çevirir — K21'in "tek ilerleme omurgası" niyetini zedeler; map'in değeri
+prerequisite zincirini ve genel görünümü GÖSTERMESİdir, (b) signature'ı ağaç/prerequisite bağlamından
+koparır (oyuncu neyin gerektiğini / neye açıldığını görmeden alır), (c) zaten yoğun paneli daha da
+kalabalıklaştırır. Yerine Olasılık 2 (K42): map tek kazanım ekranı, panel tek işletme ekranı.

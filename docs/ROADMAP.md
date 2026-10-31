@@ -139,7 +139,7 @@ Kalan içerik (Faz G → asset/lore):
 - [ ] i18n: TR + EN parite (lore ayrı yazılır, birebir çeviri değil)
 
 ### Faz I — Kontrol Sistemi + Deploy Fazı + Conquest-Gate 🟡 (2026-10-28/31)
-Bu oturumlarda eklenen oynanış sistemleri. Detay DECISIONS K38-K41.
+Bu oturumlarda eklenen oynanış sistemleri. Detay DECISIONS K38-K42.
 - [x] **Kontrol (K38):** sol-tık seç/bırak, sağ-tık komut (yürü/saldır/iyileştir). Tüm birimler
       hareket eder (necromancer dahil). Komut hedefi ölene/yeni komuta kadar sadık; kovalama +
       hareket halinde ateş; melee savaştan sonra başladığı yere dönmez.
@@ -147,8 +147,12 @@ Bu oturumlarda eklenen oynanış sistemleri. Detay DECISIONS K38-K41.
 - [x] **Deploy fazı (K39):** her floor başı sıfırdan dizilim, ekip bara toplanır (kıdem korumalı park),
       kartla diz, "BAŞLA". Necromancer karttan ZORUNLU (otomatik yok). Savaşta craft edilen yerleştirilebilir.
 - [x] **Necromancer mermi (K40):** beam yerine tek-tek mor ruh mermisi (soulBolt). Flick düzeldi.
-- [x] **Conquest-gate (K41):** tüm kadro (necromancer hariç) conquest'ten açılır; panel + map senkron
-      unlock (tek node, çift ödeme yok). archer da conquest'e bağlandı (archerUnlock → archerMastery).
+- [x] **Conquest-gate (K41):** tüm kadro (necromancer hariç) conquest'ten açılır. archer da conquest'e
+      bağlandı (archerUnlock → archerMastery).
+- [~] **İki ekran iş bölümü (K42 — K41 revize):** Olasılık 2 seçildi. Conquest map = TEK kazanım ekranı
+      (unlock + signature); panel = işletme (stat upgrade + hire/craft + sayı). Panelden unlock satın alma
+      KALDIRILIR → kilitli birim map'e yönlendirilir. **Conquest-reorg ile uygulanacak** (node grafiği
+      3-kolon yeniden düzeni + generic "+% stat" node temizliği + melee panel hp/fireRate — açık kalemler).
 - [ ] **Sürükle-bırak dizme (Deploy Parça 4):** kartı tutup sahaya sürükle. Şu an seç-sağtık çalışıyor;
       sürükle-bırak PARK/kalan tek parça.
 
