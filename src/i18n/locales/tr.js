@@ -39,7 +39,7 @@ export default {
     confirm: 'ONAYLA',
     cancel: 'VAZGEÇ',
     // Nodehint (kilitli sekme ipucu)
-    nodeHint: { golem: 'Golem Açılışı', mage: 'Büyücü Açılışı', bruiser: 'Bruiser Açılışı', cleric: 'Şifacı Açılışı', bluemage: 'Buz Büyücüsü Açılışı', default: 'Açılış' },
+    nodeHint: { archer: 'Okçu Açılışı', golem: 'Golem Açılışı', mage: 'Büyücü Açılışı', bruiser: 'Bruiser Açılışı', cleric: 'Şifacı Açılışı', bluemage: 'Buz Büyücüsü Açılışı', default: 'Açılış' },
     langBtn: 'TR',
   },
   conquestMap: {
@@ -178,6 +178,7 @@ export default {
     soulGain:        { name: 'Soul Kazanımı',         description: '+%20 Soul Kazanımı' },
     archerMastery:   { name: 'Okçu Ustalığı',         description: '+%30 Okçu Hasarı' },
     metaGain:        { name: 'Meta Takviyesi',        description: '+%30 Meta Kazanımı' },
+    archerUnlock:    { name: 'Okçu Açılışı',          description: 'İskelet Okçu açılır — temel menzilli birim' },
     cannonUnlock:    { name: 'Golem Açılışı',         description: 'Golem savunucusunu açar' },
     cannonPower1:    { name: 'Golem Gücü I',          description: '+%30 Golem Hasarı' },
     archerSplash:    { name: 'Okçu Ustalığı',         description: 'Her 5. ok menzildeki düşmanlara %40 alan hasarı verir' },

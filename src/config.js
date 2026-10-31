@@ -380,6 +380,15 @@ export const CONFIG = {
 
   // Conquest Map — Skill Tree node'ları
   CONQUEST_NODES: {
+    // Archer açılışı — kök düğüm (ucuz, erken). Archer artık conquest'ten açılır; başta craft
+    // edilemez (K40: tüm kadro conquest'e bağlı, necromancer hariç).
+    archerUnlock: {
+      id: 'archerUnlock', name: 'Archer Unlock',
+      description: 'Unlocks Skeleton Archer',
+      cost: { soul: 60 },
+      effect: { type: 'unlock', target: 'archer' },
+      requires: [], x: 280, y: 320,
+    },
     laserBoost1: {
       id: 'laserBoost1', name: 'Laser Boost I',
       description: '+25% Laser Damage',

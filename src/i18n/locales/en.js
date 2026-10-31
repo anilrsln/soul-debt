@@ -34,7 +34,7 @@ export default {
     prestigePermanent: 'Multiplier is permanent.',
     confirm: 'PRESTIGE',
     cancel: 'CANCEL',
-    nodeHint: { golem: 'Golem Unlock', mage: 'Mage Unlock', bruiser: 'Bruiser Unlock', cleric: 'Cleric Unlock', bluemage: 'Frost Mage Unlock', default: 'Unlock' },
+    nodeHint: { archer: 'Archer Unlock', golem: 'Golem Unlock', mage: 'Mage Unlock', bruiser: 'Bruiser Unlock', cleric: 'Cleric Unlock', bluemage: 'Frost Mage Unlock', default: 'Unlock' },
     langBtn: 'EN',
   },
   conquestMap: {
@@ -168,6 +168,7 @@ export default {
     soulGain:        { name: 'Soul Gain',               description: '+20% Soul Gain' },
     archerMastery:   { name: 'Archer Mastery',          description: '+30% Archer Damage' },
     metaGain:        { name: 'Meta Boost',              description: '+30% Meta Gain' },
+    archerUnlock:    { name: 'Archer Unlock',           description: 'Unlocks Skeleton Archer — basic ranged unit' },
     cannonUnlock:    { name: 'Golem Unlock',            description: 'Unlocks Golem defender' },
     cannonPower1:    { name: 'Golem Power I',           description: '+30% Golem Damage' },
     archerSplash:    { name: 'Archer Mastery',          description: 'Every 5th arrow deals 40% splash damage to nearby enemies' },

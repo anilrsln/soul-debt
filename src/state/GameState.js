@@ -17,7 +17,7 @@ const GameState = {
       damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 },
     },
     archer: {
-      unlocked: false, count: 0, maxCount: 5,
+      unlocked: false, canBeHired: false, count: 0, maxCount: 5,
       damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 },
     },
     golem: {
@@ -74,7 +74,7 @@ export function resetAll(state) {
   state.wave = { current: 1, enemiesInWave: 5, enemiesSpawned: 0, enemiesKilled: 0, inProgress: true };
   state.defenders = {
     necromancer: { damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
-    archer: { unlocked: false, count: 0, maxCount: 5, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
+    archer: { unlocked: false, canBeHired: false, count: 0, maxCount: 5, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
     golem: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 } },
     mage: { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } },
     bruiser: { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 } },
@@ -98,7 +98,7 @@ export function resetForPrestige(state) {
   state.soulDebt = { current: 0 }; // borç koşu-içi: prestige'de sıfırlanır (K33 model A)
   state.wave = { current: 1, enemiesInWave: 5, enemiesSpawned: 0, enemiesKilled: 0, inProgress: true };
   state.defenders.necromancer = { damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
-  state.defenders.archer = { unlocked: false, count: 0, maxCount: 5, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
+  state.defenders.archer = { unlocked: false, canBeHired: false, count: 0, maxCount: 5, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
   state.defenders.golem = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } };
   state.defenders.mage = { unlocked: false, canBeHired: false, count: 0, maxCount: 3, damage: { level: 1 }, fireRate: { level: 1 }, range: { level: 1 } };
   state.defenders.bruiser = { unlocked: false, canBeHired: false, count: 0, maxCount: 2, damage: { level: 1 }, blastRadius: { level: 1 }, reloadSpeed: { level: 1 } };
