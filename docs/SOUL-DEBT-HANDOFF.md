@@ -70,45 +70,58 @@ Repo'nun docs/ klasöründeki dosyalar tüm tasarımı içerir — başka yere b
   gereksiz işi ve yarım bırakılmış kararları sevmez. Açık uç çoğaltmak yerine
   karar kapatmayı tercih eder.
 
-## Mevcut Durum (2026-10-23 — Faz A-F TAMAM, Faz G çoğu bitti)
-Oyunun tam döngüsü çalışıyor + GitHub Pages'te yayında. Faz A-F ve Faz G'nin kadro/
-sistem kısmı bitti. Detaylı durum ROADMAP.md'de; özet:
+## Mevcut Durum (2026-10-31 — Faz A-G TAMAM, Faz I (kontrol/deploy) TAMAM, Faz H kaldı)
+Oyunun tam döngüsü çalışıyor + GitHub Pages'te yayında. Detaylı durum ROADMAP.md'de; özet:
 
 **TAMAMLANAN (Faz A-F):** lava sök, ekonomi (soul+3meta), necromancer+can havuzu,
-soul-debt+oto-diriltme, dur-dövüş+serbest yerleşim (K24/K27, lane söküldü), prestige
-(iki yol+Model Y).
+soul-debt+oto-diriltme, dur-dövüş, prestige (iki yol+Model Y).
 
-**TAMAMLANAN (Faz G — bu oturumlar):**
+**TAMAMLANAN (Faz G — kadro/sistem/ritim):**
 - **Veri-odaklı mimari:** tek `Defender` sınıfı + GameScene registry (defenderKeys döngüsü).
-  Yeni karakter = config'e obje. necromancer registry DIŞI (kendi entity'si).
-- **Kadro (6 oyuncu birimi):** necromancer (ranged, can havuzu), archer (ranged),
-  golem (melee tank), bruiser (melee ön-saf, hızlı), mage (ranged AoE), cleric (support/heal).
-  config.DEFENDERS; combatType melee/ranged/support. veteranBonus{damage,hp,special}.
-- **Düşman kimliği (K23):** ghoul/gargoyle/imp/soulVessel/cursedKnight/warden/ooze/cultist
-  + 5 boss (boss_* dokunulmadı). config.ENEMIES.
-- **Veteran sistemi (K37):** VeteranManager — soul-bazlı kıdem, eşit dağıtım, üstel eşik;
-  diriltme kıdemi KORUR, iptal ("✕ bırak") SIFIRLAR. Bu diriltmenin anlamıdır.
-- **Kat-arası tam-duraklama fazı (K28):** kat sonu savaş durur, "İN" + geçiş kartı.
-- **Achievements:** güncel kadroya göre + veteran/kat temalı yeniler.
-- **SaveManager v9:** eski anahtar map+temizle. Ölü kod silindi (PerkManager/LANE_COUNT/
-  prestigeUnlock/prestige.unlocked).
-- **Çok-durumlu animasyon altyapısı:** AssetProvider states{idle,walk,attack,hurt,death};
-  Defender+Enemy durum geçişleri; config-driven; geriye-uyumlu.
-- **5 karakter sprite'ı bağlandı (placeholder):** necromancer/archer/bruiser/golem/cleric.
-  ChatGPT sheet'leri Python/PIL ile işlendi (ASSET-BRIEF §9 yöntem).
+  Yeni karakter = config.DEFENDERS'a obje. necromancer registry DIŞI (kendi entity'si, Necromancer.js).
+- **Kadro (7 oyuncu birimi):** necromancer (ranged, can havuzu, başlangıç birimi), archer (ranged),
+  golem (melee tank), bruiser (melee ön-saf, hızlı), mage (ranged saf-hasar), cleric (support/heal),
+  **bluemage/Frost Mage (ranged kontrol — yavaşlat+frost-stack dondur).** combatType melee/ranged/support.
+- **Düşman kimliği (K23):** ghoul/gargoyle/imp/soulVessel/cursedKnight/warden/ooze/cultist + 5 boss.
+- **Veteran sistemi (K37):** VeteranManager — soul-bazlı kıdem, eşit dağıtım; diriltme KORUR, iptal SIFIRLAR.
+- **Kat-arası tam-duraklama (K28):** kat sonu "İN" + geçiş kartı. SaveManager v9. Achievements güncel.
+- **Çok-durumlu animasyon:** AssetProvider states{idle,walk,attack,hurt,death}; config-driven, geriye-uyumlu.
+- **7 karakter sprite'ı bağlandı (placeholder):** necromancer/archer/bruiser/golem/cleric/mage/bluemage.
 
-**Kararlar: K1-K37, reddedilenler R1-R14 (DECISIONS.md). SaveManager v9.**
+**TAMAMLANAN (Faz I — kontrol & deploy & conquest, bu oturum 2026-10-28/31):**
+- **Kontrol sistemi (K38):** sol-tık seç / boş-alana-sol-tık bırak; sağ-tık komut (yürü/saldır/
+  iyileştir). TÜM birimler hareket eder (necromancer dahil). Komut hedefi ölene/yeni komuta kadar
+  sadık; menzilli birim kaçanı kovalar + hareket halinde ateş; melee savaş sonrası yerinde kalır.
+- **Cleric hedefli heal (K38):** dost birime sağ-tık → full can olana kadar kilitli iyileştirme.
+- **Deploy fazı (K39):** her floor başı sıfırdan dizilim. Ekip bara toplanır (KIDEM KORUMALI park
+  sistemi — destroy YOK), kartla diz (sol-tık seç kart → sağ-tık saha), "BAŞLA". Necromancer karttan
+  ZORUNLU (otomatik/default necromancer YOK). Savaşta craft edilen de yerleştirilebilir (deployedCount).
+- **Necromancer mermi (K40):** beam KALDIRILDI → tek-tek mor ruh mermisi (soulBolt). Flick düzeldi.
+  (laserChain/beam özel yetenekleri uykuda, ölü kod olarak duruyor.)
+- **Conquest-gate (K41):** tüm kadro (necromancer hariç) conquest'ten açılır; panel + map SENKRON
+  unlock (tek node satın alır, çift ödeme yok). archer da conquest'e bağlı (archerUnlock → archerMastery).
 
-## SIRADAKİ İŞ — Faz G içerik kalanı → Faz H cila/MVP
+**Kararlar: K1-K41, reddedilenler R1-R14 (DECISIONS.md). SaveManager v9.**
+
+## SIRADAKİ İŞ — kalan parçalar → Faz H cila/MVP
 Öncelik (Anıl'la netleştir):
-1. **mage sprite'ı** (son oyuncu birimi placeholder) + **8 düşman sprite'ı** — asset Anıl'dan
-   gelir, ASSET-BRIEF §9 PIL yöntemiyle bağlanır. Düşman anahtarı `enemy-<key>`.
-2. **Lore** (boss banner, bestiary, idle necromancer replikleri) + spell efekt sprite'ları.
-3. **Faz H — denge playtest (Anıl oynar):** veteran kıdem hızı, cleric heal, borç eğrisi,
-   kat zorluğu — HEPSİ placeholder değer, config'de, oynamadan ayarlanamaz. MVP bitiş çizgisi.
+1. **Sürükle-bırak dizme (Deploy Parça 4):** kartı tutup sahaya sürükleme. Şu an seç-sağtık
+   çalışıyor; bu tek kalan deploy parçası. GameScene _rebuildDeployBar kartlarına Phaser drag ekle,
+   drop'ta _deploySlotAt(slot, worldX, worldY). (İsteğe bağlı — seç-sağtık zaten tam işlevsel.)
+2. **8 düşman sprite'ı** — asset Anıl'dan gelir, ASSET-BRIEF §9 PIL yöntemiyle bağlanır. Anahtar
+   `enemy-<key>`. + spell efekt sprite'ları (soul bolt impact, freeze ring).
+3. **Lore** (boss banner, bestiary, idle necromancer replikleri) — i18n TR+EN.
+4. **Faz H — denge playtest (Anıl oynar):** veteran kıdem hızı, cleric heal, borç eğrisi, kat zorluğu,
+   essence/meta akışı (golem/cleric/bluemage essence ister — erken floor'da kıt olabilir), bluemage
+   frost-stack eşiği, necromancer mermi dengesi. HEPSİ config'de placeholder. **MVP bitiş çizgisi.**
 
-**Park (şimdilik DEĞİL):** harita engel-çarpışması + A*, ranged otonomi cilası, absorbe cilası,
-yeni düşman arketipleri, endless/NG+, ses/müzik. (ROADMAP park listesi.)
+**Açık denge kalemi (Anıl'ın dikkatine):** essence ekonomisi — golem/cleric/bluemage craft'ı essence
+ister ama essence'ı sadece ileri düşmanlar (cursedKnight/warden/ooze/cultist) az miktar düşürür. Erken
+floor'da bu birimler craft edilemeyebilir. Çözüm playtest'te: essence drop'u artır VEYA craft maliyetini
+düşür (DECISIONS'ta açık bırakıldı). Dev panelde +100 essence/crystal butonları test için var.
+
+**Park (şimdilik DEĞİL):** harita engel-çarpışması + A*, absorbe cilası, yeni düşman arketipleri,
+endless/NG+, ses/müzik, necromancer özel yetenekleri (laserChain mermiye uyarlama). (ROADMAP park.)
 
 ## Çalışma Biçimi (ÖNEMLİ — Anıl'ın tercihleri)
 - **GIT:** commit'i SEN atarsın (src/docs), ama PUSH Anıl'da (bu repo için Claude GitHub App

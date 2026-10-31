@@ -287,6 +287,92 @@ Diriltme/borç/ekonomi çekirdeğini değiştirdiği için cleric'ten (Aşama 4)
 (Aşama 5) ÖNCE yapılır — cleric'in heal mantığı bu eksene oturur. Açık denge parametreleri:
 soul→kıdem dönüşüm oranı, üstel eşik eğrisi, veteranBonus oranları (hepsi config, playtest).
 
+
+### K38 — Kontrol sistemi: sol-tık seç/bırak, sağ-tık komut (hareket/saldır/iyileştir)
+**Sorun (Anıl, 2026-10-28):** K24/K36 yerleştirme akışı kafa karıştırıcıydı (sol-tık hem seç hem
+taşı, seçim her taşımadan sonra düşüyordu). Anıl standart bir RTS kontrol şeması istedi.
+
+**Karar — iki tuş net ayrışır:**
+- **Sol-tık = YALNIZ seçim.** Karaktere sol-tık → seç (seçim halkası, birimi takip eder). Karakter
+  DIŞI boş alana sol-tık → seçimi bırak (selected=false'ın TEK yolu). Seçim taşımadan SONRA DÜŞMEZ —
+  aynı birim tekrar seçilmeden arka arkaya komut alabilir.
+- **Sağ-tık = komut** (seçili birim varken): boş zemine → oraya yürü; düşmana → saldır; (cleric ise)
+  dost birime → iyileştir. Tarayıcı context-menu'sü kapatılır (disableContextMenu).
+- **Tüm birimler hareket eder, necromancer DAHİL.** Necromancer artık sabit kale değil — seçilip
+  taşınabilir, komutla düşmana yürür. (Anıl: "tüm yönetebildiğimiz karakterler hareket edebilmeli.")
+- **Komut hedefi SADIK:** saldır/iyileştir komutu, hedef ölene/dolana veya YENİ komut verilene kadar
+  sürer. Yeni komut eski görevi (eski hedef, melee _engaged, yürüyüş, sticky target) TAMAMEN bırakır.
+- **Kovalama + hareket halinde ateş:** menzilli birim komut hedefini ölene kadar kovalar; menzildeyse
+  (yürüyor olsa bile) ateş eder. Kaçan düşmanı yakalar. Menzilin %90'ına kadar yürür (kenar titremesi
+  + yetişme). Hedef ölünce otomatik en yakına geçer, kimse yoksa son yerinde idle bekler.
+- **Melee savaştan sonra başladığı yere DÖNMEZ** (Anıl): düşman kalmayınca son durduğu yerde kalır
+  (çıpa oraya sabitlenir). Taşıma komutu verilince çıpaya yürür.
+- **Cleric hedefli iyileştirme:** dost birime sağ-tık → o birime kilitli şifa; cleric şifa menzili
+  kenarına yürür, hedef FULL can olana kadar sadece onu iyileştirir, sonra otomatiğe döner. Düşmana
+  sağ-tık cleric için yok sayılır (saldıramaz).
+
+Kapsam: Defender.commandedTarget + commandedHealTarget; GameScene _commandMove/_commandAttack/
+_commandHeal + _unitAt/_enemyAt. K24/K36 "ör & yerleştir" akışı savaş-içi craft için korunur.
+
+### K39 — Deploy (dizme) fazı: her floor başı sıfırdan dizilim + necromancer karttan zorunlu
+**Karar (Anıl, 2026-10-28):** Her floor başında (floor 1 wave 1 DAHİL, sonra her 10 wave'de alt
+dungeon'a inince) bir **kurulum/dizme fazı** gelir. Tüm ekip (necromancer dahil) sahadan toplanır,
+ekranın en altındaki deploy barına kart olarak düşer; oyuncu sahaya sıfırdan dizer, "BAŞLA" ile wave
+başlar.
+
+- **Her floor başında HER ŞEY bara döner, sıfırdan dizilir** (geçen floor dizilimi korunmaz — Anıl A).
+- **"BAŞLA" butonuyla** faz biter; her birimi dizmek zorunlu değil — dizilmeyen ekipte kalır, sahaya
+  çıkmaz, sonraki floor fazında yine barda. (Anıl: dizilmeyen "sahada yer almaz, ekipte kalır.")
+- **Her kopya ayrı kart** (3 archer = 3 kart, her biri kendi Lv/kıdemiyle — Anıl A).
+- **Yerleştirme:** kartı sol-tık seç → sahaya sağ-tık yerleştir. (Sürükle-bırak PARK — Parça 4.)
+- **Craft faz sırasında AÇIK:** yeni birim craft edilince anında bara kart olarak düşer (Anıl).
+- **Necromancer ZORUNLU dizilir (K39/düzeltme):** Oyun necromancer'sız oynanamaz (ölürse game-over).
+  Necromancer dizilmeden BAŞLA çalışmaz ("Önce Necromancer'ı yerleştir" uyarısı). Otomatik/default
+  necromancer YOK — sadece karttan dizilen. (Anıl: "default necromancer'ı uçur.")
+- **KIDEM KORUNUR (kritik):** Deploy fazında birimler DESTROY EDİLMEZ — "park" sistemine alınır
+  (sprite gizlenir, nesne + veteranLevel korunur), dizilince park'tan sahaya geri konur. Yoksa her
+  floor kıdem sıfırlanırdı (K37 çöker). syncDefenders deploy fazında devre dışı; park sistemi yönetir.
+- **GameState.defenders[type].deployedCount:** sahada dizili sayı (count = sahip olunan toplam).
+  Tanımsızsa count'a düşer (geriye uyum). Savaşta craft → deployedCount++ (yoksa yeni birim yaratılmaz).
+
+Kapsam: WaveManager.isDeployPhase/start/endDeployPhase; GameScene _onDeployPhaseStart/End +
+_rebuildDeployBar + _deploySlotAt + park (_parked). Teknik tuzak: config'e spriteKey eklemek base
+Defender'ı sprite yaratmaya iter — necromancer'da bu "hayalet sprite" çift-spawn'a yol açtı, base'in
+sprite'ı constructor'da destroy edilerek çözüldü.
+
+### K40 — Necromancer tek-tek mermi atar (beam değil): mor ruh mermisi
+**Karar (Anıl, 2026-10-28):** Necromancer artık sürekli ışın (beam) yerine archer/mage gibi **tek
+tek mermi** atar — kendine özgü **mor ruh mermisi** (`soulBolt`, 0xb060ff). Gerekçe: necromancer artık
+hareketli menzilli bir birim (K38); sürekli beam onu "kale" kimliğine kilitliyordu + kovalarken
+animasyon flick ediyordu (menzilden çıkınca beam kesilip bağlanıyordu). Mermi: cooldown dolunca ateş,
+attack animasyonu atış başına BİR KEZ (0.3s pencere) → flick biter. Özel yetenekler (laserChain fetih
+düğümü, sürekli hasar) ŞİMDİLİK uykuda (Anıl: "basit tut") — beam kodu (drawBeam/applyDamage) ölü
+bırakıldı, sonra mermiye uyarlanabilir.
+
+### K41 — Tüm kadro conquest'ten açılır (necromancer hariç) + panel/map senkron unlock
+**Karar (Anıl, 2026-10-31):** Unlock tutarsızlığı düzeltildi. Önce archer tek başına conquest
+gerektirmiyordu (başta craft edilebilir), diğerleri conquest'e bağlıydı → "otomatik almışım gibi"
+hissi.
+
+- **Necromancer HARİÇ tüm birimler conquest'ten açılır** (archer dahil → yeni archerUnlock node'u,
+  kök, 60 soul). Necromancer başlangıç birimi, hep açık.
+- **Unlock = yalnız craft HAKKI** (ekonomi korunur): conquest'ten açarsın, soul+meta ile craft
+  edersin, deploy barına kart düşer. Otomatik bedava birim YOK. (Anıl, Yorum A.)
+- **İki giriş noktası, TEK işlem (Anıl):** Unlock hem conquest map'ten hem alt panelden yapılabilir,
+  ama ikisi AYNI conquest node'unu satın alır (ConquestManager.purchaseUnlockFor). Biri açılınca diğeri
+  de açık görünür, ÇİFT ÖDEME YOK. Panelde node gereksinimleri karşılanmışsa "Aç (maliyet)" butonu;
+  değilse map'e yönlendirir.
+- **archerUnlock → archerMastery sırası:** önce unlock, sonra ustalık (requires zinciri).
+
+Kapsam: GameState archer'a canBeHired:false (3 reset yolu); EconomyManager/UpgradeManager conquest-lock
+listesine archer; config.CONQUEST_NODES.archerUnlock; ConquestManager unlockNodeIdFor/canUnlockFromPanel/
+unlockCostFor/purchaseUnlockFor; UIScene panel unlock butonu; i18n unlockFromPanel + archerUnlock.
+
+### Not — 7. birim: Buz Büyücüsü / Frost Mage (bluemage) eklendi
+K22 kadrosu 6→7'ye çıktı. bluemage: kontrol büyücüsü (ranged), yavaşlatma + üst üste X vuruşta dondurma
+(frost stack, zincir YOK, düşük hasar). mage saf-hasara ayrıldı (onHitEffect kaldırıldı, dmg artırıldı,
+turuncu bolt); slow/freeze kimliği bluemage'e taşındı. conquest: bluemageUnlock. (2026-10-28.)
+
 ---
 
 ## Reddedilen Alternatifler (ve Neden)

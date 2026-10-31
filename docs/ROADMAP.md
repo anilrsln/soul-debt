@@ -17,8 +17,9 @@
 | D | Soul-debt sistemi + otomatik diriltme (üç ceza) | ✅ (birim-ölümü tetiği Faz E'de bağlandı) |
 | E | Dur-dövüş + oyuncu dizilimi + kat-arası kurulum fazı | 🟡 çekirdek kuruldu (kat-arası tam-duraklama fazı + harita engel-çarpışması cila) |
 | F | Prestige: iki yol (gönüllü/zorlanmış), Model Y çarpan | ✅ |
-| G | Ritim (kat döngüsü) + kadro (6 birim + veteran) + düşman kimliği + lore | 🟡 kadro+düşman TAMAM; kat döngüsü/lore/achievements kaldı |
-| H | Save version bump + denge + playtest cila | ⬜ |
+| G | Ritim (kat döngüsü) + kadro (7 birim + veteran) + düşman kimliği + lore | 🟡 kadro+düşman+kat döngüsü TAMAM; lore kaldı |
+| I | Kontrol sistemi (sol/sağ tık komut) + deploy fazı + conquest-gate | 🟡 çekirdek TAMAM; sürükle-bırak (deploy Parça 4) kaldı |
+| H | Save version bump + denge + playtest cila | ⬜ (asıl bitiş çizgisi) |
 
 ## Faz Detayları
 
@@ -125,13 +126,31 @@ Faz G içerik işleri (2026-10-18/23 arası TAMAMLANANLAR):
 - [x] **Conquest fix:** clericUnlock koordinat çakışması (frostUnlock ile aynı x480y560) giderildi
       → x660y680. Mage node'u görünür oldu, cleric+bruiser zinciri açıldı.
 
-Kalan içerik:
-- [ ] **mage sprite'ı** (son oyuncu birimi — placeholder) + **8 düşman sprite'ı** (ghoul/gargoyle/
-      imp/soulVessel/cursedKnight/warden/ooze/cultist). Aynı yöntemle bağlanır (PIL işleme).
-- [ ] Yeni düşman arketipleri + kat varyantları (mevcut 8 + boss temalandırma)
+Faz G ek işler (2026-10-28 TAMAMLANANLAR):
+- [x] **7. birim — Buz Büyücüsü / Frost Mage (bluemage):** kontrol büyücüsü, yavaşlat + frost-stack
+      dondur (zincir yok, düşük hasar). mage saf-hasara ayrıldı. conquest bluemageUnlock. (bkz. DECISIONS not)
+- [x] **mage + cleric + bluemage sprite'ları bağlandı** (placeholder). Oyuncu kadrosu TAM (7 birim).
+
+Kalan içerik (Faz G → asset/lore):
+- [ ] **8 düşman sprite'ı** (ghoul/gargoyle/imp/soulVessel/cursedKnight/warden/ooze/cultist). PIL
+      yöntemiyle bağlanır (ASSET-BRIEF §9). Düşman anahtarı `enemy-<key>`.
 - [ ] Lore: boss banner, bestiary, idle popup necromancer sesi
-- [ ] Spell efekt sprite'ları (A seçeneği — necromancer soul projectile/summon vb.)
+- [ ] Spell efekt sprite'ları (necromancer soul bolt impact, freeze ring vb.)
 - [ ] i18n: TR + EN parite (lore ayrı yazılır, birebir çeviri değil)
+
+### Faz I — Kontrol Sistemi + Deploy Fazı + Conquest-Gate 🟡 (2026-10-28/31)
+Bu oturumlarda eklenen oynanış sistemleri. Detay DECISIONS K38-K41.
+- [x] **Kontrol (K38):** sol-tık seç/bırak, sağ-tık komut (yürü/saldır/iyileştir). Tüm birimler
+      hareket eder (necromancer dahil). Komut hedefi ölene/yeni komuta kadar sadık; kovalama +
+      hareket halinde ateş; melee savaştan sonra başladığı yere dönmez.
+- [x] **Cleric hedefli iyileştirme (K38):** dost birime sağ-tık → full can olana kadar kilitli heal.
+- [x] **Deploy fazı (K39):** her floor başı sıfırdan dizilim, ekip bara toplanır (kıdem korumalı park),
+      kartla diz, "BAŞLA". Necromancer karttan ZORUNLU (otomatik yok). Savaşta craft edilen yerleştirilebilir.
+- [x] **Necromancer mermi (K40):** beam yerine tek-tek mor ruh mermisi (soulBolt). Flick düzeldi.
+- [x] **Conquest-gate (K41):** tüm kadro (necromancer hariç) conquest'ten açılır; panel + map senkron
+      unlock (tek node, çift ödeme yok). archer da conquest'e bağlandı (archerUnlock → archerMastery).
+- [ ] **Sürükle-bırak dizme (Deploy Parça 4):** kartı tutup sahaya sürükle. Şu an seç-sağtık çalışıyor;
+      sürükle-bırak PARK/kalan tek parça.
 
 ### Faz H — Cila
 - [ ] Save version bump + temiz başlangıç

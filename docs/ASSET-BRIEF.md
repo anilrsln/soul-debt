@@ -118,7 +118,7 @@ Kuru-mizah tonu: epik kötü büyücü değil, "yine mi bu iş" diyen yorgun bir
   walk, attack (menzilli soul atışı — asa kaldırıp mavi ışın/soul fırlatma), hurt, death.
   ChatGPT'nin verdiği necromancer sheet'i bu anahtara uyar.
 
-### 7.2 Oyuncu Birimleri — İSKELET ORDUSU (6 birim)
+### 7.2 Oyuncu Birimleri — İSKELET ORDUSU (7 birim: necromancer/archer/golem/bruiser/mage/cleric/bluemage)
 Hepsi kemik/dirilmiş estetiği; soğuk palet. Rolleri siluetten okunmalı.
 **Asset anahtarları KODDAKİ gerçek anahtarlardır — dosya adı bunlarla eşleşmeli.**
 
@@ -204,15 +204,17 @@ Defender ve Enemy durum geçişlerini otomatik yapar (yürü→walk, vuruş→at
 Sheet'te bir durum yoksa idle'a düşer (kırılmaz). Yani: sprite sheet'i üret → dosyayı koy → config
 ASSETS'e `frames` + ANIM_DEFS'e `states` gir. Entegrasyon adımları bana (kod) bırakılabilir.
 
-**BAĞLANAN SPRITE'LAR (2026-10-21/23, placeholder — final değil):**
-necromancer (192px), archer (96px), bruiser (96px), golem (112px), cleric (96px). Hepsi çok-durumlu
-(idle/walk/attack/hurt/death). `public/assets/units/` altında: necromancer.png, skeleton-archer.png,
-skeleton-bruiser.png, stone-golem.png, cleric.png. golem attack/death kareleri placeholder-kusurlu
-(taş parçacık dağılması otomatik kesmeyi zorladı). Necromancer kendi entity'si (Necromancer.js),
-animasyonu orada elle (ışın atarken attack, boşta idle).
+**BAĞLANAN SPRITE'LAR (2026-10-21/28, placeholder — final değil): 7 OYUNCU BİRİMİ TAM.**
+necromancer (192px), archer (96px), bruiser (96px), golem (112px), cleric (96px, 3-satır idle/walk/heal
+— cleric SALDIRMAZ, attack yerine heal state), mage (96px), bluemage/frost-mage (96px). Hepsi çok-durumlu
+(cleric hariç idle/walk/attack/hurt/death; cleric idle/walk/heal). `public/assets/units/`: necromancer.png,
+skeleton-archer.png, skeleton-bruiser.png, stone-golem.png, cleric.png, mage.png, frost-mage.png.
+golem attack/death kareleri placeholder-kusurlu (taş parçacık dağılması otomatik kesmeyi zorladı).
+Necromancer kendi entity'si (Necromancer.js), animasyonu orada elle (yürürken walk, atışta attack 0.3s,
+boşta idle — K40 mermi sistemiyle).
 
-**KALAN:** mage (son oyuncu birimi) + 8 düşman (ghoul/gargoyle/imp/soulVessel/cursedKnight/warden/
-ooze/cultist). Düşman asset anahtarı `enemy-<key>`.
+**KALAN:** 8 düşman (ghoul/gargoyle/imp/soulVessel/cursedKnight/warden/ooze/cultist). Düşman asset
+anahtarı `enemy-<key>`. + spell efekt sprite'ları (soul bolt impact, freeze ring).
 
 **SPRITE İŞLEME YÖNTEMİ (yeni agent için kritik):** ChatGPT sheet'leri doğrudan oyuna oturmaz
 (başlık metni, düzensiz frame aralıkları, checkerboard arka plan). Python/PIL ile işlenir:
