@@ -18,6 +18,10 @@ import AssetProvider from '../systems/AssetProvider.js';
 export default class Necromancer extends Defender {
   constructor(scene, x, y) {
     super(scene, 'necromancer', x, y);
+    // Base Defender, config.spriteKey eklendiğinden beri KENDİ sprite'ını yaratıyor (soul bolt
+    // için eklendi). Necromancer da aşağıda kendi sprite'ını yaratıp this.sprite'ı eziyordu →
+    // base'in sprite'ı ORTADA kalıyordu (silinemeyen "hayalet" necromancer). Base'inkini yok et.
+    this.sprite?.destroy();
     this.sprite = scene.add.sprite(x, y, 'defender-necromancer').setDepth(5);
     AssetProvider.applySprite(this.sprite, 'defender-necromancer');
     AssetProvider.playAnim(this.sprite, 'defender-necromancer', 'idle');
