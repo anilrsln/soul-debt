@@ -402,16 +402,31 @@ map tek kazanım ekranı, (3) K41 hali kalsın. **Olasılık 2 seçildi.**
   yalnız panel, kazanım yalnız map.
 - **Öğrenilebilirlik:** oyuncu kuralı tek cümlede söyler ("yeni şey → map, güçlendir → panel").
 
-**Takip (henüz AÇIK — conquest-reorg kapatır):** per-birim stat-grind'i tümüyle panele taşıma + generic
-"+% birim statı" conquest node'larını kaldırma (laserBoost1/2, archerMastery, cannonPower1 — işlerini
-panel yapar; global/ekonomi node'ları defenderAura/bossPenetration/soulGain/metaGain/kingsDecree KALIR) +
-melee birimlere (golem/bruiser) panelde `hp`+`fireRate` ekleme. Bunlar K42 prensibinin uygulaması;
-Anıl'ın onayıyla conquest-reorg node listesinde netleşir.
+**Uygulama (TAMAM — conquest-reorg, 2026-10-31):**
+- **3-kolon ağaç (14 node, eski 22'den):** Kolon 1 Necromancer & Komuta (soulGain→metaGain→metaGain2→
+  defenderAura→bossPenetration→kingsDecree1→kingsDecree2; ekonomi+global, unlock YOK); Kolon 2 Menzilli
+  (archerUnlock→archerSplash→mageUnlock→bluemageUnlock→clericUnlock); Kolon 3 Melee (golemUnlock→
+  bruiserUnlock). Kolon kökleri bağımsız (çapraz-gate yok): soulGain / archerUnlock / golemUnlock.
+- **Tematik id rename:** cannonUnlock→golemUnlock, frostUnlock→mageUnlock (frostUnlock aslında mage'i
+  açıyordu!), catapultUnlock→bruiserUnlock. archerSplash = archer signature (requires archerUnlock).
+- **Generic "+% birim statı" node'ları KALDIRILDI** (laserBoost1/2, archerMastery, cannonPower1) — işleri
+  artık panel grind'i. laserChain node'u da çıkarıldı (uyuyan özellik; ConquestManager getter null döner,
+  Necromancer.js çağrısı kırılmaz). Global/ekonomi node'ları (defenderAura, bossPenetration, soulGain,
+  metaGain, metaGain2, kingsDecree1/2) KALDI.
+- **Tank-first fiyat-nudge:** golemUnlock 50 soul (en ucuz unlock) < archerUnlock 70 → necro zaten menzilli,
+  eksik olan blokçu; oyuncu doğal olarak ilk tank'ı alır (uçurum değil, eğim).
+- **Melee panel statları:** golem/bruiser DEFENDERS'a `fireRate` + `maxHp` eklendi (UpgradeManager baseCost'lu
+  her statı otomatik panele koyar). Defender `_baseHpValue`/`refreshMaxHp` maxHp'yi leveled okur +
+  upgrade'i canlı birime yansıtır (GameScene onDefenderUpgraded); melee vuruş hızı `getMeleeAttackRate`
+  ile leveled fireRate'ten. L1 değerleri eski efektif değere oturur (golem HP 120, bruiser 70).
 
-**Kapsam (kod):** UIScene renderUpgradePanel — kilitli birimde unlock-satın-alma butonu yerine map
-yönlendirmesi; ConquestManager purchaseUnlockFor/canUnlockFromPanel satın-alma için KULLANILMAZ
-(yönlendirme yardımcısına iner veya kaldırılır); signature node'ları panelde ASLA görünmez; i18n
-ui.unlockFromPanel yönlendirme metnine döner.
+**Kapsam (kod — uygulandı):** config CONQUEST_NODES yeniden yazıldı + golem/bruiser fireRate/maxHp +
+SAVE_VERSION 10; GameState golem/bruiser stat şekli (3 blok, resetForPrestige'deki bayat blastRadius/
+reloadSpeed düzeltildi); Defender maxHp/fireRate wiring; GameScene canlı maxHp refresh; UIScene
+renderUpgradePanel kilitli birim → "Fetih Haritası'nı Aç" yönlendirmesi (satın alma YOK); SaveManager
+MIGRATIONS[9] (unlockedNodes remap+filter+dedupe); i18n TR+EN conquest bloğu + ui.goToMap + statLabel.maxHp/
+heal. ConquestManager'a DOKUNULMADI (unlock effect.target ile çalışır, laserChain getter dursun).
+Doğrulama: graf tutarlılık testi + migration testi + node --check tüm src + vite build geçti.
 
 ---
 

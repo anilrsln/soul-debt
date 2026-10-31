@@ -87,6 +87,23 @@ const MIGRATIONS = {
     }
     return gs;
   },
+  // v9 → v10: conquest node yeniden adlandırma + generic "+% birim statı" node temizliği (K42).
+  // unlockedNodes'taki eski id'leri yeniye MAP'le (unit tip kilidi korunur); KALDIRILAN node'ları
+  // (artık config'de yok — işi panel grind'i yapıyor) DÜŞ + dedupe. bonuses temizlenir; applyLoad
+  // sonundaki reapplyAllEffects temiz listeden yeniden kurar. Defender stat şekli (golem/bruiser
+  // maxHp/fireRate) GameState varsayılanı + Object.assign ile otomatik gelir — migration gerekmez.
+  9: (gs) => {
+    const RENAME = { cannonUnlock: 'golemUnlock', frostUnlock: 'mageUnlock', catapultUnlock: 'bruiserUnlock' };
+    const REMOVED = new Set(['laserBoost1', 'laserBoost2', 'archerMastery', 'cannonPower1', 'laserChain']);
+    if (gs.conquestMap && Array.isArray(gs.conquestMap.unlockedNodes)) {
+      const seen = new Set();
+      gs.conquestMap.unlockedNodes = gs.conquestMap.unlockedNodes
+        .map(id => RENAME[id] || id)
+        .filter(id => !REMOVED.has(id) && !seen.has(id) && seen.add(id));
+      gs.conquestMap.bonuses = {}; // reapplyAllEffects yeniden kuracak
+    }
+    return gs;
+  },
 };
 
 const SaveManager = {

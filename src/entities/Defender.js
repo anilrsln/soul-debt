@@ -47,7 +47,7 @@ export default class Defender {
 
     // Savaş tipi + HP (K34). maxHp kıdem çarpanıyla ölçeklenir (veteranLevel=0'da nötr).
     this.combatType = this.config.combatType || 'ranged';
-    this.baseHp = this.config.hp || 30;
+    this.baseHp = this._baseHpValue();
     this.maxHp = this._scaledMaxHp();
     this.hp = this.maxHp;
     this._attackTimer = 0;      // melee dur-dövüş vuruş sayacı
@@ -95,9 +95,31 @@ export default class Defender {
     return base * (1 + bonus) * bossMult * vet;
   }
 
-  /** Kıdemle ölçeklenmiş maksimum HP (K37). veteranLevel=0'da baseHp. */
+  /** Taban (kıdem-öncesi) maxHp. Panelden yükseltilebilir maxHp statı (K42) varsa leveled
+   *  değer, yoksa flat config.hp. UpgradeManager her baseCost'lu statı otomatik panele koyar;
+   *  burada o statın oyun-içi maxHp'ye bağlanması sağlanır. */
+  _baseHpValue() {
+    const s = this.config.maxHp;
+    if (s && s.baseCost) {
+      const lvl = GameState.defenders[this.type]?.maxHp?.level || 1;
+      return calculateValue(s.base, s.multiplier, lvl);
+    }
+    return this.config.hp || 30;
+  }
+
+  /** Kıdemle ölçeklenmiş maksimum HP (K37). veteranLevel=0'da _baseHpValue. */
   _scaledMaxHp() {
-    return Math.round(this.baseHp * VeteranManager.getMultiplier(this, 'hp'));
+    return Math.round(this._baseHpValue() * VeteranManager.getMultiplier(this, 'hp'));
+  }
+
+  /** maxHp'yi yeniden hesapla, mevcut hp'yi oransal koru (full doldurmaz).
+   *  Kıdem atlayınca VE panelden maxHp yükseltilince (K42) çağrılır. */
+  refreshMaxHp() {
+    const prevMax = this.maxHp || this.baseHp;
+    const ratio = prevMax > 0 ? this.hp / prevMax : 1;
+    this.baseHp = this._baseHpValue();
+    this.maxHp = this._scaledMaxHp();
+    this.hp = Math.max(1, Math.round(this.maxHp * ratio));
   }
 
   /** Özel skil gücü kıdem çarpanı (archer splash / mage slow / cleric heal — K37). */
@@ -107,10 +129,7 @@ export default class Defender {
 
   /** Kıdem atladığında çağrılır (VeteranManager): maxHp tazelenir, mevcut hp oransal korunur. */
   applyVeteranLevel() {
-    const prevMax = this.maxHp || this.baseHp;
-    const ratio = prevMax > 0 ? this.hp / prevMax : 1;
-    this.maxHp = this._scaledMaxHp();
-    this.hp = Math.max(1, Math.round(this.maxHp * ratio)); // oranı koru (full doldurmaz)
+    this.refreshMaxHp();
   }
 
   rollDamage(isBossTarget = false) {
@@ -125,6 +144,13 @@ export default class Defender {
     const l = this.getStateLevels();
     const stat = this.config.fireRate || this.config.reloadSpeed;
     return calculateValue(stat.base, stat.multiplier, l.fireRate || l.reloadSpeed);
+  }
+
+  /** Melee vuruş hızı (vuruş/sn). Panelden yükseltilebilir fireRate statı (K42) varsa onu
+   *  kullan (leveled); yoksa birim-başına flat meleeAttackRate veya global sabit (K34). */
+  getMeleeAttackRate() {
+    if (this.config.fireRate && this.config.fireRate.baseCost) return this.getFireRate();
+    return this.config.meleeAttackRate || CONFIG.COMBAT.meleeAttackRate;
   }
 
   getRange() {
@@ -255,9 +281,9 @@ export default class Defender {
         this._lungeState = 'engaged';
         this._attackTimer -= delta;
         if (this._attackTimer <= 0) {
-          // Birim-başına meleeAttackRate override (config) — yoksa global sabit (K34).
+          // Vuruş hızı: panelden yükseltilebilir fireRate statı (K42) → yoksa flat/global (K34).
           // Bruiser bununla golem'den hızlı vurur (ön-saf vurucu kimliği).
-          const rate = this.config.meleeAttackRate || C.meleeAttackRate;
+          const rate = this.getMeleeAttackRate();
           this._attackTimer = 1 / rate;
           const isBoss = this._engaged.type?.startsWith('boss_');
           this._engaged.takeDamage(Math.max(1, Math.floor(this.getDamage(isBoss))), true);

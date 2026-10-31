@@ -149,10 +149,13 @@ Bu oturumlarda eklenen oynanış sistemleri. Detay DECISIONS K38-K42.
 - [x] **Necromancer mermi (K40):** beam yerine tek-tek mor ruh mermisi (soulBolt). Flick düzeldi.
 - [x] **Conquest-gate (K41):** tüm kadro (necromancer hariç) conquest'ten açılır. archer da conquest'e
       bağlandı (archerUnlock → archerMastery).
-- [~] **İki ekran iş bölümü (K42 — K41 revize):** Olasılık 2 seçildi. Conquest map = TEK kazanım ekranı
-      (unlock + signature); panel = işletme (stat upgrade + hire/craft + sayı). Panelden unlock satın alma
-      KALDIRILIR → kilitli birim map'e yönlendirilir. **Conquest-reorg ile uygulanacak** (node grafiği
-      3-kolon yeniden düzeni + generic "+% stat" node temizliği + melee panel hp/fireRate — açık kalemler).
+- [x] **İki ekran iş bölümü + conquest-reorg (K42 — K41 revize):** Conquest map = TEK kazanım ekranı
+      (unlock + signature); panel = işletme (stat/hire/sayı). Panelden unlock satın alma KALDIRILDI →
+      kilitli birim "Fetih Haritası'nı Aç" ile yönlendirilir. 3-kolon ağaç (14 node): Necromancer&Komuta /
+      Menzilli / Melee; tematik id rename; generic "+% stat" node temizliği; golem/bruiser panele hp+fireRate;
+      golemUnlock 50<archerUnlock 70 (tank-first nudge); SaveManager v10 migration. Graf+migration testi +
+      node --check + vite build geçti. (Signature'lar: archer Splash hazır; golem taunt/bruiser cleave vb.
+      yetenek kodlanınca eklenecek.)
 - [ ] **Sürükle-bırak dizme (Deploy Parça 4):** kartı tutup sahaya sürükle. Şu an seç-sağtık çalışıyor;
       sürükle-bırak PARK/kalan tek parça.
 

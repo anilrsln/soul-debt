@@ -224,50 +224,27 @@ export default class UIScene extends Phaser.Scene {
     const info = UpgradeManager.getDefenderUpgradeInfo(this.activeTab);
     const startX = 10, startY = this.panelY + 32;
 
-    // Conquest kilidi: panelden de unlock edilebilir (map ile aynı node — K40). Node'un
-    // gereksinimleri karşılanmışsa "Aç" butonu; değilse map'e yönlendiren ipucu.
+    // K42: Conquest kilidi — panelden SATIN ALMA YOK. Kazanım (unlock + signature) yalnız
+    // Fetih Haritası'ndan yapılır; panel yalnız bilgilendirir + haritaya yönlendirir.
+    // ("İşlet" panelde, "kazan" map'te — tek cümlelik kural; eski panel-unlock çift-girişi
+    // K41'den kaldırıldı.)
     if (info.conquestLocked) {
       const type = this.activeTab;
-      const nodeName = t(`ui.nodeHint.${type}`) || t('ui.nodeHint.default');
-      const canUnlock = ConquestManager.canUnlockFromPanel(type);
-      const nodeId = ConquestManager.unlockNodeIdFor(type);
-      const available = nodeId ? ConquestManager.isAvailable(nodeId) : false;
+      const infoText = this.add.text(CONFIG.CANVAS_WIDTH / 2, startY + 18,
+        t('ui.unlockFromPanel', { name: t(`defender.${type}`) }),
+        this.textStyle(12, '#aaaaaa')
+      ).setOrigin(0.5).setDepth(102);
+      this.upgradeElements.push(infoText);
 
-      if (available) {
-        // Gereksinimler tamam → panelden açılabilir. Buton maliyeti conquest node'undan.
-        const cost = ConquestManager.unlockCostFor(type);
-        const infoText = this.add.text(CONFIG.CANVAS_WIDTH / 2, startY + 18,
-          t('ui.unlockFromPanel', { name: t(`defender.${type}`) }),
-          this.textStyle(12, '#aaaaaa')
-        ).setOrigin(0.5).setDepth(102);
-        this.upgradeElements.push(infoText);
-
-        const bx = CONFIG.CANVAS_WIDTH / 2, by = startY + 48;
-        const bg = this.add.rectangle(bx, by, 150, 28, canUnlock ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED, 1)
-          .setDepth(102).setInteractive({ useHandCursor: true });
-        const label = this.add.text(bx, by, t('ui.unlock', { cost: this.formatCost(cost) }),
-          this.textStyle(10, canUnlock ? '#66ff66' : '#666666')).setOrigin(0.5).setDepth(103);
-        bg.on('pointerdown', () => {
-          if (ConquestManager.purchaseUnlockFor(type)) {
-            this.flashButton(bg);
-            this.panelDirty = true;
-            this.game.events.emit('sfx', 'hire');
-            this.game.events.emit('conquest-node-purchased'); // map açıksa yenilensin
-          } else {
-            this.game.events.emit('sfx', 'uiDenied');
-          }
-        });
-        bg.on('pointerover', () => { if (canUnlock) bg.setFillStyle(0x2a8a2a); });
-        bg.on('pointerout', () => bg.setFillStyle(canUnlock ? 0x1a6a1a : CONFIG.COLORS.UI_BUTTON_DISABLED));
-        this.upgradeElements.push(bg, label);
-      } else {
-        // Önce gereksinim node'ları gerekiyor → map'e yönlendir.
-        const lockText = this.add.text(CONFIG.CANVAS_WIDTH / 2, startY + 30,
-          t('ui.conquestLock', { node: nodeName }),
-          this.textStyle(12, '#888888')
-        ).setOrigin(0.5).setDepth(102);
-        this.upgradeElements.push(lockText);
-      }
+      const bx = CONFIG.CANVAS_WIDTH / 2, by = startY + 48;
+      const bg = this.add.rectangle(bx, by, 190, 28, CONFIG.COLORS.UI_BUTTON, 1)
+        .setDepth(102).setInteractive({ useHandCursor: true });
+      const label = this.add.text(bx, by, t('ui.goToMap'),
+        this.textStyle(11, '#9fd8ff')).setOrigin(0.5).setDepth(103);
+      bg.on('pointerdown', () => this.openConquestMap());
+      bg.on('pointerover', () => bg.setFillStyle(CONFIG.COLORS.UI_BUTTON_HOVER));
+      bg.on('pointerout', () => bg.setFillStyle(CONFIG.COLORS.UI_BUTTON));
+      this.upgradeElements.push(bg, label);
       return;
     }
 

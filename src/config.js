@@ -18,7 +18,7 @@ export const CONFIG = {
   // Kaydetme
   SAVE_KEY: 'idle-kingdom-defense-save',
   SAVE_INTERVAL: 30000,
-  SAVE_VERSION: 9, // save şema sürümü — v9: kadro rename (K22/K23) eski defender anahtarlarını map+temizle
+  SAVE_VERSION: 10, // v10 (K42): conquest node id rename + generic +% stat node temizliği; unlockedNodes remap
 
   // Idle sistemi
   IDLE_EFFICIENCY: 0.5,
@@ -179,8 +179,13 @@ export const CONFIG = {
       craftCost: { soul: 200, essence: 8 }, craftCostMultiplier: 2.0,
       hireCost: 200,
       hireCostMultiplier: 2.0,
-      // Melee: yalnız damage upgrade edilebilir (blastRadius/reloadSpeed mermiye aitti — kaldırıldı).
-      damage:      { base: 15, multiplier: 1.25, baseCost: 30 },
+      // K42: melee PANEL statları — damage + fireRate (vuruş hızı) + maxHp (can).
+      // Oyuncu tank'ın "etli mi vurucu mu?" önceliğini panelde tek tek belirler
+      // (conquest'te generic +% node YOK). base değerleri level-1'de (base·mult)
+      // eski efektif değere oturur: maxHp L1=120, fireRate L1≈1.0 (eski global).
+      damage:      { base: 15,   multiplier: 1.25, baseCost: 30 },
+      fireRate:    { base: 0.93, multiplier: 1.08, baseCost: 35 }, // melee vuruş/sn (L1≈1.0)
+      maxHp:       { base: 100,  multiplier: 1.20, baseCost: 40 }, // can (L1=120, eski flat hp)
     },
     mage: {
       name: 'Damage Mage',
@@ -222,13 +227,17 @@ export const CONFIG = {
       // Melee: mermi yok. Golem'den rol farkı: orta HP, yüksek hasar, HIZLI vuruş.
       spriteKey: 'defender-bruiser', spriteType: 'sprite',
       fireFx: 'blast',
-      meleeAttackRate: 1.8, // golem'in global 1.0'ından hızlı — bruiser'ın kimliği (ön-saf vurucu)
+      // (eski flat meleeAttackRate: 1.8 → K42'de panel fireRate statına taşındı, aşağıda)
       soulCapacity: 14, // golem'den (20) ucuz dirilt; orta borç (K12)
       // K30 placeholder: soul + bone (ön-saf iskelet — golem'in essence'ından ayrışır)
       craftCost: { soul: 350, bone: 25 }, craftCostMultiplier: 2.2,
       hireCost: 350,
       hireCostMultiplier: 2.2,
-      damage:      { base: 22, multiplier: 1.28, baseCost: 40 }, // golem (15) üstü vuruş gücü
+      // K42: melee PANEL statları (damage + fireRate + maxHp). L1'de eski efektif değere oturur:
+      // maxHp L1≈70, fireRate L1=1.8 (eski meleeAttackRate).
+      damage:      { base: 22,   multiplier: 1.28, baseCost: 40 }, // golem (15) üstü vuruş gücü
+      fireRate:    { base: 1.67, multiplier: 1.08, baseCost: 45 }, // ön-saf vurucu: golem'den hızlı (L1≈1.8)
+      maxHp:       { base: 58,   multiplier: 1.20, baseCost: 35 }, // can (L1≈70, eski flat hp)
     },
     cleric: {
       name: 'Cleric',
@@ -380,146 +389,108 @@ export const CONFIG = {
 
   // Conquest Map — Skill Tree node'ları
   CONQUEST_NODES: {
-    // Archer açılışı — kök düğüm (ucuz, erken). Archer artık conquest'ten açılır; başta craft
-    // edilemez (K40: tüm kadro conquest'e bağlı, necromancer hariç).
-    archerUnlock: {
-      id: 'archerUnlock', name: 'Archer Unlock',
-      description: 'Unlocks Skeleton Archer',
-      cost: { soul: 60 },
-      effect: { type: 'unlock', target: 'archer' },
-      requires: [], x: 100, y: 440,
-    },
-    laserBoost1: {
-      id: 'laserBoost1', name: 'Laser Boost I',
-      description: '+25% Laser Damage',
-      cost: { soul: 50 },
-      effect: { type: 'defenderBoost', target: 'necromancer', stat: 'damage', value: 0.25 },
-      requires: [], x: 100, y: 80,
-    },
-    laserBoost2: {
-      id: 'laserBoost2', name: 'Laser Boost II',
-      description: '+25% Laser Fire Rate',
-      cost: { soul: 150 },
-      effect: { type: 'defenderBoost', target: 'necromancer', stat: 'fireRate', value: 0.25 },
-      requires: ['laserBoost1'], x: 280, y: 80,
-    },
-    defenderAura: {
-      id: 'defenderAura', name: 'Defender Damage Aura',
-      description: '+15% All Defender Damage',
-      cost: { soul: 500 },
-      effect: { type: 'globalBonus', stat: 'damage', value: 0.15 },
-      requires: ['laserBoost2'], x: 480, y: 80,
-    },
+    // ═══════════════════════════════════════════════════════════════════
+    // 3-KOLON FETİH AĞACI (K42). İki ekran, iki iş: KAZAN (unlock + signature)
+    // burada; İŞLET (stat upgrade + hire/craft) panelde. Generic "+% birim statı"
+    // node'ları KALDIRILDI (o iş panelde). Her birimin TEK unlock node'u; kolon
+    // kökleri bağımsız (çapraz-gate yok). Melee kökü (golem) en ucuz unlock →
+    // oyuncu ilk tank'a yönlendirilir (necro zaten menzilli; eksik olan blokçu —
+    // fiyat-nudge, uçurum değil). Node adı/açıklaması i18n'den (conquest.<id>.*).
+    // Kolon 1 (x120): Necromancer & Komuta — ekonomi + global (necro hep açık, unlock yok)
+    // Kolon 2 (x400): Menzilli hat — archer → splash → mage → frost → cleric
+    // Kolon 3 (x680): Melee hat — golem → bruiser
+    // ═══════════════════════════════════════════════════════════════════
+
+    // ── Kolon 1: Necromancer & Komuta (x120) ──
     soulGain: {
-      id: 'soulGain', name: 'Soul Gain',
-      description: '+20% Soul Gain',
+      id: 'soulGain', name: 'Soul Harvest', description: '+20% Soul Gain',
       cost: { soul: 100 },
       effect: { type: 'economy', stat: 'soulMultiplier', value: 0.2 },
-      requires: ['laserBoost1'], x: 100, y: 200,
-    },
-    archerMastery: {
-      id: 'archerMastery', name: 'Archer Mastery',
-      description: '+30% Archer Damage',
-      cost: { soul: 300 },
-      effect: { type: 'defenderBoost', target: 'archer', stat: 'damage', value: 0.3 },
-      // Archer Unlock'tan BİR SONRA (K40): önce archer açılır, sonra ustalığı alınır.
-      requires: ['archerUnlock'], x: 280, y: 440,
+      requires: [], x: 120, y: 90,
     },
     metaGain: {
-      id: 'metaGain', name: 'Meta Boost',
-      description: '+30% Meta Gain',
+      id: 'metaGain', name: 'Grave Yield', description: '+30% Meta Gain',
       cost: { soul: 200 },
       effect: { type: 'economy', stat: 'metaMultiplier', value: 0.3 },
-      requires: ['soulGain'], x: 100, y: 320,
-    },
-    cannonUnlock: {
-      id: 'cannonUnlock', name: 'Cannon Unlock',
-      description: 'Unlocks Cannon defender',
-      cost: { soul: 400 },
-      effect: { type: 'unlock', target: 'golem' },
-      requires: ['archerMastery'], x: 480, y: 320,
-    },
-    cannonPower1: {
-      id: 'cannonPower1', name: 'Cannon Power I',
-      description: '+30% Cannon Damage',
-      cost: { soul: 600 },
-      effect: { type: 'defenderBoost', target: 'golem', stat: 'damage', value: 0.3 },
-      requires: ['cannonUnlock'], x: 660, y: 320,
-    },
-    // NOT: prestigeUnlock node KALDIRILDI (K26/Faz G temizlik) — prestige artık tanrıyı yenince
-    // (gönüllü) veya necromancer ölünce (zorlanmış) OTOMATİK tetiklenir; manuel açılış node'u ölüydü.
-
-    // --- Tier 2 genişleme (yeni node'lar) ---
-
-    archerSplash: {
-      id: 'archerSplash', name: 'Archer Mastery',
-      description: 'Her 5. ok menzildeki düşmanlara %40 alan hasarı verir',
-      cost: { soul: 450 },
-      effect: { type: 'archerSplash', splashEvery: 5, splashRadius: 55, splashFraction: 0.4 },
-      requires: ['archerMastery'], x: 480, y: 440,
-    },
-    laserChain: {
-      id: 'laserChain', name: 'Laser Enhancement II',
-      description: 'Laser her vuruşta ikinci bir hedefe %50 hasar iletir',
-      cost: { soul: 350 },
-      effect: { type: 'laserChain', chainFraction: 0.5 },
-      requires: ['laserBoost2'], x: 280, y: 200,
-    },
-    bossPenetration: {
-      id: 'bossPenetration', name: 'Artillery Specialist',
-      description: '+50% Boss hasarı — tüm savunucular',
-      cost: { soul: 800 },
-      effect: { type: 'bossBonus', value: 0.5 },
-      requires: ['cannonPower1'], x: 660, y: 440,
+      requires: ['soulGain'], x: 120, y: 190,
     },
     metaGain2: {
-      id: 'metaGain2', name: 'Meta Production II',
-      description: '+30% Meta Kazanımı',
+      id: 'metaGain2', name: 'Grave Yield II', description: '+30% Meta Gain',
       cost: { soul: 300 },
       effect: { type: 'economy', stat: 'metaMultiplier', value: 0.3 },
-      requires: ['metaGain'], x: 100, y: 560,
+      requires: ['metaGain'], x: 120, y: 290,
+    },
+    defenderAura: {
+      id: 'defenderAura', name: 'Dread Aura', description: '+15% All Defender Damage',
+      cost: { soul: 500 },
+      effect: { type: 'globalBonus', stat: 'damage', value: 0.15 },
+      requires: ['metaGain2'], x: 120, y: 390,
+    },
+    bossPenetration: {
+      id: 'bossPenetration', name: 'Godslayer Focus', description: '+50% Boss Damage (all defenders)',
+      cost: { soul: 800 },
+      effect: { type: 'bossBonus', value: 0.5 },
+      requires: ['defenderAura'], x: 120, y: 490,
     },
     kingsDecree1: {
-      id: 'kingsDecree1', name: "King's Decree I",
-      description: '+40% tüm Soul ve Meta kazanımı',
+      id: 'kingsDecree1', name: "Necromancer's Decree I", description: '+40% all Soul & Meta gain',
       cost: { soul: 1500 },
       effect: { type: 'incomeMultiplier', value: 0.4 },
-      requires: ['metaGain2'], x: 100, y: 680,
+      requires: ['bossPenetration'], x: 120, y: 590,
     },
     kingsDecree2: {
-      id: 'kingsDecree2', name: "King's Decree II",
-      description: '+60% tüm Soul ve Meta kazanımı',
+      id: 'kingsDecree2', name: "Necromancer's Decree II", description: '+60% all Soul & Meta gain',
       cost: { soul: 3000 },
       effect: { type: 'incomeMultiplier', value: 0.6 },
-      requires: ['kingsDecree1'], x: 280, y: 680,
+      requires: ['kingsDecree1'], x: 120, y: 690,
     },
-    frostUnlock: {
-      id: 'frostUnlock', name: 'Frost Tower Unlock',
-      description: 'Frost Tower açılır — düşmanları yavaşlatır',
-      cost: { soul: 700 },
+
+    // ── Kolon 2: Menzilli hat (x400) ──
+    archerUnlock: {
+      id: 'archerUnlock', name: 'Archer Unlock', description: 'Unlocks Skeleton Archer',
+      cost: { soul: 70 },
+      effect: { type: 'unlock', target: 'archer' },
+      requires: [], x: 400, y: 90,
+    },
+    archerSplash: {
+      // Archer SIGNATURE (kodu HAZIR: Defender.config.archerSplash + ConquestManager.getArcherSplash)
+      id: 'archerSplash', name: 'Soul Volley', description: 'Every 5th arrow deals 40% splash damage',
+      cost: { soul: 450 },
+      effect: { type: 'archerSplash', splashEvery: 5, splashRadius: 55, splashFraction: 0.4 },
+      requires: ['archerUnlock'], x: 400, y: 190,
+    },
+    mageUnlock: {
+      id: 'mageUnlock', name: 'Mage Unlock', description: 'Unlocks Damage Mage',
+      cost: { soul: 500 },
       effect: { type: 'unlock', target: 'mage' },
-      requires: ['defenderAura'], x: 480, y: 560,
-    },
-    catapultUnlock: {
-      id: 'catapultUnlock', name: 'Catapult Unlock',
-      description: 'Catapult açılır — uzun menzilli büyük AoE',
-      cost: { soul: 1200 },
-      effect: { type: 'unlock', target: 'bruiser' },
-      requires: ['frostUnlock', 'bossPenetration'], x: 660, y: 560,
-    },
-    clericUnlock: {
-      id: 'clericUnlock', name: 'Cleric Unlock',
-      description: 'Cleric açılır — menzildeki dost birimleri iyileştirir',
-      cost: { soul: 1500 },
-      effect: { type: 'unlock', target: 'cleric' },
-      requires: ['frostUnlock'], x: 660, y: 680, // frostUnlock ile çakışmasın (eskiden x480 y560)
+      requires: ['archerSplash'], x: 400, y: 290,
     },
     bluemageUnlock: {
-      id: 'bluemageUnlock', name: 'Frost Mage Unlock',
-      description: 'Buz Büyücüsü açılır — yavaşlatır + üst üste ayaz ile dondurur',
-      cost: { soul: 1800 },
+      id: 'bluemageUnlock', name: 'Frost Mage Unlock', description: 'Unlocks Frost Mage (slow + freeze)',
+      cost: { soul: 900 },
       effect: { type: 'unlock', target: 'bluemage' },
-      requires: ['frostUnlock'], x: 480, y: 680,
+      requires: ['mageUnlock'], x: 400, y: 390,
+    },
+    clericUnlock: {
+      id: 'clericUnlock', name: 'Cleric Unlock', description: 'Unlocks Cleric (heals allies)',
+      cost: { soul: 1400 },
+      effect: { type: 'unlock', target: 'cleric' },
+      requires: ['bluemageUnlock'], x: 400, y: 490,
+    },
+
+    // ── Kolon 3: Melee hat (x680) — golem = en ucuz unlock (tank-first nudge) ──
+    // Signature'lar (golem taunt / bruiser cleave) yetenek kodlanınca eklenir (uyuyan node yok).
+    golemUnlock: {
+      id: 'golemUnlock', name: 'Golem Unlock', description: 'Unlocks Stone Golem (tank)',
+      cost: { soul: 50 },
+      effect: { type: 'unlock', target: 'golem' },
+      requires: [], x: 680, y: 90,
+    },
+    bruiserUnlock: {
+      id: 'bruiserUnlock', name: 'Bruiser Unlock', description: 'Unlocks Skeleton Bruiser (front-line)',
+      cost: { soul: 400 },
+      effect: { type: 'unlock', target: 'bruiser' },
+      requires: ['golemUnlock'], x: 680, y: 190,
     },
   },
 };

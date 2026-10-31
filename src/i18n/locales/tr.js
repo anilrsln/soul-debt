@@ -24,7 +24,8 @@ export default {
     level: 'Lv.{n}',
     costSoul: '{n} Soul',
     conquestLock: '🔒 Fetih Haritası\'nda "{node}" düğümünü satın al',
-    unlockFromPanel: '{name} kilitli — buradan veya Fetih Haritası\'ndan aç',
+    unlockFromPanel: '{name} kilitli — Fetih Haritası\'ndan aç',
+    goToMap: '▶ Fetih Haritası\'nı Aç',
     hireFirst: 'Önce {name} ör ({cost})',
     hirePlus: '+1 Ör ({cost})',
     hirePlace: 'Yerleştir ({cost})',
@@ -145,7 +146,7 @@ export default {
   },
   // Ekonomi yükseltmeleri (ECONOMY_UPGRADES)
   statLabel: {
-    damage: 'Hasar', fireRate: 'Atış Hızı', range: 'Menzil',
+    damage: 'Hasar', fireRate: 'Atış Hızı', range: 'Menzil', maxHp: 'Can', heal: 'Şifa',
     blastRadius: 'Patlama Yarıçapı', reloadSpeed: 'Doldurma Hızı',
   },
   economy: {
@@ -171,26 +172,24 @@ export default {
     firstCancel:   { name: 'Merhametsiz',   desc: 'Bir birimin dirilişini iptal et (kalıcı ölüm)' },
     floor3:        { name: 'Derine İniş',   desc: '3. kata ulaş' },
   },
-  // Fetih düğümleri (CONQUEST_NODES) — name + description
+  // Fetih düğümleri (CONQUEST_NODES) — name + description. 3-kolon ağaç (K42).
   conquest: {
-    laserBoost1:     { name: 'Necromancer Takviyesi I',  description: '+%25 Necromancer Hasarı' },
-    laserBoost2:     { name: 'Necromancer Takviyesi II', description: '+%25 Necromancer Atış Hızı' },
-    defenderAura:    { name: 'Savunucu Hasar Aurası', description: '+%15 Tüm Savunucu Hasarı' },
-    soulGain:        { name: 'Soul Kazanımı',         description: '+%20 Soul Kazanımı' },
-    archerMastery:   { name: 'Okçu Ustalığı',         description: '+%30 Okçu Hasarı' },
-    metaGain:        { name: 'Meta Takviyesi',        description: '+%30 Meta Kazanımı' },
-    archerUnlock:    { name: 'Okçu Açılışı',          description: 'İskelet Okçu açılır — temel menzilli birim' },
-    cannonUnlock:    { name: 'Golem Açılışı',         description: 'Golem savunucusunu açar' },
-    cannonPower1:    { name: 'Golem Gücü I',          description: '+%30 Golem Hasarı' },
-    archerSplash:    { name: 'Okçu Ustalığı',         description: 'Her 5. ok menzildeki düşmanlara %40 alan hasarı verir' },
-    laserChain:      { name: 'Necromancer Geliştirme II', description: 'Necromancer her vuruşta ikinci bir hedefe %50 hasar iletir' },
-    bossPenetration: { name: 'Kuşatma Uzmanı',        description: '+%50 Boss hasarı — tüm savunucular' },
-    metaGain2:       { name: 'Meta Üretimi II',       description: '+%30 Meta Kazanımı' },
-    kingsDecree1:    { name: 'Kral Fermanı I',        description: '+%40 tüm Soul ve Meta kazanımı' },
-    kingsDecree2:    { name: 'Kral Fermanı II',       description: '+%60 tüm Soul ve Meta kazanımı' },
-    frostUnlock:     { name: 'Büyücü Açılışı',        description: 'Hasar Büyücüsü açılır — düşmanları yavaşlatır' },
-    catapultUnlock:  { name: 'Bruiser Açılışı',       description: 'İskelet Bruiser açılır — ön-saf melee' },
-    clericUnlock:    { name: 'Şifacı Açılışı',        description: 'Şifacı açılır — menzildeki dost birimleri iyileştirir' },
-    bluemageUnlock:  { name: 'Buz Büyücüsü Açılışı',  description: 'Buz Büyücüsü açılır — yavaşlatır + üst üste ayaz ile dondurur' },
+    // Kolon 1 — Necromancer & Komuta (ekonomi + global)
+    soulGain:        { name: 'Soul Hasadı',            description: '+%20 Soul Kazanımı' },
+    metaGain:        { name: 'Mezar Mahsulü',          description: '+%30 Meta Kazanımı' },
+    metaGain2:       { name: 'Mezar Mahsulü II',       description: '+%30 Meta Kazanımı' },
+    defenderAura:    { name: 'Dehşet Aurası',          description: '+%15 Tüm Savunucu Hasarı' },
+    bossPenetration: { name: 'Tanrı-Kıran Odak',       description: '+%50 Boss Hasarı (tüm savunucular)' },
+    kingsDecree1:    { name: 'Necromancer Fermanı I',  description: '+%40 tüm Soul ve Meta kazanımı' },
+    kingsDecree2:    { name: 'Necromancer Fermanı II', description: '+%60 tüm Soul ve Meta kazanımı' },
+    // Kolon 2 — Menzilli hat
+    archerUnlock:    { name: 'Okçu Açılışı',           description: 'İskelet Okçu açılır — temel menzilli birim' },
+    archerSplash:    { name: 'Ruh Yağmuru',            description: 'Her 5. ok menzildeki düşmanlara %40 alan hasarı verir' },
+    mageUnlock:      { name: 'Büyücü Açılışı',         description: 'Hasar Büyücüsü açılır — saf alan hasarı' },
+    bluemageUnlock:  { name: 'Buz Büyücüsü Açılışı',   description: 'Buz Büyücüsü açılır — yavaşlatır + ayazla dondurur' },
+    clericUnlock:    { name: 'Şifacı Açılışı',         description: 'Şifacı açılır — menzildeki dost birimleri iyileştirir' },
+    // Kolon 3 — Melee hat
+    golemUnlock:     { name: 'Golem Açılışı',          description: 'Taş Golem açılır — asıl tank/blokçu' },
+    bruiserUnlock:   { name: 'Bruiser Açılışı',        description: 'İskelet Bruiser açılır — ön-saf vurucu' },
   },
 };

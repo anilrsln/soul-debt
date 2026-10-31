@@ -536,6 +536,9 @@ export default class GameScene extends Phaser.Scene {
     const list = type === 'necromancer' ? [this.necromancer] : (this.defenders[type] || []);
     for (const d of list) {
       if (!d || !d.sprite) continue;
+      // K42: maxHp panel upgrade'i canlı birime yansısın (oransal hp korunur; damage/fireRate
+      // zaten canlı okunur, bu çağrı onlarda no-op). refreshMaxHp yoksa (necromancer) atla.
+      if (d.refreshMaxHp) d.refreshMaxHp();
       // Önceki pulse tween'ini iptal et ve base scale'e sıfırla — üst üste binen
       // tween'ler yoyo'yu bozup kalıcı büyüme bırakmasın (setDisplaySize scale≠1).
       this.tweens.killTweensOf(d.sprite);
